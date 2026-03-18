@@ -7,10 +7,10 @@
     <img src="https://img.icons8.com/color/96/000000/space-shuttle.png" alt="Logo" width="80" height="80">
   </a>
 
-  <h3 align="center"> OffShift: Zero-G Gig Economy Insurance</h3>
+  <h3 align="center"> OffShift: Smart Income Shield</h3>
 
   <p align="center">
-    Coverage so light and flexible, it feels weightless.
+    An AI-powered, parametric insurance platform designed specifically for gig workers.
     <br />
     <a href="https://github.com/SHIVIKA330/OffShift"><strong>Explore the docs »</strong></a>
     <br />
@@ -53,43 +53,34 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-Hey! Welcome to the repo for **OffShift**. We're proudly building this platform for the **DEVTrails 2026 Hackathon**. 🏆
+Hey! Welcome to the repo for **OffShift**. We're proudly building this platform for the future of the gig economy at **#GuidewireDEVTrails2026** Hackathon. 🏆
 
-As 3rd-year CS students, we noticed a massive gap in how modern labor works versus how traditional insurance operates. We decided to build a platform that actually respects the gig worker. 
+A big shoutout to Guidewire Software for creating a platform that challenges us to rethink insurance through innovation, technology, and real-world impact.
 
 ### The Problem
 
-The "gig economy" (delivery riders, freelance drivers, task-based workers) is booming. However, insurance companies still treat these workers like 9-to-5 employees with strict, expensive, and heavy 24/7 policies. 
+Millions of delivery partners power our daily lives — yet when disruptions like heavy rain, extreme heat, or pollution strike, their income takes a direct hit. No safety net. No protection. Just lost earnings.
 
-If a delivery rider only works for 4 hours a day on weekends, why are they paying full-time premiums? Furthermore, the claims process involves mountains of PDF paperwork, manual verifications, and weeks of waiting—time these workers cannot afford to lose. Traditional insurance is fundamentally broken for the modern, fast-paced "gig" lifecycle.
+That’s the problem we set out to solve.
 
-### The Solution: "Zero-G" Coverage
+### The Solution: "Smart Income Shield"
 
-We built **OffShift** to provide "Zero-G" insurance—coverage so flexible, algorithmic, and lightweight that it feels completely frictionless. OffShift is an on-demand, mobile-first micro-insurance platform that adapts directly to the worker's shift using API-driven embedded insurance middleware.
+Introducing **“Smart Income Shield”** by OffShift — an AI-powered, parametric insurance platform designed specifically for gig workers. 
 
-### Unique Features (What makes us stand out!)
+Our goal is simple: 
+**Ensure that no gig worker goes home empty-handed due to factors beyond their control.**
 
-Here is how OffShift completely redefines gig insurance for Users, Agents, and Companies:
+This project is more than just insurance — it’s about building financial resilience, trust, and stability for a workforce that keeps our cities moving.
 
-#### 1. The Power of "The Toggle" (User Experience)
-At the core of the worker's app is a massive, visually satisfying toggle button. 
-* **Frictionless Activation:** You flip it ON when your shift starts (e.g., accepting a Zomato order). You flip it OFF when you're done. 
-* **Micro-Pricing:** You *only* pay for the exact hours/minutes you are exposed to risk. The premium is calculated dynamically in real-time on your screen.
+### Unique Features (What makes it different?)
 
-#### 2. "Sense" Telematics & Gamification (Behavioral Risk)
-Why punish bad drivers when you can reward good ones? 
-* **Sensor Integration:** We utilize the native mobile gyroscope and GPS to track speed and breaking habits safely in the background.
-* **Unlockable Rewards:** We gamify the experience. Maintain a "Safe Driver" streak for 15 hours and automatically unlock a 20% discount coupon applied directly to your future micro-premiums.
+* **Income-first approach:** We don’t just track weather, we predict income loss.
+* **Zero-touch claims:** Automated payouts triggered by real-world conditions.
+* **AI-driven intelligence:** Dynamic pricing, predictive risk modeling, and fraud detection.
+* **Hyperlocal insights:** Risk-aware recommendations for smarter work decisions.
+* **Weekly affordability:** Designed around the real earning cycles of gig workers.
 
-#### 3. Instant Parametric UPI Claims (Smart Contracts)
-The old way of filing a claim using a 40-page PDF is dead.
-* **Smart Triggers:** If a telematics algorithm detects a severe impact and is mutually backed by a hospital API or gig platform (like an SOS button press), a "Parametric Smart Contract" is triggered.
-* **Instant Payout:** The pre-determined claim amount is blasted directly into the gig worker's pre-registered **UPI Wallet** via instant API transfer, skipping human adjusters entirely for micro-claims.
-
-#### 4. API-First Fleet Middleware (Company/Agent Dashboard)
-We aren't just a consumer app; we are an infrastructure play.
-* **Embedded Insurance:** Using our Node.js microservices, massive gig platforms like Urban Company or Uber can plug our "Toggle" API directly into their own partner apps.
-* **Broker Command Center:** Agents get access to a powerful data-dense dashboard to upload CSVs, bulk auto-KYC fleets, and monitor active worker heatmaps in real-time.
+**Tags:** `#InsuranceInnovation` `#AI` `#GigEconomy` `#FinTech` `#ParametricInsurance` `#DEVTrails` `#Guidewire` `#StartupBuilding` `#TechForGood` `#DEVTrails2026` `#Hackathon`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
