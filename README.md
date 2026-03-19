@@ -53,7 +53,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-Hey! Welcome to the repo for **OffShift**. We're proudly building this platform for the future of the gig economy at **#GuidewireDEVTrails2026** Hackathon. 🏆
+Hey! Welcome to the repo for **OffShift**. We're proudly building this platform for the future of the gig economy at **#GuidewireDEVTrails2026** Hackathon. 
 
 A big shoutout to Guidewire Software for creating a platform that challenges us to rethink insurance through innovation, technology, and real-world impact.
 
