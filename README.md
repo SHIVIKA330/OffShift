@@ -25,7 +25,7 @@
     <br/><br/>
     <a href="./km_20260319_720p_60f_20260319_232546.mp4">📱 View Demo</a>
     ·
-    <a href="./OffShift — Smart Income Shield _ Guidewire DEVTrails 2026.pdf">📊 View Presentation</a>
+    <a href="./OffShift — Smart Income Shield _ Guidewire DEVTrails 2026.pdf"> View Presentation</a>
     ·
     <a href="https://github.com/SHIVIKA330/OffShift/issues"> Report Bug</a>
   </p>
