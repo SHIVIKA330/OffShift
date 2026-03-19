@@ -107,13 +107,7 @@ When the Delhi monsoon hits — and it always hits — Ravi parks under a flyove
 
 ---
 
-### Secondary Persona: Amit Sharma
 
-Amit is a 22-year-old engineering student in Gurugram. He rides for Swiggy evenings and weekends to fund his college expenses. He doesn't need a ₹349/month plan — he needs coverage for his Friday and Saturday evening shifts, when app outages are most likely during peak demand.
-
-On a recent Friday peak, a Swiggy platform crash meant he earned ₹0 in a 4-hour window he'd specifically saved for. He had no recourse.
-
-**OffShift for Amit:** He buys a ₹49 Shift Pass before his Friday evening shift. The Swiggy Downdetector spike, cross-referenced with 50+ GPS-inactive riders in his zone, auto-triggers. His ₹500 arrives before he even notices the platform is back up.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
