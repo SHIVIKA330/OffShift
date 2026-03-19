@@ -655,7 +655,7 @@ Built with purpose and late nights by the OffShift team for **Guidewire DEVTrail
 
 **OffShift Team — DEVTrails 2026 — shivikaj47@gmail.com**
 
-Project: [https://v0-off-shift-projects.vercel.app/](https://v0-off-shift-projects.vercel.app/)
+Project(prototype - try out link): [https://v0-off-shift-projects.vercel.app/](https://v0-off-shift-projects.vercel.app/)
 
 ---
 
