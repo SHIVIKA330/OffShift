@@ -23,9 +23,9 @@
     An AI-powered parametric insurance platform for India's 12 million gig delivery workers.<br/>
     <strong>Zero claim forms. Zero paperwork. Automatic UPI payout in 120 seconds.</strong>
     <br/><br/>
-    <a href="https://github.com/SHIVIKA330/OffShift">📱 View Demo</a>
+    <a href="https://github.com/SHIVIKA330/OffShift"> View Demo</a>
     ·
-    <a href="./Smart-Income-Shield.pdf">📊 View Presentation</a>
+    <a href="./Smart-Income-Shield.pdf"> View Presentation</a>
     ·
     <a href="https://github.com/SHIVIKA330/OffShift/issues">🐛 Report Bug</a>
   </p>
@@ -35,7 +35,7 @@
 
 <!-- TABLE OF CONTENTS -->
 <details>
-  <summary>📋 Table of Contents</summary>
+  <summary> Table of Contents</summary>
   <ol>
     <li><a href="#the-problem">The Problem — 12 Million Workers, Zero Protection</a></li>
     <li><a href="#who-we-build-for">Who We Build For — Persona Stories</a></li>
@@ -43,7 +43,7 @@
     <li><a href="#how-it-works">How It Works — End-to-End Workflow</a></li>
     <li><a href="#premium-model">The Weekly Premium Model</a></li>
     <li><a href="#ai-ml">AI/ML Integration — Kavach Engine</a></li>
-    <li><a href="#adversarial-defense">🛡️ Adversarial Defense & Anti-Spoofing Strategy</a></li>
+    <li><a href="#adversarial-defense"> Adversarial Defense & Anti-Spoofing Strategy</a></li>
     <li><a href="#tech-stack">Tech Stack</a></li>
     <li><a href="#platform-choice">Platform Choice Justification</a></li>
     <li><a href="#database-schema">Database Schema</a></li>
@@ -56,7 +56,7 @@
 ---
 
 <!-- THE PROBLEM -->
-## 😔 The Problem — 12 Million Workers, Zero Protection <a name="the-problem"></a>
+## The Problem — 12 Million Workers, Zero Protection <a name="the-problem"></a>
 
 India has **12 million gig delivery workers**. Every single one of them is exposed to income loss from events completely beyond their control — and not a single parametric income protection product exists for this segment today.
 
@@ -70,11 +70,11 @@ India has **12 million gig delivery workers**. Every single one of them is expos
 | Parametric income protection products available for gig workers | **0** |
 
 **The disruptions we cover:**
-- 🌧️ **Heavy Rain** — IMD Red Alert (rainfall > 65mm/hr)
-- 🌡️ **Extreme Heat** — Temperature exceeding 45°C
-- 🌫️ **Severe Air Pollution** — AQI > 300 (hazardous to health)
-- 📱 **App Outages** — Zomato/Swiggy platform failures on peak nights
-- 🚫 **Curfews & Strikes** — Government-issued movement restrictions
+-  **Heavy Rain** — IMD Red Alert (rainfall > 65mm/hr)
+-  **Extreme Heat** — Temperature exceeding 45°C
+-  **Severe Air Pollution** — AQI > 300 (hazardous to health)
+-  **App Outages** — Zomato/Swiggy platform failures on peak nights
+-  **Curfews & Strikes** — Government-issued movement restrictions
 
 These aren't edge cases. For a delivery rider in Delhi, **these are monthly occurrences.**
 
@@ -83,7 +83,7 @@ These aren't edge cases. For a delivery rider in Delhi, **these are monthly occu
 ---
 
 <!-- WHO WE BUILD FOR -->
-## 👤 Who We Build For — Persona Stories <a name="who-we-build-for"></a>
+##  Who We Build For — Persona Stories <a name="who-we-build-for"></a>
 
 ### Primary Persona: Ravi Kumar
 
@@ -120,22 +120,22 @@ On a recent Friday peak, a Swiggy platform crash meant he earned ₹0 in a 4-hou
 ---
 
 <!-- THE SOLUTION -->
-## 💡 The Solution — Smart Income Shield <a name="the-solution"></a>
+##  The Solution — Smart Income Shield <a name="the-solution"></a>
 
 OffShift is a **parametric insurance engine** — payouts are triggered by objective, external data conditions, never by self-reported claims. Five pillars underpin the entire system:
 
-1. **📱 WhatsApp-First Onboarding** — 60-second signup. Phone number + UPI ID only. No app download. No documents.
-2. **💰 Weekly Micro-Premium Model** — Sachet-sized pricing (₹49/₹99/₹349) built around gig workers' weekly cash flows.
-3. **🧠 Kavach AI Engine** — Our proprietary XGBoost model prices risk to the pincode level, dynamically per rider.
-4. **⚡ Parametric Auto-Triggers** — IMD API, AQICN API, Downdetector, GPS cluster inactivity — objective data only. No subjective judgment.
-5. **💸 120-Second UPI Auto-Payout** — Razorpay API sends money directly to the rider's UPI handle. Zero claim forms. Ever.
+1. ** WhatsApp-First Onboarding** — 60-second signup. Phone number + UPI ID only. No app download. No documents.
+2. ** Weekly Micro-Premium Model** — Sachet-sized pricing (₹49/₹99/₹349) built around gig workers' weekly cash flows.
+3. ** Kavach AI Engine** — Our proprietary XGBoost model prices risk to the pincode level, dynamically per rider.
+4. ** Parametric Auto-Triggers** — IMD API, AQICN API, Downdetector, GPS cluster inactivity — objective data only. No subjective judgment.
+5. ** 120-Second UPI Auto-Payout** — Razorpay API sends money directly to the rider's UPI handle. Zero claim forms. Ever.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ---
 
 <!-- HOW IT WORKS -->
-## ⚙️ How It Works — End-to-End Workflow <a name="how-it-works"></a>
+##  How It Works — End-to-End Workflow <a name="how-it-works"></a>
 
 ```
 STEP 1: ONBOARDING (60 seconds)
@@ -145,7 +145,7 @@ Rider texts "HI" to OffShift WhatsApp
   → Kavach AI scores zone risk for that pincode
   → Personalized weekly premium generated (₹39–₹79 range)
   → Rider pays via PhonePe UPI deep link
-  → Coverage ACTIVE ✅ — all within 60 seconds
+  → Coverage ACTIVE  — all within 60 seconds
 
 STEP 2: MONITORING (Every 15 Minutes)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -169,7 +169,7 @@ Condition met if:
 
 STEP 4: PAYOUT (Trust-Scored, Tiered)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Trust Score > 0.75  →  Razorpay UPI payout in 120 seconds ⚡
+Trust Score > 0.75  →  Razorpay UPI payout in 120 seconds 
 Trust Score 0.40-0.75  →  1 WhatsApp message → payout in 3 mins
 Trust Score < 0.40  →  15-min admin hold → auto-release if confirmed
 ```
@@ -179,15 +179,15 @@ Trust Score < 0.40  →  15-min admin hold → auto-release if confirmed
 ---
 
 <!-- PREMIUM MODEL -->
-## 💳 The Weekly Premium Model <a name="premium-model"></a>
+##  The Weekly Premium Model <a name="premium-model"></a>
 
 Traditional insurance charges ₹2,000–₹5,000/year for plans that exclude gig workers entirely. OffShift charges for what the rider actually needs, when they need it.
 
 | Plan | Price | Duration | Max Payout | Coverage |
 |---|---|---|---|---|
-| 🟡 **Shift Pass** | ₹49 | 24 hours | ₹500 | Heavy Rain, Heatwave |
-| 🔵 **Weekly Pass** | ₹99 | 7 days | ₹1,500 | Weather + App Outages |
-| 🟣 **Monthly Pro** | ₹349 | 30 days | ₹4,000 | All disruptions + Curfews |
+|  **Shift Pass** | ₹49 | 24 hours | ₹500 | Heavy Rain, Heatwave |
+|  **Weekly Pass** | ₹99 | 7 days | ₹1,500 | Weather + App Outages |
+|  **Monthly Pro** | ₹349 | 30 days | ₹4,000 | All disruptions + Curfews |
 
 ### Dynamic Pricing via Kavach AI
 The weekly base premium is adjusted ±₹10 based on 4 real-time signals:
@@ -204,7 +204,7 @@ This means Ravi in monsoon-prone Okhla pays a contextually accurate premium — 
 ---
 
 <!-- AI/ML -->
-## 🧠 AI/ML Integration — The Kavach Engine <a name="ai-ml"></a>
+##  AI/ML Integration — The Kavach Engine <a name="ai-ml"></a>
 
 Kavach is our AI core. It is not a black box — it is three distinct, purpose-built models, each solving a specific problem.
 
@@ -290,7 +290,7 @@ trust_score = (
 ---
 
 <!-- ADVERSARIAL DEFENSE -->
-## 🛡️ Adversarial Defense & Anti-Spoofing Strategy <a name="adversarial-defense"></a>
+##  Adversarial Defense & Anti-Spoofing Strategy <a name="adversarial-defense"></a>
 
 > **The Market Crash Scenario:** A coordinated syndicate of 500 riders uses GPS-spoofing apps to fake their location inside a Red Alert weather zone — while sitting safely at home — triggering mass false payouts and draining the liquidity pool.
 >
@@ -334,7 +334,7 @@ Coordinated ring fraud leaves unmistakable statistical signatures that individua
 | UPI receiver patterns | Diverse payout accounts | Multiple accounts routing to same UPI handle |
 | Accelerometer variance | High (environmental vibration) | Near-zero across entire group |
 
-When **3 or more** of these signals fire simultaneously across a cluster of riders, our Isolation Forest model raises a **🔴 Syndicate Alert** — freezing payouts for that cluster and routing them to the admin dashboard for a 15-minute human review.
+When **3 or more** of these signals fire simultaneously across a cluster of riders, our Isolation Forest model raises a ** Syndicate Alert** — freezing payouts for that cluster and routing them to the admin dashboard for a 15-minute human review.
 
 **Layer 6 — Weighted Quorum Trust Voting**
 
@@ -345,11 +345,11 @@ Our anti-fraud layer already requires **50+ riders in a 5km zone** to confirm an
 ```
 Scenario A — 500 Spoofed Riders:
 500 riders × Trust Weight 0.1 = 50 weighted votes
-Payout threshold: NOT MET ❌
+Payout threshold: NOT MET 
 
 Scenario B — 50 Genuine Riders:
 50 riders × Trust Weight 0.9 = 45 weighted votes  
-Payout threshold: MET ✅ — payout fires
+Payout threshold: MET  — payout fires
 ```
 
 **500 GPS-spoofed accounts cannot collectively generate enough trusted signal to trigger a payout. This is mathematically unsolvable for fraudsters without physical presence.**
@@ -362,9 +362,9 @@ The hardest design problem: a genuine rider in a storm may have weak GPS signal,
 
 | Tier | Trust Score | Action | Experience |
 |---|---|---|---|
-| ✅ **Auto-Approve** | > 0.75 | UPI payout in 120 seconds | Zero friction — 85%+ of genuine riders |
-| 🟡 **Soft Verify** | 0.40 – 0.75 | 1 WhatsApp message: *"Reply YES to confirm you're on shift"* | Payout in 3 minutes after reply |
-| 🔶 **Hold & Review** | < 0.40 | 15-minute admin review; auto-release if IMD + cell tower confirm disruption independently | WhatsApp update sent; no penalty, no rejection |
+|  **Auto-Approve** | > 0.75 | UPI payout in 120 seconds | Zero friction — 85%+ of genuine riders |
+|  **Soft Verify** | 0.40 – 0.75 | 1 WhatsApp message: *"Reply YES to confirm you're on shift"* | Payout in 3 minutes after reply |
+|  **Hold & Review** | < 0.40 | 15-minute admin review; auto-release if IMD + cell tower confirm disruption independently | WhatsApp update sent; no penalty, no rejection |
 
 > **The Golden Rule:** We NEVER deny a claim based on a single signal. Denial requires **3+ independent signals** pointing to fraud. When in doubt — we pay.
 >
@@ -402,7 +402,7 @@ Every component is free or open-source. Total infrastructure cost: **₹0**.
 ---
 
 <!-- PLATFORM CHOICE -->
-## 📱 Platform Choice Justification <a name="platform-choice"></a>
+##  Platform Choice Justification <a name="platform-choice"></a>
 
 ### Why WhatsApp — Not a Native App
 
@@ -431,7 +431,7 @@ The single most important product decision we made.
 ---
 
 <!-- DATABASE SCHEMA -->
-## 🗄️ Database Schema <a name="database-schema"></a>
+##  Database Schema <a name="database-schema"></a>
 
 All data is stored in Supabase (PostgreSQL) with Row-Level Security (RLS) enforced at the database level.
 
@@ -501,7 +501,7 @@ CREATE TABLE claims (
 ---
 
 <!-- GETTING STARTED -->
-## 🚀 Getting Started <a name="getting-started"></a>
+##  Getting Started <a name="getting-started"></a>
 
 ### Prerequisites
 
@@ -563,9 +563,9 @@ npm install npm@latest -g
 ---
 
 <!-- ROADMAP -->
-## 🗺️ Development Roadmap <a name="roadmap"></a>
+##  Development Roadmap <a name="roadmap"></a>
 
-### ✅ Phase 1 — Ideation & Foundation (March 4–20, COMPLETE)
+###  Phase 1 — Ideation & Foundation (March 4–20, COMPLETE)
 - [x] README & architecture fully documented
 - [x] Supabase DB schemas designed (users, policies, sessions, claims, trigger_events)
 - [x] WhatsApp onboarding bot flow wireframed (`index.html` prototype)
@@ -573,7 +573,7 @@ npm install npm@latest -g
 - [x] Tech stack selected — all free/open-source
 - [x] Kavach AI architecture designed (XGBoost + Isolation Forest)
 
-### 🔄 Phase 2 — Automation & Protection (March 21 – April 4)
+###  Phase 2 — Automation & Protection (March 21 – April 4)
 - [ ] WhatsApp sandbox bot live — Dialogflow CX + Twilio integration
 - [ ] Node.js cron job polling IMD + AQICN APIs every 15 minutes
 - [ ] Kavach XGBoost model trained on IMD historical data + synthetic riders
@@ -581,7 +581,7 @@ npm install npm@latest -g
 - [ ] Rider registration + policy management UI live on Vercel
 - [ ] Dynamic premium calculation working end-to-end
 
-### 🚀 Phase 3 — Scale & Optimize (April 5–17)
+###  Phase 3 — Scale & Optimize (April 5–17)
 - [ ] Isolation Forest fraud ring detection deployed
 - [ ] 6-signal Trust Score engine live
 - [ ] Weighted quorum anti-spoofing active in production
@@ -595,7 +595,7 @@ npm install npm@latest -g
 ---
 
 <!-- CONTRIBUTORS -->
-## 👥 Team & Contributors <a name="contributors"></a>
+##  Team & Contributors <a name="contributors"></a>
 
 Built with purpose and late nights by the OffShift team for **Guidewire DEVTrails 2026**.
 
