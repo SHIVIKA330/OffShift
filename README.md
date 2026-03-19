@@ -23,7 +23,7 @@
     An AI-powered parametric insurance platform for India's 12 million gig delivery workers.<br/>
     <strong>Zero claim forms. Zero paperwork. Automatic UPI payout in 120 seconds.</strong>
     <br/><br/>
-    <a href="./km_20260319_720p_60f_20260319_232546.mp4">📱 View Demo</a>
+    <a href="https://youtu.be/-H7DZOUcolM?si=UAGWT9GT7QqNVLQC"> View Demo</a>
     ·
     <a href="./OffShift — Smart Income Shield _ Guidewire DEVTrails 2026.pdf"> View Presentation</a>
     ·
