@@ -12,8 +12,6 @@
   <p align="center">
     An AI-powered, parametric insurance platform designed specifically for gig workers.
     <br />
-    <a href="https://github.com/SHIVIKA330/OffShift"><strong>Explore the docs »</strong></a>
-    <br />
     <br />
     <a href="https://github.com/SHIVIKA330/OffShift">View Demo</a>
     ·
