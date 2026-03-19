@@ -375,7 +375,7 @@ The hardest design problem: a genuine rider in a storm may have weak GPS signal,
 ---
 
 <!-- TECH STACK -->
-## 🛠️ Tech Stack <a name="tech-stack"></a>
+##  Tech Stack <a name="tech-stack"></a>
 
 Every component is free or open-source. Total infrastructure cost: **₹0**.
 
