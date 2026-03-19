@@ -1,303 +1,677 @@
 <a name="readme-top"></a>
 
-<!-- PROJECT LOGO -->
-<br />
 <div align="center">
   <a href="https://github.com/SHIVIKA330/OffShift">
     <img src="offshift-icon.png" alt="OffShift Logo" width="400">
   </a>
 
-  <h3 align="center"> OffShift: Smart Income Shield</h3>
+  <h1>OffShift — Smart Income Shield</h1>
+  <h3><em>"When the storm hits — the money hits first."</em></h3>
 
-  <p align="center">
-    An AI-powered, parametric insurance platform designed specifically for gig workers.
-    <br />
-    <br />
-    <a href="https://github.com/SHIVIKA330/OffShift">View Demo</a>
+  <p>
+    <img src="https://img.shields.io/badge/DEVTrails_2026-Guidewire-blueviolet?style=for-the-badge" alt="DEVTrails 2026"/>
+    <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React"/>
+    <img src="https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js"/>
+    <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase"/>
+    <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
+    <img src="https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="WhatsApp"/>
+    <img src="https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white" alt="scikit-learn"/>
+    <img src="https://img.shields.io/badge/Infrastructure_Cost-₹0-success?style=for-the-badge" alt="Zero Cost"/>
+  </p>
+
+  <p>
+    An AI-powered parametric insurance platform for India's 12 million gig delivery workers.<br/>
+    <strong>Zero claim forms. Zero paperwork. Automatic UPI payout in 120 seconds.</strong>
+    <br/><br/>
+    <a href="https://github.com/SHIVIKA330/OffShift">📱 View Demo</a>
     ·
-    <a href="./Smart-Income-Shield.pdf">View Presentation</a>
+    <a href="./Smart-Income-Shield.pdf">📊 View Presentation</a>
     ·
-    <a href="https://github.com/SHIVIKA330/OffShift/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/SHIVIKA330/OffShift/issues">Request Feature</a>
+    <a href="https://github.com/SHIVIKA330/OffShift/issues">🐛 Report Bug</a>
   </p>
 </div>
 
+---
+
 <!-- TABLE OF CONTENTS -->
 <details>
-  <summary>Table of Contents</summary>
+  <summary>📋 Table of Contents</summary>
   <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#problem-statement">The Problem</a></li>
-        <li><a href="#unique-features">Unique Features</a></li>
-        <li><a href="#built-with">Built With (Tech Stack)</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
+    <li><a href="#the-problem">The Problem — 12 Million Workers, Zero Protection</a></li>
+    <li><a href="#who-we-build-for">Who We Build For — Persona Stories</a></li>
+    <li><a href="#the-solution">The Solution — Smart Income Shield</a></li>
+    <li><a href="#how-it-works">How It Works — End-to-End Workflow</a></li>
+    <li><a href="#premium-model">The Weekly Premium Model</a></li>
+    <li><a href="#ai-ml">AI/ML Integration — Kavach Engine</a></li>
+    <li><a href="#adversarial-defense">🛡️ Adversarial Defense & Anti-Spoofing Strategy</a></li>
+    <li><a href="#tech-stack">Tech Stack</a></li>
+    <li><a href="#platform-choice">Platform Choice Justification</a></li>
+    <li><a href="#database-schema">Database Schema</a></li>
+    <li><a href="#getting-started">Getting Started</a></li>
+    <li><a href="#roadmap">Development Roadmap</a></li>
+    <li><a href="#contributors">Team & Contributors</a></li>
   </ol>
 </details>
 
-<!-- ABOUT THE PROJECT -->
-## About The Project
+---
 
-Hey! Welcome to the repo for **OffShift**. We're proudly building this platform for the future of the gig economy at **#GuidewireDEVTrails2026** Hackathon. 
+<!-- THE PROBLEM -->
+## 😔 The Problem — 12 Million Workers, Zero Protection <a name="the-problem"></a>
 
-A big shoutout to Guidewire Software for creating a platform that challenges us to rethink insurance through innovation, technology, and real-world impact.
+India has **12 million gig delivery workers**. Every single one of them is exposed to income loss from events completely beyond their control — and not a single parametric income protection product exists for this segment today.
 
-### The Problem
+| Reality | The Number |
+|---|---|
+| Gig delivery workers in India | 12,000,000 |
+| Monthly income lost during monsoon/heatwave | 20–30% |
+| Time to resolve a traditional insurance claim | 3 weeks |
+| Number of documents required for a standard claim | 10 PDFs |
+| Actual payout received for disruption under existing plans | ₹500 in 3 months |
+| Parametric income protection products available for gig workers | **0** |
 
-Millions of delivery partners power our daily lives — yet when disruptions like heavy rain, extreme heat, or pollution strike, their income takes a direct hit. No safety net. No protection. Just lost earnings.
+**The disruptions we cover:**
+- 🌧️ **Heavy Rain** — IMD Red Alert (rainfall > 65mm/hr)
+- 🌡️ **Extreme Heat** — Temperature exceeding 45°C
+- 🌫️ **Severe Air Pollution** — AQI > 300 (hazardous to health)
+- 📱 **App Outages** — Zomato/Swiggy platform failures on peak nights
+- 🚫 **Curfews & Strikes** — Government-issued movement restrictions
 
-That’s the problem we set out to solve.
-
-### The Solution: "Smart Income Shield"
-
-Introducing **“Smart Income Shield”** by OffShift — an AI-powered, parametric insurance platform designed specifically for gig workers. 
-
-Our goal is simple: 
-**Ensure that no gig worker goes home empty-handed due to factors beyond their control.**
-
-This project is more than just insurance — it’s about building financial resilience, trust, and stability for a workforce that keeps our cities moving.
-
-### Unique Features (What makes it different?)
-
-* **Income-first approach:** We don’t just track weather, we predict income loss.
-* **Zero-touch claims:** Automated payouts triggered by real-world conditions.
-* **AI-driven intelligence:** Dynamic pricing, predictive risk modeling, and fraud detection.
-* **Hyperlocal insights:** Risk-aware recommendations for smarter work decisions.
-* **Weekly affordability:** Designed around the real earning cycles of gig workers.
-
-**Tags:** `#InsuranceInnovation` `#AI` `#GigEconomy` `#FinTech` `#ParametricInsurance` `#DEVTrails` `#Guidewire` `#StartupBuilding` `#TechForGood` `#DEVTrails2026` `#Hackathon`
+These aren't edge cases. For a delivery rider in Delhi, **these are monthly occurrences.**
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- CORE STRATEGY -->
-## Phase 1: Idea Document & Core Strategy
+---
 
-### 1. Persona-Based Scenarios & Workflow
-**Persona:** Rahul is a 28-year-old food delivery partner in New Delhi. He relies entirely on daily payouts to support his family.
-**Scenario:** During a peak earning window, an unexpected, torrential downpour floods the streets of his regular zone. Deliveries are halted indefinitely. Usually, this means lost income and financial distress.
-**Workflow:**
-1. **Weekly Subscription:** Rahul opts into the OffShift "Smart Income Shield" at the start of the week using a micro-premium deducted via UPI.
-2. **Parametric Trigger:** The Indian Meteorological Department (IMD) API issues a "Red Alert" for severe waterlogging in his exact pincode.
-3. **Automated Verification:** OffShift automatically checks his presence inside the alert zone without relying solely on easily spoofed GPS data.
-4. **Zero-Touch Claim:** The smart contract executes, instantly transferring the compensation for lost hours directly to Rahul's UPI wallet. No paperwork, no wait times.
+<!-- WHO WE BUILD FOR -->
+## 👤 Who We Build For — Persona Stories <a name="who-we-build-for"></a>
 
-### 2. Business Model: Weekly Premium & Parametric Triggers
-**The Weekly Premium Model:**
-Traditional insurance is annual and expensive. OffShift works on a dynamic, sachet-sized *weekly premium* model (e.g., ₹30-₹50/week) tailored to gig workers' weekly cash flows. Premiums are risk-adjusted dynamically using AI (Kavach engine) based on historical regional data, weather forecasts, and the individual's "driving score."
-**Parametric Triggers:**
-Our engine uses deterministic, objective external data to trigger claims. Triggers include:
-* Severe Weather Alerts (IMD APIs for >50mm rain, extreme heatwaves)
-* Toxic Air Quality (AQI > 450 rendering work hazardous)
-When an external oracle verifies the condition, payouts trigger automatically.
+### Primary Persona: Ravi Kumar
 
-### 3. Platform Justification: Mobile-First / PWA
-Delivery workers are fundamentally highly-mobile users who rely entirely on their smartphones. We chose a **Mobile-First Progressive Web App (PWA)** combined with native mobile elements. This is critical because:
-* **Background Telematics:** We need device motion and location data while the user switches to their delivery partner app.
-* **Low Latency & Low Data:** PWAs allow offline caching for spotty network areas.
-* **Instant Notifications:** Real-time WhatsApp/Push notifications to alert riders of incoming weather disruptions and claim status.
-A desktop web platform would fail completely for our target persona on the road.
+Ravi is 31 years old. Full-time Zomato rider, Okhla Industrial Zone, New Delhi. He's been on the road for 4 years. He wakes up at 7am, logs on by 8, and rarely stops before 8pm. On a good day, he makes ₹800. That money feeds his wife and six-year-old daughter.
 
-### 4. AI/ML Integration: Adversarial Defense & Anti-Spoofing Strategy
-> "500 riders. Fake GPS. Real money drained. We saw it coming."
+When the Delhi monsoon hits — and it always hits — Ravi parks under a flyover and waits. He can't deliver. He can't earn. The platform doesn't compensate him. He's tried insurance before — once. The form asked for documents he didn't have. The claim was rejected after 3 weeks without explanation. He never tried again.
 
-Our parametric model relies on distinguishing truth from deception. OffShift assumes bad actors WILL try to game the system (e.g., a syndicate spoofing GPS inside a Red Alert zone to drain the liquidity pool). Our defense goes 6 layers deep.
+**In a typical July, Ravi loses 7-9 working days to rain. That's ₹5,600–₹7,200 gone. With zero safety net.**
 
-#### Layer 1 — The Differentiation: Real Rider vs. Faker
-1. **Network Cell Tower Triangulation:** We cross-reference reported GPS with connected cell tower IDs (OpenCelliD API). A spoofed location won't match the physical tower.
-2. **Accelerometer & Gyroscope Micro-Pattern:** A genuinely stranded rider on a bike shows micro-vibrations. A spoofer at home is completely flat. We use the DeviceMotion API to flag flatlined activity.
-3. **App Activity Fingerprint:** We verify recent partner app session activity to confirm the rider was genuinely on-shift before the disruption.
-4. **Historical Shift Pattern Baseline:** Kavach AI builds a 4-week behavioral baseline per rider via Supabase. Sudden claims in entirely new zones raise instant statistical anomalies.
-5. **Temporal Plausibility Check:** Late subscriptions suspiciously 5 minutes after an alert are triggered for "Pending Verification".
+| Detail | Ravi's Reality |
+|---|---|
+| Employment Type | Full-time, self-employed |
+| Platform | Zomato, Okhla Zone |
+| Daily Earnings | ₹800/day |
+| Daily Hours | 10–12 hours |
+| Device | Entry-level Android, WhatsApp, PhonePe |
+| Insurance Experience | Never successfully claimed |
+| Monthly Income Loss (Monsoon) | 20–30% (~₹4,800–₹7,200) |
 
-#### Layer 2 — The Data: Catching a Fraud RING
-Individual fraud is hard; coordinated rings leave patterns. Our anomaly detection engine uses **scikit-learn's Isolation Forest** to watch for signatures:
-* Overlapping device fingerprints across accounts.
-* Unnatural clusters of 50+ payouts routed to a single UPI handle.
-* Subscription spikes exactly following an alert.
+**OffShift for Ravi:** He texts "HI" to our WhatsApp number once. 60 seconds later, he has ₹99/week coverage. The next time it rains — really rains — he gets a WhatsApp notification and ₹1,500 appears in his PhonePe. He didn't fill a single form.
 
-**The "50-Rider Quorum with Quality Score":**
-Rider confirmations aren't just counted; they are weighted by a **Trust Score (0.0 to 1.0)** based on their AI behavioral signals. 500 spoofed riders with a 0.1 score = 50 votes. Fifty genuine riders with a 0.9 score = 45 votes. Payouts only fire when the *weighted* quorum is met, neutralizing mass spoofing mathmatically.
+---
 
-#### Layer 3 — The UX Balance: 3-Tier Response System
-When in doubt, we pay. But we scale friction dynamically to protect honest workers who might have weak GPS signals in a storm:
-* **Tier 1 — Auto-Approve (Trust > 0.75):** Passes 4+ signals. Payout in 120 seconds. Zero friction. (85% of users)
-* **Tier 2 — Soft Verify (Trust 0.40–0.75):** Passes 2-3 signals. One WhatsApp message sent: *"Reply YES to confirm you're on shift."* Payout fires in 3 mins.
-* **Tier 3 — Hold & Review (Trust < 0.40):** Payout held up to 15 minutes for admin review via our React/Supabase dashboard. No penalty, just a transparent delay.
+### Secondary Persona: Amit Sharma
 
-**The Golden Rule:** We never deny a claim on a single signal; denial requires 3+ independent flags.
+Amit is a 22-year-old engineering student in Gurugram. He rides for Swiggy evenings and weekends to fund his college expenses. He doesn't need a ₹349/month plan — he needs coverage for his Friday and Saturday evening shifts, when app outages are most likely during peak demand.
 
-#### Zero-Cost Tech Stack for This Defense Layer
-| Feature | Tool | Cost |
+On a recent Friday peak, a Swiggy platform crash meant he earned ₹0 in a 4-hour window he'd specifically saved for. He had no recourse.
+
+**OffShift for Amit:** He buys a ₹49 Shift Pass before his Friday evening shift. The Swiggy Downdetector spike, cross-referenced with 50+ GPS-inactive riders in his zone, auto-triggers. His ₹500 arrives before he even notices the platform is back up.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
+<!-- THE SOLUTION -->
+## 💡 The Solution — Smart Income Shield <a name="the-solution"></a>
+
+OffShift is a **parametric insurance engine** — payouts are triggered by objective, external data conditions, never by self-reported claims. Five pillars underpin the entire system:
+
+1. **📱 WhatsApp-First Onboarding** — 60-second signup. Phone number + UPI ID only. No app download. No documents.
+2. **💰 Weekly Micro-Premium Model** — Sachet-sized pricing (₹49/₹99/₹349) built around gig workers' weekly cash flows.
+3. **🧠 Kavach AI Engine** — Our proprietary XGBoost model prices risk to the pincode level, dynamically per rider.
+4. **⚡ Parametric Auto-Triggers** — IMD API, AQICN API, Downdetector, GPS cluster inactivity — objective data only. No subjective judgment.
+5. **💸 120-Second UPI Auto-Payout** — Razorpay API sends money directly to the rider's UPI handle. Zero claim forms. Ever.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
+<!-- HOW IT WORKS -->
+## ⚙️ How It Works — End-to-End Workflow <a name="how-it-works"></a>
+
+```
+STEP 1: ONBOARDING (60 seconds)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Rider texts "HI" to OffShift WhatsApp
+  → Dialogflow CX bot collects: name, pincode, UPI ID
+  → Kavach AI scores zone risk for that pincode
+  → Personalized weekly premium generated (₹39–₹79 range)
+  → Rider pays via PhonePe UPI deep link
+  → Coverage ACTIVE ✅ — all within 60 seconds
+
+STEP 2: MONITORING (Every 15 Minutes)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Node.js cron job runs every 15 minutes:
+  → Polls IMD Weather API for Red Alerts by pincode
+  → Polls AQICN API for pollution levels by zone
+  → Monitors Downdetector for Zomato/Swiggy outage spikes
+  → Cross-references rider GPS cluster inactivity from Supabase
+
+STEP 3: PARAMETRIC TRIGGER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Condition met if:
+  → Rainfall > 65mm/hr (IMD Red Alert)  OR
+  → Temperature > 45°C               OR
+  → AQI > 300                         OR
+  → Downdetector spike + 50 riders GPS-inactive in same 5km zone
+
+  → Trigger event logged to Supabase
+  → Kavach Trust Score calculated per rider
+  → Payout queue initiated
+
+STEP 4: PAYOUT (Trust-Scored, Tiered)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Trust Score > 0.75  →  Razorpay UPI payout in 120 seconds ⚡
+Trust Score 0.40-0.75  →  1 WhatsApp message → payout in 3 mins
+Trust Score < 0.40  →  15-min admin hold → auto-release if confirmed
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
+<!-- PREMIUM MODEL -->
+## 💳 The Weekly Premium Model <a name="premium-model"></a>
+
+Traditional insurance charges ₹2,000–₹5,000/year for plans that exclude gig workers entirely. OffShift charges for what the rider actually needs, when they need it.
+
+| Plan | Price | Duration | Max Payout | Coverage |
+|---|---|---|---|---|
+| 🟡 **Shift Pass** | ₹49 | 24 hours | ₹500 | Heavy Rain, Heatwave |
+| 🔵 **Weekly Pass** | ₹99 | 7 days | ₹1,500 | Weather + App Outages |
+| 🟣 **Monthly Pro** | ₹349 | 30 days | ₹4,000 | All disruptions + Curfews |
+
+### Dynamic Pricing via Kavach AI
+The weekly base premium is adjusted ±₹10 based on 4 real-time signals:
+
+1. **Historical rainfall frequency** for rider's pincode (last 3 years of IMD data)
+2. **Rider shift pattern** — a morning rider in Okhla vs an evening rider in Gurugram face different risk profiles
+3. **Weather forecast lead time** — if a storm is coming in 6 hours, the premium adjusts upward
+4. **Zone-level historical payout ratio** — pincodes with high historical claims share higher collective risk
+
+This means Ravi in monsoon-prone Okhla pays a contextually accurate premium — not a generic flat fee designed for someone in Rajasthan.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
+<!-- AI/ML -->
+## 🧠 AI/ML Integration — The Kavach Engine <a name="ai-ml"></a>
+
+Kavach is our AI core. It is not a black box — it is three distinct, purpose-built models, each solving a specific problem.
+
+---
+
+### Model 1 — Kavach Pricing Engine (XGBoost)
+
+**Purpose:** Generate a personalized, risk-appropriate weekly premium per rider per pincode.
+
+| Attribute | Detail |
+|---|---|
+| Algorithm | XGBoost (Gradient Boosted Trees) |
+| Library | `scikit-learn` + `xgboost` (open source, free) |
+| Input Features | pincode, day of week, shift hour, IMD forecast score, historical payout ratio for zone, rider shift pattern baseline, hours until predicted event |
+| Output | Dynamic weekly premium in ₹39–₹79 range |
+| Training Data | IMD historical rainfall records (public), OpenWeatherMap Historical API, synthetic rider activity data |
+
+```python
+# Kavach Pricing Engine — Simplified Feature Vector
+features = {
+    'pincode_risk_score': 0.73,       # 3-year historical IMD payout ratio
+    'day_of_week': 3,                  # Wednesday
+    'shift_hour': 18,                  # 6pm start
+    'imd_forecast_score': 0.85,       # High confidence 24hr rain forecast
+    'zone_historical_payout_rate': 0.41,  # 41% of events in this zone triggered payout
+    'hours_to_event': 6,               # Storm predicted in 6 hours
+    'rider_morning_vs_evening': 1,     # Evening rider = higher rain exposure
+}
+# Model output → premium = ₹67 (base ₹49 + ₹18 risk adjustment for Okhla, July)
+```
+
+---
+
+### Model 2 — Outage Validator (Isolation Forest)
+
+**Purpose:** Distinguish a genuine platform outage from riders simply going offline on purpose.
+
+| Attribute | Detail |
+|---|---|
+| Algorithm | Isolation Forest (Anomaly Detection) |
+| Library | `scikit-learn` (free) |
+| Input | GPS ping frequency per rider cluster, Downdetector scrape data, time-of-day baseline activity patterns |
+| Output | Binary — `REAL_OUTAGE` or `FALSE_OFFLINE` |
+| Threshold | 50+ riders in the same 5km zone showing simultaneous inactivity required |
+
+A genuine app outage creates a sharp, correlated inactivity spike across a geographic cluster — a statistical anomaly the Isolation Forest excels at detecting. Riders individually going offline creates no such spatial correlation.
+
+---
+
+### Model 3 — Fraud Detection & Trust Scoring
+
+**Purpose:** Score every rider's claim with a Trust Weight from 0.0 to 1.0 using 6 independent behavioral signals.
+
+| Signal | Data Source | What It Catches |
 |---|---|---|
-| Anomaly Detection (Ring Fraud) | scikit-learn Isolation Forest | Free |
-| Behavioral Baseline Storage | Supabase PostgreSQL (free tier) | Free |
-| Cell Tower Cross-reference | OpenCelliD API | Free |
-| Device Motion Signals | Browser DeviceMotion API / PWA | Free |
-| Trust Score Engine | Custom XGBoost model (existing Kavach) | Free |
-| Admin Alert Dashboard | React + Supabase Realtime | Free |
-| WhatsApp Soft Verify Message | WhatsApp Business API (sandbox) | Free |
+| GPS vs Cell Tower Match | OpenCelliD API (free) | Spoofed GPS location |
+| Accelerometer Micro-Pattern | Browser DeviceMotion API (free) | Spoofer sitting at home vs rider in storm |
+| App Activity Fingerprint | Last Zomato/Swiggy session timestamp | Was rider actually on-shift before the event? |
+| Historical Shift Pattern Deviation | Supabase 4-week baseline | Rider claiming in zone they've never worked |
+| Subscription Timing vs Alert Gap | Trigger event timestamp | Subscribed after Red Alert went public? |
+| Device Fingerprint Uniqueness | Browser fingerprint hash | Same device used for multiple accounts |
+
+```python
+# Trust Score Calculation — Weighted Average
+trust_score = (
+    0.25 * gps_cell_tower_match +      # Highest weight — hardest to fake
+    0.20 * accelerometer_score +
+    0.20 * app_activity_score +
+    0.15 * shift_pattern_score +
+    0.10 * subscription_timing_score +
+    0.10 * device_fingerprint_score
+)
+# Output: 0.0 (certain fraud) to 1.0 (certain genuine)
+```
+
+**Payout tiers based on Trust Score:**
+- `> 0.75` → Instant UPI payout in 120 seconds
+- `0.40 – 0.75` → Single WhatsApp soft-verify → payout in 3 mins
+- `< 0.40` → 15-minute hold → auto-release if confirmed independently
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Built With (Tech Stack)
+---
 
-We carefully selected our tech stack to prioritize rapid prototyping, blazing-fast performance, and a stunning "dark mode" aesthetic suitable for a hackathon timeline.
+<!-- ADVERSARIAL DEFENSE -->
+## 🛡️ Adversarial Defense & Anti-Spoofing Strategy <a name="adversarial-defense"></a>
 
-#### **Frontend Ecosystem**
-* [![React][React.js]][React-url] - The industry standard. We chose React for its component-based architecture allowing us to perfectly isolate our complex "Toggle" logic.
-* [![Vite][Vite.js]][Vite-url] - Next.js is great, but Vite provides the ultimate lightning-fast Hot Module Replacement (HMR) for incredibly fast SPA rendering during hackathons.
-* [![TailwindCSS][TailwindCSS.com]][TailwindCSS-url] - We heavily rely on Tailwind for rapid styling, focusing heavily on glassmorphism, neo-brutalism, and ultra-high contrast dark modes without writing custom CSS files.
+> **The Market Crash Scenario:** A coordinated syndicate of 500 riders uses GPS-spoofing apps to fake their location inside a Red Alert weather zone — while sitting safely at home — triggering mass false payouts and draining the liquidity pool.
+>
+> *Simple GPS verification is dead. Our defense goes 6 layers deeper.*
 
-#### **Backend Ecosystem**
-* [![Node.js][Node.js]][Node-url] - Our primary runtime for handling real-time API requests and writing our parametric claim webhooks.
-* [![Express.js][Express.js]][Express-url] - Lightweight and unopinionated framework to scaffold our RESTful architecture.
+---
 
-#### **Database & Auth**
-* [![Supabase][Supabase.com]][Supabase-url] - Supabase (PostgreSQL) is the absolute MVP of our stack. It gives us out-of-the-box secure authentication, row-level security policies (RLS), and real-time database subscriptions (vital for syncing the mobile App toggle with the Agent Dashboard dashboard instantly).
+### The Attack Surface
+
+Our parametric model's biggest vulnerability is **location fraud at scale**. A genuine stranded rider and a GPS-spoofed rider look identical on a map. They look completely different across 5 behavioral dimensions and 1 mathematical mechanism. Here is exactly how we catch them.
+
+---
+
+### 6-Layer Defense Architecture
+
+**Layer 1 — Cell Tower Triangulation**
+
+GPS coordinates can be fabricated in software. Physical cell tower connections cannot be faked without being physically present. Every rider's reported GPS location is cross-referenced against their actual connected cell tower ID, retrieved via the **OpenCelliD API** (free, global coverage). A rider claiming to be in Okhla but connected to a cell tower in Dwarka is flagged instantly. Cost: ₹0.
+
+**Layer 2 — Accelerometer Micro-Pattern Analysis**
+
+A rider genuinely parked in heavy rain — even completely stationary — experiences ambient micro-vibrations: passing vehicles, raindrops on the bike, wind. A person sitting on a sofa at home registers a near-zero, flat accelerometer reading. We score physical plausibility using the **browser DeviceMotion API** (free, no permissions beyond HTTPS). Spoofers at home produce a telltale flat line. Flagged.
+
+**Layer 3 — Shift History Behavioral Baseline**
+
+Kavach AI builds a **4-week activity baseline per rider** stored in Supabase: which pincodes they work in, what hours, which days of the week. A rider who has never made a single delivery in Connaught Place suddenly claiming a payout there during a Red Alert is a statistical anomaly with near-zero false positive risk. Flagged instantly.
+
+**Layer 4 — Temporal Subscription Analysis**
+
+Genuine riders subscribe before disruptions happen. Opportunist fraudsters subscribe *during* active Red Alerts. Any subscription placed within **10 minutes of a publicly announced Red Alert** is automatically moved to a **Pending Verification** queue — never instant payout. This alone eliminates reactive fraud with zero tech cost.
+
+**Layer 5 — Fraud Ring Detection (Isolation Forest)**
+
+Coordinated ring fraud leaves unmistakable statistical signatures that individual fraud cannot:
+
+| Ring Fraud Signal | Normal Behavior | Fraud Ring Signature |
+|---|---|---|
+| Subscription timing | Spread over days/weeks | 50+ subscriptions within 60 minutes of alert |
+| Device fingerprints | Unique devices, varied models | Multiple accounts sharing same `device_id` hash |
+| Cell tower overlap | Riders spread across zone | Unnatural cluster hitting the same 1–2 towers |
+| UPI receiver patterns | Diverse payout accounts | Multiple accounts routing to same UPI handle |
+| Accelerometer variance | High (environmental vibration) | Near-zero across entire group |
+
+When **3 or more** of these signals fire simultaneously across a cluster of riders, our Isolation Forest model raises a **🔴 Syndicate Alert** — freezing payouts for that cluster and routing them to the admin dashboard for a 15-minute human review.
+
+**Layer 6 — Weighted Quorum Trust Voting**
+
+This is the mathematical kill-shot for coordinated spoofing.
+
+Our anti-fraud layer already requires **50+ riders in a 5km zone** to confirm an outage. We upgrade this: each rider's confirmation carries a **Trust Weight (0.0–1.0)** based on their behavioral Trust Score. The payout only fires when the **weighted quorum** crosses a threshold — not a raw count.
+
+```
+Scenario A — 500 Spoofed Riders:
+500 riders × Trust Weight 0.1 = 50 weighted votes
+Payout threshold: NOT MET ❌
+
+Scenario B — 50 Genuine Riders:
+50 riders × Trust Weight 0.9 = 45 weighted votes  
+Payout threshold: MET ✅ — payout fires
+```
+
+**500 GPS-spoofed accounts cannot collectively generate enough trusted signal to trigger a payout. This is mathematically unsolvable for fraudsters without physical presence.**
+
+---
+
+### UX Balance — Never Punish Honest Riders
+
+The hardest design problem: a genuine rider in a storm may have weak GPS signal, low accelerometer readings (sheltering under a bridge), or a new account with no behavioral baseline. Here is our **3-Tier Response System** — not a binary approve/reject:
+
+| Tier | Trust Score | Action | Experience |
+|---|---|---|---|
+| ✅ **Auto-Approve** | > 0.75 | UPI payout in 120 seconds | Zero friction — 85%+ of genuine riders |
+| 🟡 **Soft Verify** | 0.40 – 0.75 | 1 WhatsApp message: *"Reply YES to confirm you're on shift"* | Payout in 3 minutes after reply |
+| 🔶 **Hold & Review** | < 0.40 | 15-minute admin review; auto-release if IMD + cell tower confirm disruption independently | WhatsApp update sent; no penalty, no rejection |
+
+> **The Golden Rule:** We NEVER deny a claim based on a single signal. Denial requires **3+ independent signals** pointing to fraud. When in doubt — we pay.
+>
+> A ₹500 false positive costs us less than destroying the trust of 10 genuine riders forever.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+---
+
+<!-- TECH STACK -->
+## 🛠️ Tech Stack <a name="tech-stack"></a>
+
+Every component is free or open-source. Total infrastructure cost: **₹0**.
+
+| Layer | Technology | Purpose | Cost |
+|---|---|---|---|
+| **Bot Interface** | WhatsApp Business API (sandbox) + Dialogflow CX | Rider onboarding & soft-verify flow | Free |
+| **Frontend** | React + Vite + Tailwind CSS | Admin analytics dashboard | Free |
+| **Backend** | Node.js (TypeScript) + Express.js | API server, cron jobs, webhook handlers | Free |
+| **Hosting** | Vercel (frontend) + AWS Lambda free tier (backend) | Production hosting | Free |
+| **Database** | Supabase (PostgreSQL) | All persistent data + real-time subscriptions | Free tier |
+| **Cache** | Upstash Redis (free tier) | Active storm event state, rate limiting | Free |
+| **ML Models** | Python + scikit-learn + XGBoost | Kavach Pricing Engine, Isolation Forest | Open source |
+| **Weather Oracle** | IMD API + OpenWeatherMap free tier | Rainfall, temperature triggers | Free |
+| **AQI Oracle** | AQICN API (free tier) | Pollution level triggers | Free |
+| **Outage Oracle** | Downdetector scraper + GPS cluster analysis | App outage validation | Free |
+| **Payments** | Razorpay test mode + PhonePe UPI sandbox | Automated UPI payouts | Free (sandbox) |
+| **Auth** | Supabase Auth | Rider & admin authentication | Free |
+| **Cell Tower** | OpenCelliD API | Anti-spoofing triangulation | Free |
+| **Motion Data** | Browser DeviceMotion API | Accelerometer fraud signal | Free (browser) |
+| **Fraud Detection** | scikit-learn Isolation Forest | Ring fraud detection | Open source |
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
+<!-- PLATFORM CHOICE -->
+## 📱 Platform Choice Justification <a name="platform-choice"></a>
+
+### Why WhatsApp — Not a Native App
+
+The single most important product decision we made.
+
+| Factor | Native App | WhatsApp (Our Choice) |
+|---|---|---|
+| Adoption barrier | Download required, ~50MB | Zero — already installed |
+| Device compatibility | Requires Android 8+ | Works on ₹5,000 phones from 2019 |
+| Notification reliability | Depends on battery optimization | WhatsApp messages always delivered |
+| UPI payment flow | Deep link integration needed | Native UPI links work inside WhatsApp |
+| Time to first interaction | 5–10 minutes (download + signup) | 60 seconds |
+| Battery impact | Constant background drain | None |
+
+**95% of delivery riders already use WhatsApp daily.** Meeting them where they already are — not asking them to change their behavior — is the only way a ₹49 product gets adopted at scale.
+
+### Why a React Web Dashboard for Admin
+
+- Real-time Supabase subscriptions work natively in browser — no iOS/Android deployment required
+- Lightweight, instant deployment to Vercel — no app store approval delays
+- Works on any device for the insurance operations team
+- Admin users are not the same constraints as field riders
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
+<!-- DATABASE SCHEMA -->
+## 🗄️ Database Schema <a name="database-schema"></a>
+
+All data is stored in Supabase (PostgreSQL) with Row-Level Security (RLS) enforced at the database level.
+
+```sql
+-- Riders (Insured Workers)
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  phone TEXT UNIQUE NOT NULL,
+  pincode TEXT NOT NULL,
+  upi_id TEXT NOT NULL,
+  trust_score FLOAT DEFAULT 0.5,
+  device_fingerprint TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Insurance Policies / Plans
+CREATE TABLE policies (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,                    -- 'Shift Pass', 'Weekly Pass', 'Monthly Pro'
+  duration_hours INTEGER NOT NULL,       -- 24, 168, 720
+  base_premium_inr INTEGER NOT NULL,     -- 49, 99, 349
+  max_payout_inr INTEGER NOT NULL,       -- 500, 1500, 4000
+  coverage_types TEXT[] NOT NULL        -- ['rain', 'heat', 'aqi', 'outage', 'curfew']
+);
+
+-- Active Coverage Sessions
+CREATE TABLE active_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  policy_id UUID REFERENCES policies(id),
+  kavach_premium_inr INTEGER NOT NULL,   -- Dynamic AI-adjusted premium
+  start_time TIMESTAMPTZ DEFAULT now(),
+  end_time TIMESTAMPTZ NOT NULL,
+  status TEXT DEFAULT 'active'           -- 'active', 'expired', 'claimed'
+);
+
+-- Trigger Events (Parametric Conditions)
+CREATE TABLE trigger_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  event_type TEXT NOT NULL,             -- 'rain', 'heat', 'aqi', 'outage', 'curfew'
+  pincode TEXT NOT NULL,
+  severity_value FLOAT NOT NULL,        -- 74.2mm/hr, 47°C, AQI 340, etc.
+  triggered_at TIMESTAMPTZ DEFAULT now(),
+  source_api TEXT NOT NULL,             -- 'IMD', 'AQICN', 'Downdetector'
+  resolved BOOLEAN DEFAULT false
+);
+
+-- Claims / Payouts
+CREATE TABLE claims (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  session_id UUID REFERENCES active_sessions(id),
+  trigger_event_id UUID REFERENCES trigger_events(id),
+  amount_inr INTEGER NOT NULL,
+  trust_score_at_claim FLOAT NOT NULL,
+  tier INTEGER NOT NULL,                -- 1 (auto), 2 (soft verify), 3 (hold)
+  status TEXT DEFAULT 'pending',        -- 'pending', 'paid', 'rejected', 'review'
+  razorpay_payout_id TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  paid_at TIMESTAMPTZ
+);
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
 
 <!-- GETTING STARTED -->
-## Getting Started
-
-To get a local copy up and running, follow these simple example steps.
+## 🚀 Getting Started <a name="getting-started"></a>
 
 ### Prerequisites
 
-Make sure you have Node.js and npm installed on your machine.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
+- Node.js v18+ and npm
+- Python 3.9+ (for ML models)
+- Supabase account (free)
+- WhatsApp Business API sandbox (Twilio or Meta sandbox)
+
+```sh
+npm install npm@latest -g
+```
 
 ### Installation
 
-1. Get your Supabase API Keys at [https://supabase.com](https://supabase.com)
-2. Clone the repo
+1. Clone the repository
    ```sh
    git clone https://github.com/SHIVIKA330/OffShift.git
+   cd OffShift
    ```
-3. Install NPM packages
+
+2. Install Node.js dependencies
    ```sh
-   cd offshift
    npm install
    ```
-4. Enter your API in `.env`
+
+3. Install Python ML dependencies
+   ```sh
+   pip install scikit-learn xgboost pandas numpy
+   ```
+
+4. Configure environment variables — create a `.env` file:
    ```env
-   VITE_SUPABASE_URL='ENTER YOUR SUPABASE URL'
-   VITE_SUPABASE_ANON_KEY='ENTER YOUR SUPABASE ANON KEY'
+   # Supabase
+   VITE_SUPABASE_URL='YOUR_SUPABASE_PROJECT_URL'
+   VITE_SUPABASE_ANON_KEY='YOUR_SUPABASE_ANON_KEY'
+
+   # Razorpay UPI Payouts
+   RAZORPAY_KEY_ID='YOUR_RAZORPAY_KEY'
+   RAZORPAY_KEY_SECRET='YOUR_RAZORPAY_SECRET'
+
+   # WhatsApp / Twilio
+   TWILIO_ACCOUNT_SID='YOUR_TWILIO_SID'
+   TWILIO_AUTH_TOKEN='YOUR_TWILIO_TOKEN'
+   TWILIO_WHATSAPP_FROM='whatsapp:+14155238886'
+
+   # Weather & AQI Oracles
+   OPENWEATHER_API_KEY='YOUR_OWM_KEY'
+   AQICN_API_KEY='YOUR_AQICN_KEY'
+   OPENCELLID_API_KEY='YOUR_OPENCELLID_KEY'
+   ```
+
+5. Start the development server
+   ```sh
+   npm run dev
    ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- USAGE EXAMPLES -->
-## Usage
-
-Right now, we are wrapping up **Phase 1: Foundation**. We've mapped out the DB schemas, our API routes, and got the repository skeleton ready. 
-
-### Database Schema (Supabase)
-* `users`: The gig workers (id, name, upi_id, driving_score)
-* `policies`: The available bundles (id, name, hourly_rate)
-* `active_sessions`: The "Toggle" states (id, user_id, start_time, end_time, total_premium)
-* `claims`: Handled via smart-contract/admin override.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+---
 
 <!-- ROADMAP -->
-## Roadmap
+## 🗺️ Development Roadmap <a name="roadmap"></a>
 
-- [x] Phase 1: Foundation (Architecture & DB Schemas)
-- [ ] Phase 2: Core UX (The Mobile Toggle & Agent UI)
-- [ ] Phase 3: Logic (Telematics integration & Micro-premiums)
-- [ ] Phase 4: Innovation (Smart Claims & UPI Integrations)
-- [ ] Phase 5: Polish & Pitch Preparation
+### ✅ Phase 1 — Ideation & Foundation (March 4–20, COMPLETE)
+- [x] README & architecture fully documented
+- [x] Supabase DB schemas designed (users, policies, sessions, claims, trigger_events)
+- [x] WhatsApp onboarding bot flow wireframed (`index.html` prototype)
+- [x] Adversarial defense & anti-spoofing strategy documented in full
+- [x] Tech stack selected — all free/open-source
+- [x] Kavach AI architecture designed (XGBoost + Isolation Forest)
 
-See the [open issues](https://github.com/SHIVIKA330/OffShift/issues) for a full list of proposed features (and known issues).
+### 🔄 Phase 2 — Automation & Protection (March 21 – April 4)
+- [ ] WhatsApp sandbox bot live — Dialogflow CX + Twilio integration
+- [ ] Node.js cron job polling IMD + AQICN APIs every 15 minutes
+- [ ] Kavach XGBoost model trained on IMD historical data + synthetic riders
+- [ ] Razorpay UPI test mode integrated — automated payout flow end-to-end
+- [ ] Rider registration + policy management UI live on Vercel
+- [ ] Dynamic premium calculation working end-to-end
+
+### 🚀 Phase 3 — Scale & Optimize (April 5–17)
+- [ ] Isolation Forest fraud ring detection deployed
+- [ ] 6-signal Trust Score engine live
+- [ ] Weighted quorum anti-spoofing active in production
+- [ ] Admin analytics dashboard with real-time Supabase data feeds
+- [ ] Rider dashboard: active coverage status, payout history
+- [ ] 50-rider alpha test in Okhla/Gurugram during actual monsoon rainfall
+- [ ] Full 5-minute demo video with live simulated disruption
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- CONTRIBUTING -->
-## Contributing
+---
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+<!-- CONTRIBUTORS -->
+## 👥 Team & Contributors <a name="contributors"></a>
 
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
+Built with purpose and late nights by the OffShift team for **Guidewire DEVTrails 2026**.
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### Contributors:
-
-<table align="left">
+<table align="center">
   <tr>
     <td align="center">
       <a href="https://github.com/SHIVIKA330">
-        <img src="https://github.com/SHIVIKA330.png" width="60" height="60" style="border-radius: 50%;" alt="Shivika"><br />
+        <img src="https://github.com/SHIVIKA330.png" width="80" height="80" style="border-radius: 50%;" alt="Shivika">
+        <br/>
         <sub><b>Shivika</b></sub>
+        <br/>
+        <sub>@SHIVIKA330</sub>
       </a>
     </td>
     <td align="center">
       <a href="https://github.com/TejikaSingh02">
-        <img src="https://github.com/TejikaSingh02.png" width="60" height="60" style="border-radius: 50%;" alt="Tejika"><br />
+        <img src="https://github.com/TejikaSingh02.png" width="80" height="80" style="border-radius: 50%;" alt="Tejika">
+        <br/>
         <sub><b>Tejika</b></sub>
+        <br/>
+        <sub>@TejikaSingh02</sub>
       </a>
     </td>
     <td align="center">
       <a href="https://github.com/nomita1303">
-        <img src="https://github.com/nomita1303.png" width="60" height="60" style="border-radius: 50%;" alt="Nomita"><br />
+        <img src="https://github.com/nomita1303.png" width="80" height="80" style="border-radius: 50%;" alt="Nomita">
+        <br/>
         <sub><b>Nomita</b></sub>
+        <br/>
+        <sub>@nomita1303</sub>
       </a>
     </td>
     <td align="center">
       <a href="https://github.com/yuvi194">
-        <img src="https://github.com/yuvi194.png" width="60" height="60" style="border-radius: 50%;" alt="Yuvika"><br />
+        <img src="https://github.com/yuvi194.png" width="80" height="80" style="border-radius: 50%;" alt="Yuvika">
+        <br/>
         <sub><b>Yuvika</b></sub>
+        <br/>
+        <sub>@yuvi194</sub>
       </a>
     </td>
     <td align="center">
       <a href="https://github.com/love123-code">
-        <img src="https://github.com/love123-code.png" width="60" height="60" style="border-radius: 50%;" alt="Love"><br />
+        <img src="https://github.com/love123-code.png" width="80" height="80" style="border-radius: 50%;" alt="Love">
+        <br/>
         <sub><b>Love</b></sub>
+        <br/>
+        <sub>@love123-code</sub>
       </a>
     </td>
   </tr>
 </table>
 
-<br clear="both" />
+<br/>
+
+<div align="center">
+
+**OffShift Team — DEVTrails 2026 — shivikaj47@gmail.com**
+
+Project: [https://github.com/SHIVIKA330/OffShift](https://github.com/SHIVIKA330/OffShift)
+
+---
+
+> *Every other platform asks WHERE you are.*
+> *OffShift asks WHO you are, HOW you move, WHEN you subscribed,*
+> *and WHETHER your behavior matches 4 weeks of your own history.*
+>
+> **GPS tells us your location. Kavach tells us your truth.**
+
+*Built for the riders who keep cities moving — even when the sky falls.*
+
+</div>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- LICENSE -->
-## Contact
-
-OffShift Team - DEVTrails 2026 - shivikaj47@gmail.com
-
-Project Link: [https://github.com/SHIVIKA330/OffShift](https://github.com/SHIVIKA330/OffShift)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-<!-- MARKDOWN LINKS & IMAGES -->
+<!-- MARKDOWN LINKS & BADGES -->
 [React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
 [React-url]: https://reactjs.org/
 [Vite.js]: https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white
