@@ -105,7 +105,7 @@ When the Delhi monsoon hits — and it always hits — Ravi parks under a flyove
 
 **OffShift for Ravi:** He texts "HI" to our WhatsApp number once. 60 seconds later, he has ₹99/week coverage. The next time it rains — really rains — he gets a WhatsApp notification and ₹1,500 appears in his PhonePe. He didn't fill a single form.
 
----
+
 
 
 
