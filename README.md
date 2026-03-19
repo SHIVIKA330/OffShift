@@ -105,15 +105,9 @@ When the Delhi monsoon hits — and it always hits — Ravi parks under a flyove
 
 **OffShift for Ravi:** He texts "HI" to our WhatsApp number once. 60 seconds later, he has ₹99/week coverage. The next time it rains — really rains — he gets a WhatsApp notification and ₹1,500 appears in his PhonePe. He didn't fill a single form.
 
----
 
-### Secondary Persona: Amit Sharma
 
-Amit is a 22-year-old engineering student in Gurugram. He rides for Swiggy evenings and weekends to fund his college expenses. He doesn't need a ₹349/month plan — he needs coverage for his Friday and Saturday evening shifts, when app outages are most likely during peak demand.
 
-On a recent Friday peak, a Swiggy platform crash meant he earned ₹0 in a 4-hour window he'd specifically saved for. He had no recourse.
-
-**OffShift for Amit:** He buys a ₹49 Shift Pass before his Friday evening shift. The Swiggy Downdetector spike, cross-referenced with 50+ GPS-inactive riders in his zone, auto-triggers. His ₹500 arrives before he even notices the platform is back up.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -655,7 +649,7 @@ Built with purpose and late nights by the OffShift team for **Guidewire DEVTrail
 
 **OffShift Team — DEVTrails 2026 — shivikaj47@gmail.com**
 
-Project: [https://github.com/SHIVIKA330/OffShift](https://github.com/SHIVIKA330/OffShift)
+Project (try out link): [https://v0-off-shift-projects.vercel.app/](https://v0-off-shift-projects.vercel.app/)
 
 ---
 
