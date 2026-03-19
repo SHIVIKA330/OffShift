@@ -84,6 +84,76 @@ This project is more than just insurance — it’s about building financial res
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+<!-- CORE STRATEGY -->
+## Phase 1: Idea Document & Core Strategy
+
+### 1. Persona-Based Scenarios & Workflow
+**Persona:** Rahul is a 28-year-old food delivery partner in New Delhi. He relies entirely on daily payouts to support his family.
+**Scenario:** During a peak earning window, an unexpected, torrential downpour floods the streets of his regular zone. Deliveries are halted indefinitely. Usually, this means lost income and financial distress.
+**Workflow:**
+1. **Weekly Subscription:** Rahul opts into the OffShift "Smart Income Shield" at the start of the week using a micro-premium deducted via UPI.
+2. **Parametric Trigger:** The Indian Meteorological Department (IMD) API issues a "Red Alert" for severe waterlogging in his exact pincode.
+3. **Automated Verification:** OffShift automatically checks his presence inside the alert zone without relying solely on easily spoofed GPS data.
+4. **Zero-Touch Claim:** The smart contract executes, instantly transferring the compensation for lost hours directly to Rahul's UPI wallet. No paperwork, no wait times.
+
+### 2. Business Model: Weekly Premium & Parametric Triggers
+**The Weekly Premium Model:**
+Traditional insurance is annual and expensive. OffShift works on a dynamic, sachet-sized *weekly premium* model (e.g., ₹30-₹50/week) tailored to gig workers' weekly cash flows. Premiums are risk-adjusted dynamically using AI (Kavach engine) based on historical regional data, weather forecasts, and the individual's "driving score."
+**Parametric Triggers:**
+Our engine uses deterministic, objective external data to trigger claims. Triggers include:
+* Severe Weather Alerts (IMD APIs for >50mm rain, extreme heatwaves)
+* Toxic Air Quality (AQI > 450 rendering work hazardous)
+When an external oracle verifies the condition, payouts trigger automatically.
+
+### 3. Platform Justification: Mobile-First / PWA
+Delivery workers are fundamentally highly-mobile users who rely entirely on their smartphones. We chose a **Mobile-First Progressive Web App (PWA)** combined with native mobile elements. This is critical because:
+* **Background Telematics:** We need device motion and location data while the user switches to their delivery partner app.
+* **Low Latency & Low Data:** PWAs allow offline caching for spotty network areas.
+* **Instant Notifications:** Real-time WhatsApp/Push notifications to alert riders of incoming weather disruptions and claim status.
+A desktop web platform would fail completely for our target persona on the road.
+
+### 4. AI/ML Integration: Adversarial Defense & Anti-Spoofing Strategy
+> "500 riders. Fake GPS. Real money drained. We saw it coming."
+
+Our parametric model relies on distinguishing truth from deception. OffShift assumes bad actors WILL try to game the system (e.g., a syndicate spoofing GPS inside a Red Alert zone to drain the liquidity pool). Our defense goes 6 layers deep.
+
+#### Layer 1 — The Differentiation: Real Rider vs. Faker
+1. **Network Cell Tower Triangulation:** We cross-reference reported GPS with connected cell tower IDs (OpenCelliD API). A spoofed location won't match the physical tower.
+2. **Accelerometer & Gyroscope Micro-Pattern:** A genuinely stranded rider on a bike shows micro-vibrations. A spoofer at home is completely flat. We use the DeviceMotion API to flag flatlined activity.
+3. **App Activity Fingerprint:** We verify recent partner app session activity to confirm the rider was genuinely on-shift before the disruption.
+4. **Historical Shift Pattern Baseline:** Kavach AI builds a 4-week behavioral baseline per rider via Supabase. Sudden claims in entirely new zones raise instant statistical anomalies.
+5. **Temporal Plausibility Check:** Late subscriptions suspiciously 5 minutes after an alert are triggered for "Pending Verification".
+
+#### Layer 2 — The Data: Catching a Fraud RING
+Individual fraud is hard; coordinated rings leave patterns. Our anomaly detection engine uses **scikit-learn's Isolation Forest** to watch for signatures:
+* Overlapping device fingerprints across accounts.
+* Unnatural clusters of 50+ payouts routed to a single UPI handle.
+* Subscription spikes exactly following an alert.
+
+**The "50-Rider Quorum with Quality Score":**
+Rider confirmations aren't just counted; they are weighted by a **Trust Score (0.0 to 1.0)** based on their AI behavioral signals. 500 spoofed riders with a 0.1 score = 50 votes. Fifty genuine riders with a 0.9 score = 45 votes. Payouts only fire when the *weighted* quorum is met, neutralizing mass spoofing mathmatically.
+
+#### Layer 3 — The UX Balance: 3-Tier Response System
+When in doubt, we pay. But we scale friction dynamically to protect honest workers who might have weak GPS signals in a storm:
+* **Tier 1 — Auto-Approve (Trust > 0.75):** Passes 4+ signals. Payout in 120 seconds. Zero friction. (85% of users)
+* **Tier 2 — Soft Verify (Trust 0.40–0.75):** Passes 2-3 signals. One WhatsApp message sent: *"Reply YES to confirm you're on shift."* Payout fires in 3 mins.
+* **Tier 3 — Hold & Review (Trust < 0.40):** Payout held up to 15 minutes for admin review via our React/Supabase dashboard. No penalty, just a transparent delay.
+
+**The Golden Rule:** We never deny a claim on a single signal; denial requires 3+ independent flags.
+
+#### Zero-Cost Tech Stack for This Defense Layer
+| Feature | Tool | Cost |
+|---|---|---|
+| Anomaly Detection (Ring Fraud) | scikit-learn Isolation Forest | Free |
+| Behavioral Baseline Storage | Supabase PostgreSQL (free tier) | Free |
+| Cell Tower Cross-reference | OpenCelliD API | Free |
+| Device Motion Signals | Browser DeviceMotion API / PWA | Free |
+| Trust Score Engine | Custom XGBoost model (existing Kavach) | Free |
+| Admin Alert Dashboard | React + Supabase Realtime | Free |
+| WhatsApp Soft Verify Message | WhatsApp Business API (sandbox) | Free |
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ### Built With (Tech Stack)
 
 We carefully selected our tech stack to prioritize rapid prototyping, blazing-fast performance, and a stunning "dark mode" aesthetic suitable for a hackathon timeline.
