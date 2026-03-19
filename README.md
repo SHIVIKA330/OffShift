@@ -27,7 +27,7 @@
     ·
     <a href="./Smart-Income-Shield.pdf"> View Presentation</a>
     ·
-    <a href="https://github.com/SHIVIKA330/OffShift/issues">🐛 Report Bug</a>
+    <a href="https://github.com/SHIVIKA330/OffShift/issues"> Report Bug</a>
   </p>
 </div>
 
