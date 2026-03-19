@@ -2,7 +2,7 @@
 
 <div align="center">
   <a href="https://github.com/SHIVIKA330/OffShift">
-    <img src="offshift-icon.png" alt="OffShift Logo" width="400">
+    <img src="readme_badge_icon_128.png" alt="OffShift Logo" width="400">
   </a>
 
   <h1>OffShift — Smart Income Shield</h1>
