@@ -118,11 +118,11 @@ When the Delhi monsoon hits — and it always hits — Ravi parks under a flyove
 
 OffShift is a **parametric insurance engine** — payouts are triggered by objective, external data conditions, never by self-reported claims. Five pillars underpin the entire system:
 
-1. ** WhatsApp-First Onboarding** — 60-second signup. Phone number + UPI ID only. No app download. No documents.
-2. ** Weekly Micro-Premium Model** — Sachet-sized pricing (₹49/₹99/₹349) built around gig workers' weekly cash flows.
-3. ** Kavach AI Engine** — Our proprietary XGBoost model prices risk to the pincode level, dynamically per rider.
-4. ** Parametric Auto-Triggers** — IMD API, AQICN API, Downdetector, GPS cluster inactivity — objective data only. No subjective judgment.
-5. ** 120-Second UPI Auto-Payout** — Razorpay API sends money directly to the rider's UPI handle. Zero claim forms. Ever.
+1.  **WhatsApp-First Onboarding** — 60-second signup. Phone number + UPI ID only. No app download. No documents.
+2. **Weekly Micro-Premium Model** — Sachet-sized pricing (₹49/₹99/₹349) built around gig workers' weekly cash flows.
+3.  **Kavach AI Engine** — Our proprietary XGBoost model prices risk to the pincode level, dynamically per rider.
+4.  **Parametric Auto-Triggers** — IMD API, AQICN API, Downdetector, GPS cluster inactivity — objective data only. No subjective judgment.
+5.  **120-Second UPI Auto-Payout** — Razorpay API sends money directly to the rider's UPI handle. Zero claim forms. Ever.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
