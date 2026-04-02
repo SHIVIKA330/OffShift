@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import Razorpay from "razorpay";
 
 import {
   fetchOpenMeteoRain,
@@ -8,6 +7,7 @@ import {
   type ShiftType,
 } from "@/lib/kavach-engine";
 import { getMockAqiForZone } from "@/lib/mock-data";
+import { createOrderRazorpay } from "@/lib/razorpay-rest";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeZone, type ZoneSlug } from "@/lib/zones";
 
@@ -21,8 +21,7 @@ export async function POST(req: Request) {
   }
 
   const keyId = process.env.RAZORPAY_KEY_ID;
-  const keySecret = process.env.RAZORPAY_KEY_SECRET;
-  if (!keyId || !keySecret) {
+  if (!keyId) {
     return NextResponse.json({ error: "Razorpay not configured" }, { status: 500 });
   }
 
@@ -57,16 +56,14 @@ export async function POST(req: Request) {
   });
 
   const amountPaise = Math.round(engine.final_premium * 100);
-  const rzp = new Razorpay({ key_id: keyId, key_secret: keySecret });
 
-  const order = await rzp.orders.create({
-    amount: amountPaise,
-    currency: "INR",
+  const order = await createOrderRazorpay({
+    amountPaise,
     receipt: `off_${user.id.slice(0, 8)}_${Date.now()}`,
     notes: {
       user_id: user.id,
       plan_type: body.plan_type,
-      zone: zone as ZoneSlug,
+      zone,
     },
   });
 
