@@ -73,7 +73,9 @@ async function getSilentPingRatio(
     .eq("status", "ACTIVE");
 
   const rows = (policies ?? []).filter((p: { workers: unknown }) => workerZone(p.workers) === zone);
-  const workerIds = [...new Set(rows.map((r: { worker_id: string }) => r.worker_id))];
+  const workerIds = Array.from(
+    new Set(rows.map((r: { worker_id: string }) => r.worker_id))
+  );
   if (workerIds.length === 0) return 0;
 
   const since = new Date(Date.now() - 20 * 60 * 1000).toISOString();
