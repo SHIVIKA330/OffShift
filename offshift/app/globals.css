@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-teal: #0f4c5c;
+  --brand-amber: #f59e0b;
+  --background: #ffffff;
+  --foreground: #0f172a;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
