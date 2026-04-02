@@ -28,6 +28,7 @@ type PolicyRow = {
 
 type ClaimRow = {
   id: string;
+  policy_id: string;
   trigger_type: string;
   payout_amount: number;
   status: string;
@@ -252,12 +253,11 @@ export function DashboardClient() {
         </CardHeader>
         <CardContent className="space-y-2">
           {slice.map((p) => {
-            const related = claims.filter((c) => c.id);
-            const claimCount = claims.filter(() => true).length;
-            void related;
-            void claimCount;
             const paidClaims = claims.filter(
-              (c) => c.status === "SETTLED" && new Date(c.created_at) >= new Date(p.created_at)
+              (c) =>
+                c.policy_id === p.id &&
+                c.status === "SETTLED" &&
+                new Date(c.created_at) >= new Date(p.created_at)
             );
             return (
               <div
