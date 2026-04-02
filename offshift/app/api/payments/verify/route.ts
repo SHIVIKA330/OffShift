@@ -1,7 +1,16 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
+import Razorpay from "razorpay";
 
+import {
+  fetchOpenMeteoRain,
+  runKavachEngine,
+  type CoverageType,
+  type ShiftType,
+} from "@/lib/kavach-engine";
+import { getMockAqiForZone } from "@/lib/mock-data";
 import { createClient } from "@/lib/supabase/server";
+import { normalizeZone, type ZoneSlug } from "@/lib/zones";
 
 function verifySignature(
   orderId: string,
@@ -27,8 +36,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const keyId = process.env.RAZORPAY_KEY_ID;
   const secret = process.env.RAZORPAY_KEY_SECRET;
-  if (!secret) {
+  if (!keyId || !secret) {
     return NextResponse.json({ error: "Server misconfiguration" }, { status: 500 });
   }
 
@@ -36,7 +46,11 @@ export async function POST(req: Request) {
     razorpay_order_id: string;
     razorpay_payment_id: string;
     razorpay_signature: string;
-    plan_type: "24hr" | "7day";
+    plan_type: CoverageType;
+    zone: string;
+    shift_type: ShiftType;
+    active_days: number;
+    platform: "zomato" | "swiggy";
   };
   try {
     body = await req.json();
@@ -53,6 +67,35 @@ export async function POST(req: Request) {
     )
   ) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+  }
+
+  const zone = normalizeZone(body.zone);
+  if (!zone) {
+    return NextResponse.json({ error: "Invalid zone" }, { status: 400 });
+  }
+
+  const rzp = new Razorpay({ key_id: keyId, key_secret: secret });
+  const order = await rzp.orders.fetch(body.razorpay_order_id);
+  const paidPaise = Number(order.amount);
+
+  const aqi = getMockAqiForZone(zone);
+  const openMeteo = await fetchOpenMeteoRain(zone);
+  const engine = runKavachEngine({
+    zone,
+    shift_type: body.shift_type,
+    active_days: body.active_days,
+    platform: body.platform,
+    coverage_type: body.plan_type,
+    aqi_forecast_peak: aqi.aqi_forecast_peak,
+    openMeteo,
+  });
+
+  const expectedPaise = Math.round(engine.final_premium * 100);
+  if (Math.abs(paidPaise - expectedPaise) > 1) {
+    return NextResponse.json(
+      { error: "Amount mismatch — refresh pricing and try again" },
+      { status: 400 }
+    );
   }
 
   const start = new Date();
@@ -76,7 +119,7 @@ export async function POST(req: Request) {
     .insert({
       worker_id: user.id,
       plan_type: body.plan_type,
-      premium_amount: 0,
+      premium_amount: engine.final_premium,
       max_payout,
       coverage_start: start.toISOString(),
       coverage_end: end.toISOString(),
@@ -85,28 +128,16 @@ export async function POST(req: Request) {
       razorpay_payment_id: body.razorpay_payment_id,
       next_premium_due_at: end.toISOString(),
     })
-    .select("id, coverage_start, coverage_end, plan_type, max_payout, status")
+    .select("id, coverage_start, coverage_end, plan_type, max_payout, status, trigger_weather, trigger_outage")
     .single();
 
   if (error || !policy) {
     return NextResponse.json({ error: error?.message ?? "Policy create failed" }, { status: 400 });
   }
 
-  const premiumFromOrder = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/api/payments/create-order`,
-    { method: "POST", body: JSON.stringify({}), headers: { cookie: "" } }
-  );
-  void premiumFromOrder;
-
-  await supabase
-    .from("policies")
-    .update({
-      premium_amount: body.plan_type === "24hr" ? 29 : 99,
-    })
-    .eq("id", policy.id);
-
   return NextResponse.json({
     policy,
     kavach_score: worker?.kavach_score ?? null,
+    zone: zone as ZoneSlug,
   });
 }
