@@ -27,7 +27,7 @@ export async function GET() {
 
   const { data: policiesZone } = await supabase
     .from("policies")
-    .select("workers(zone)")
+    .select("worker_id, workers!inner(zone)")
     .eq("status", "ACTIVE");
 
   const zoneMap: Record<string, number> = {};
