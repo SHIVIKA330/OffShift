@@ -25,27 +25,29 @@ export async function processClaimPipeline(claimId: string): Promise<void> {
 
   if (cErr || !claim) return;
 
-  const worker = claim.workers as {
-    zone: string;
-    shift_type: string;
-    kavach_score: number | null;
-  };
-  const policy = claim.policies as { created_at: string };
+  const workerAny = (claim as any).workers;
+  const worker = Array.isArray(workerAny) ? workerAny[0] : workerAny;
+
+  const policyAny = (claim as any).policies;
+  const policy = Array.isArray(policyAny) ? policyAny[0] : policyAny;
 
   await supabase.from("claims").update({ status: "FRAUD_CHECK" }).eq("id", claimId);
 
   const policyAgeDays = Math.max(
     0,
     Math.floor(
-      (Date.now() - new Date(policy.created_at).getTime()) / (86400 * 1000)
+      (Date.now() -
+        new Date(policy?.created_at ? String(policy.created_at) : Date.now()).getTime()) /
+        (86400 * 1000)
     )
   );
 
   const fraudPayload = {
     worker: {
-      zone: worker.zone,
-      shift: worker.shift_type,
-      kavach_score: worker.kavach_score ?? 50,
+      zone: String(worker?.zone ?? "okhla"),
+      shift: String(worker?.shift_type ?? "evening"),
+      kavach_score:
+        typeof worker?.kavach_score === "number" ? worker.kavach_score : 50,
       policy_age_days: policyAgeDays,
     },
     trigger: {
