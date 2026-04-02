@@ -32,7 +32,7 @@ export function getMockDowndetector(platform: "zomato" | "swiggy"): {
   outage_hours_estimate: number;
   status: "operational" | "degraded" | "major_outage";
 } {
-  const z = platform === "zomato" ? 720 : 410;
+  const z = platform === "zomato" ? 720 : 560;
   return {
     platform,
     report_count: z,
