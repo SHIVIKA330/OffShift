@@ -14,6 +14,23 @@ import { ZONE_COORDS, type ZoneSlug } from "@/lib/zones";
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
+function workerZone(w: unknown): string | undefined {
+  if (!w || typeof w !== "object") return undefined;
+  if (Array.isArray(w)) return (w[0] as { zone?: string })?.zone;
+  return (w as { zone?: string }).zone;
+}
+
+function workerMeta(w: unknown): {
+  zone?: string;
+  shift_type?: string;
+  platform?: string;
+} {
+  const raw = !w ? null : Array.isArray(w) ? w[0] : w;
+  if (!raw || typeof raw !== "object") return {};
+  const o = raw as { zone?: string; shift_type?: string; platform?: string };
+  return { zone: o.zone, shift_type: o.shift_type, platform: o.platform };
+}
+
 function authorize(req: Request): boolean {
   const secret = process.env.CRON_SECRET;
   if (!secret) return true;
@@ -55,10 +72,10 @@ async function getSilentPingRatio(
     .select("worker_id, workers!inner(zone)")
     .eq("status", "ACTIVE");
 
-  const rows = (policies ?? []).filter(
-    (p: { workers: { zone: string } }) => p.workers.zone === zone
+  const rows = (policies ?? []).filter((p: { workers: unknown }) => workerZone(p.workers) === zone);
+  const workerIds = Array.from(
+    new Set(rows.map((r: { worker_id: string }) => r.worker_id))
   );
-  const workerIds = [...new Set(rows.map((r: { worker_id: string }) => r.worker_id))];
   if (workerIds.length === 0) return 0;
 
   const since = new Date(Date.now() - 20 * 60 * 1000).toISOString();
@@ -120,17 +137,16 @@ export async function GET(req: Request) {
         )
         .eq("status", "ACTIVE");
 
-      const list = (policies ?? []).filter(
-        (p: {
-          workers: { zone: string; shift_type: string };
-          trigger_weather: boolean;
-        }) =>
-          p.workers.zone === zone &&
+      const list = (policies ?? []).filter((p: { workers: unknown; trigger_weather: boolean }) => {
+        const m = workerMeta(p.workers);
+        return (
+          m.zone === zone &&
           p.trigger_weather &&
           shiftMatchesCurrentIST(
-            p.workers.shift_type as "morning" | "evening" | "night" | "flexible"
+            (m.shift_type ?? "flexible") as "morning" | "evening" | "night" | "flexible"
           )
-      );
+        );
+      });
 
       let triggered = 0;
       for (const p of list) {
@@ -204,12 +220,10 @@ export async function GET(req: Request) {
         )
         .eq("status", "ACTIVE");
 
-      const list = (policies ?? []).filter(
-        (p: {
-          workers: { zone: string };
-          trigger_weather: boolean;
-        }) => p.workers.zone === zone && p.trigger_weather
-      );
+      const list = (policies ?? []).filter((p: { workers: unknown; trigger_weather: boolean }) => {
+        const m = workerMeta(p.workers);
+        return m.zone === zone && p.trigger_weather;
+      });
 
       let triggered = 0;
       for (const p of list) {
@@ -277,17 +291,17 @@ export async function GET(req: Request) {
           .eq("status", "ACTIVE");
 
         const list = (policies ?? []).filter(
-          (p: {
-            workers: { zone: string; platform: string };
-            trigger_outage: boolean;
-          }) =>
-            p.workers.zone === zone &&
-            p.workers.platform === platform &&
-            p.trigger_outage &&
-            shiftMatchesCurrentIST(
-              (p as { workers: { shift_type: string } }).workers
-                .shift_type as "morning" | "evening" | "night" | "flexible"
-            )
+          (p: { workers: unknown; trigger_outage: boolean }) => {
+            const m = workerMeta(p.workers);
+            return (
+              m.zone === zone &&
+              m.platform === platform &&
+              p.trigger_outage &&
+              shiftMatchesCurrentIST(
+                (m.shift_type ?? "flexible") as "morning" | "evening" | "night" | "flexible"
+              )
+            );
+          }
         );
 
         let triggered = 0;

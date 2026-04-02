@@ -32,8 +32,12 @@ export async function GET() {
 
   const zoneMap: Record<string, number> = {};
   for (const row of policiesZone ?? []) {
-    const w = row.workers as { zone: string } | null;
-    const z = w?.zone ?? "unknown";
+    const w = row.workers as { zone: string } | { zone: string }[] | null;
+    const z = !w
+      ? "unknown"
+      : Array.isArray(w)
+        ? (w[0]?.zone ?? "unknown")
+        : w.zone;
     zoneMap[z] = (zoneMap[z] ?? 0) + 1;
   }
 

@@ -1,13 +1,32 @@
-import Anthropic from "@anthropic-ai/sdk";
-
 const MODEL = "claude-sonnet-4-20250514";
+const API = "https://api.anthropic.com/v1/messages";
 
-export function getAnthropicClient(): Anthropic {
+async function anthropicMessages(body: Record<string, unknown>) {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) {
     throw new Error("Missing ANTHROPIC_API_KEY");
   }
-  return new Anthropic({ apiKey: key });
+  const res = await fetch(API, {
+    method: "POST",
+    headers: {
+      "x-api-key": key,
+      "anthropic-version": "2023-06-01",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  const data = (await res.json()) as {
+    content?: { type: string; text?: string }[];
+    error?: { message?: string };
+  };
+  if (!res.ok) {
+    throw new Error(data.error?.message ?? "Anthropic API error");
+  }
+  const text =
+    data.content
+      ?.map((b) => (b.type === "text" && b.text ? b.text : ""))
+      .join("") ?? "";
+  return text.trim();
 }
 
 export async function generateHindiPremiumExplanation(params: {
@@ -17,8 +36,7 @@ export async function generateHindiPremiumExplanation(params: {
   finalPremium: number;
   coverageLabel: string;
 }): Promise<string> {
-  const client = getAnthropicClient();
-  const msg = await client.messages.create({
+  const text = await anthropicMessages({
     model: MODEL,
     max_tokens: 256,
     messages: [
@@ -34,8 +52,7 @@ Kavach Score: ${params.kavachScore}
       },
     ],
   });
-  const text = msg.content.find((b) => b.type === "text");
-  if (text && text.type === "text") return text.text.trim();
+  if (text) return text;
   return `आपका Kavach Score ${params.kavachScore} है — ${params.zoneLabel} ज़ोन और ${params.shiftLabel} शिफ्ट के हिसाब से। आपका प्रीमियम ₹${params.finalPremium} है।`;
 }
 
@@ -48,8 +65,7 @@ export type FraudAssessment = {
 };
 
 export async function runFraudDetection(payload: Record<string, unknown>): Promise<FraudAssessment> {
-  const client = getAnthropicClient();
-  const msg = await client.messages.create({
+  const raw = await anthropicMessages({
     model: MODEL,
     max_tokens: 512,
     system:
@@ -61,8 +77,7 @@ export async function runFraudDetection(payload: Record<string, unknown>): Promi
       },
     ],
   });
-  const text = msg.content.find((b) => b.type === "text");
-  const raw = text && text.type === "text" ? text.text.trim() : "{}";
+
   let parsed: Partial<FraudAssessment>;
   try {
     const jsonMatch = raw.match(/\{[\s\S]*\}/);

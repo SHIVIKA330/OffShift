@@ -1,6 +1,5 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
-import Razorpay from "razorpay";
 
 import {
   fetchOpenMeteoRain,
@@ -9,6 +8,7 @@ import {
   type ShiftType,
 } from "@/lib/kavach-engine";
 import { getMockAqiForZone } from "@/lib/mock-data";
+import { fetchOrderRazorpay } from "@/lib/razorpay-rest";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeZone, type ZoneSlug } from "@/lib/zones";
 
@@ -74,8 +74,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid zone" }, { status: 400 });
   }
 
-  const rzp = new Razorpay({ key_id: keyId, key_secret: secret });
-  const order = await rzp.orders.fetch(body.razorpay_order_id);
+  const order = await fetchOrderRazorpay(body.razorpay_order_id);
   const paidPaise = Number(order.amount);
 
   const aqi = getMockAqiForZone(zone);
@@ -128,7 +127,9 @@ export async function POST(req: Request) {
       razorpay_payment_id: body.razorpay_payment_id,
       next_premium_due_at: end.toISOString(),
     })
-    .select("id, coverage_start, coverage_end, plan_type, max_payout, status, trigger_weather, trigger_outage")
+    .select(
+      "id, coverage_start, coverage_end, plan_type, max_payout, status, trigger_weather, trigger_outage"
+    )
     .single();
 
   if (error || !policy) {
