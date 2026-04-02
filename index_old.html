@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GigShield Wireframes</title>
+    <style>
+        :root {
+            --whatsapp-green: #25D366;
+            --whatsapp-dark: #075E54;
+            --phonepe-purple: #5f259f;
+            --bg-color: #f0f2f5;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #e5e5e5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            background-color: white;
+            border-radius: 40px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            overflow: hidden;
+            position: relative;
+            border: 12px solid #333;
+        }
+
+        .screen {
+            height: 100%;
+            width: 100%;
+            display: none;
+            flex-direction: column;
+            background-color: var(--bg-color);
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Screen 1: WhatsApp Chat */
+        .wa-header {
+            background-color: var(--whatsapp-dark);
+            color: white;
+            padding: 40px 15px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .bot-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: white;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+        }
+
+        .chat-container {
+            padding: 20px;
+            flex-grow: 1;
+            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 15px;
+            border-radius: 12px;
+            font-size: 15px;
+            line-height: 1.4;
+            position: relative;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .message.received {
+            background-color: white;
+            align-self: flex-start;
+            border-top-left-radius: 0;
+        }
+
+        .message.sent {
+            background-color: #dcf8c6;
+            align-self: flex-end;
+            border-top-right-radius: 0;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #999;
+            float: right;
+            margin-top: 5px;
+            margin-left: 10px;
+        }
+
+        .interactive-btn {
+            display: block;
+            text-align: center;
+            background: none;
+            border: none;
+            color: #00a884;
+            font-weight: 600;
+            font-size: 15px;
+            padding: 10px 0 0 0;
+            margin-top: 10px;
+            border-top: 1px solid #eee;
+            cursor: pointer;
+            width: 100%;
+            font-family: inherit;
+        }
+
+        /* Screen 2: Checkout */
+        .header-basic {
+            padding: 40px 20px 20px;
+            background: white;
+            font-weight: 600;
+            font-size: 18px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .checkout-content {
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .price-tag {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        .upi-btn {
+            background-color: var(--phonepe-purple);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 16px;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(95, 37, 159, 0.3);
+            transition: transform 0.1s;
+        }
+
+        .upi-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Screen 3: Payout */
+        .payout-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white;
+        }
+
+        .success-circle {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 50px;
+            color: #38ef7d;
+            margin-bottom: 20px;
+            animation: bounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes bounce {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        .amount-payout {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        /* Controls outside phone */
+        .controls {
+            position: absolute;
+            left: -150px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-btn {
+            padding: 10px 15px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .pulse {
+            animation: pulse-animation 2s infinite;
+        }
+        @keyframes pulse-animation {
+            0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(37, 211, 102, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <button class="control-btn" onclick="showScreen('screen1')">1. WhatsApp Alert</button>
+        <button class="control-btn" onclick="showScreen('screen2')">2. Mobile Checkout</button>
+        <button class="control-btn" onclick="showScreen('screen3')">3. Auto Payout</button>
+    </div>
+
+    <div class="phone-container">
+        <!-- Screen 1: WhatsApp Alert -->
+        <div id="screen1" class="screen active">
+            <div class="wa-header">
+                <div class="bot-avatar">🛡️</div>
+                <div>
+                    <div style="font-weight: 600; font-size: 16px;">GigShield India</div>
+                    <div style="font-size: 12px; opacity: 0.8;">Verified Business</div>
+                </div>
+            </div>
+            <div class="chat-container">
+                <div class="message received" style="margin-top: auto; opacity: 0; animation: fadeIn 0.5s forwards 0.5s;">
+                    🚨 <strong>RAIN RADAR ALERT</strong><br><br>
+                    Hi Rajesh, the IMD predicts heavy rainfall in your zone (Okhla) this Thursday. Delivery volumes will drop.<br><br>
+                    <strong>Get 24Hr Shift Kavach for just ₹49.</strong> If you can't ride, we immediately send ₹500 to your PhonePe. No forms.<br>
+                    <span class="message-time">10:42 AM</span>
+                    <button class="interactive-btn pulse" onclick="showScreen('screen2')">Activate Kavach Now</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 2: No-App Checkout -->
+        <div id="screen2" class="screen">
+            <div class="header-basic">GigShield Secure Payment</div>
+            <div class="checkout-content">
+                <div class="card" style="margin-top: 10px;">
+                    <div style="color: #666; font-size: 14px; text-transform: uppercase; font-weight: 600;">Shift Kavach (24hr)</div>
+                    <div class="price-tag">₹49.00</div>
+                    <div style="font-size: 14px; color: #444; margin-top: 15px;">
+                        <strong>Coverage Details:</strong><br>
+                        • Payout: ₹500 directly to linked UPI<br>
+                        • Triggers: IMD High Rain / Zomato Outage<br>
+                        • Valid: 18 March, 12 AM - 11:59 PM
+                    </div>
+                </div>
+                
+                <div style="margin-top: 40px;">
+                    <button class="upi-btn" onclick="payNow()">
+                        <span>Pay via PhonePe</span>
+                    </button>
+                    <div style="text-align: center; margin-top: 15px; font-size: 12px; color: #888;">UPI Auto-Claim feature will be activated.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 3: Auto Payout -->
+        <div id="screen3" class="screen">
+            <div class="payout-content">
+                <div class="success-circle">✓</div>
+                <div style="font-size: 20px; font-weight: 600;">Claim Paid!</div>
+                <div class="amount-payout">₹500.00</div>
+                <div style="font-size: 16px; margin-top: 10px; opacity: 0.9;">Parametric Trigger Met:</div>
+                <div style="margin-top: 5px; background: rgba(0,0,0,0.2); padding: 8px 15px; border-radius: 20px; font-size: 14px;">
+                    ⛈️ Delhi IMD Red Alert Exceeded
+                </div>
+                <div style="margin-top: 40px; font-size: 14px; opacity: 0.8;">
+                    No forms required.<br>Funds deposited to: rajesh@ybl
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function payNow() {
+            // Simulate button press then show next screen after delay
+            const btn = document.querySelector('.upi-btn');
+            btn.innerHTML = "Processing...";
+            setTimeout(() => {
+                showScreen('screen3');
+                btn.innerHTML = "<span>Pay via PhonePe</span>";
+            }, 1000);
+        }
+
+        // Add fadeIn animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                to { opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

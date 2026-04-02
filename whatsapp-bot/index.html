@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="OffShift WhatsApp Bot Simulator — Experience the full rider journey from registration to auto-payout.">
+    <title>OffShift — WhatsApp Bot Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --wa-green: #25D366;
+            --wa-dark: #075E54;
+            --wa-darker: #054D44;
+            --wa-teal: #128C7E;
+            --wa-light-green: #DCF8C6;
+            --wa-chat-bg: #0B141A;
+            --wa-msg-incoming: #202C33;
+            --wa-msg-outgoing: #005C4B;
+            --wa-header-bg: #1F2C34;
+            --wa-input-bg: #2A3942;
+            --wa-text: #E9EDEF;
+            --wa-text-secondary: #8696A0;
+            --wa-time: rgba(255,255,255,0.45);
+            --wa-link: #53BDEB;
+            --phonepe-purple: #5f259f;
+            --success-green: #38EF7D;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0e14 0%, #111820 50%, #0a0e14 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px;
+            color: #e6edf3;
+        }
+
+        .demo-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 40px;
+            max-width: 1000px;
+        }
+
+        /* ─── Phone Frame ────────────────────────────────────────── */
+
+        .phone-frame {
+            width: 375px;
+            height: 780px;
+            background: #000;
+            border-radius: 44px;
+            box-shadow: 
+                0 0 0 2px #333,
+                0 0 0 4px #1a1a1a,
+                0 20px 60px rgba(0,0,0,0.5),
+                0 0 80px rgba(37, 211, 102, 0.08);
+            overflow: hidden;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .phone-notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 28px;
+            background: #000;
+            border-radius: 0 0 20px 20px;
+            z-index: 20;
+        }
+
+        .phone-status-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 44px;
+            background: var(--wa-header-bg);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--wa-text);
+        }
+
+        /* ─── Screen Container ───────────────────────────────────── */
+
+        .screen-container {
+            height: 100%;
+            position: relative;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        .screen.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+        }
+
+        .screen.exit-left {
+            opacity: 0;
+            transform: translateX(-30%);
+        }
+
+        /* ─── WhatsApp Header ────────────────────────────────────── */
+
+        .wa-header {
+            background: var(--wa-header-bg);
+            padding: 50px 12px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 80px;
+        }
+
+        .wa-back {
+            color: var(--wa-text);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .wa-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--wa-green), var(--wa-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .wa-contact-info {
+            flex: 1;
+        }
+
+        .wa-contact-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--wa-text);
+        }
+
+        .wa-contact-status {
+            font-size: 12px;
+            color: var(--wa-text-secondary);
+        }
+
+        .wa-verified {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(37, 211, 102, 0.15);
+            color: var(--wa-green);
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 6px;
+        }
+
+        /* ─── Chat Area ──────────────────────────────────────────── */
+
+        .chat-area {
+            flex: 1;
+            padding: 12px 14px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background: var(--wa-chat-bg);
+            background-image: url("data:image/svg+xml,%3Csvg width='400' height='400' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M50 50h20v20H50zM100 100h20v20h-20zM200 50h20v20h-20zM150 150h20v20h-20zM300 100h20v20h-20zM350 200h20v20h-20zM50 300h20v20H50zM250 250h20v20h-20zM100 350h20v20h-20zM300 300h20v20h-20z'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .date-divider {
+            text-align: center;
+            margin: 12px 0;
+        }
+
+        .date-divider span {
+            background: rgba(18, 140, 126, 0.2);
+            color: var(--wa-text-secondary);
+            padding: 4px 14px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* ─── Messages ───────────────────────────────────────────── */
+
+        .message {
+            max-width: 85%;
+            padding: 8px 10px 4px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.45;
+            position: relative;
+            word-wrap: break-word;
+            opacity: 0;
+            animation: msgAppear 0.3s ease-out forwards;
+        }
+
+        @keyframes msgAppear {
+            from { opacity: 0; transform: translateY(8px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .message.incoming {
+            background: var(--wa-msg-incoming);
+            color: var(--wa-text);
+            align-self: flex-start;
+            border-top-left-radius: 3px;
+        }
+
+        .message.outgoing {
+            background: var(--wa-msg-outgoing);
+            color: var(--wa-text);
+            align-self: flex-end;
+            border-top-right-radius: 3px;
+        }
+
+        .message .time {
+            float: right;
+            font-size: 11px;
+            color: var(--wa-time);
+            margin-left: 10px;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .message .time .read-receipt {
+            color: var(--wa-link);
+            font-size: 12px;
+        }
+
+        .message strong {
+            color: var(--wa-text);
+        }
+
+        .message .highlight {
+            color: var(--wa-green);
+            font-weight: 700;
+        }
+
+        .message .amount {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--wa-green);
+            display: block;
+            margin: 6px 0;
+        }
+
+        .message-btn {
+            display: block;
+            text-align: center;
+            color: var(--wa-link);
+            font-weight: 600;
+            font-size: 14px;
+            padding: 10px 0 4px;
+            margin-top: 6px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .message-btn:hover { opacity: 0.8; }
+
+        /* ─── Input Bar ──────────────────────────────────────────── */
+
+        .input-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            background: var(--wa-chat-bg);
+        }
+
+        .input-field {
+            flex: 1;
+            background: var(--wa-input-bg);
+            border: none;
+            padding: 10px 16px;
+            border-radius: 24px;
+            color: var(--wa-text);
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .input-field::placeholder { color: var(--wa-text-secondary); }
+
+        .send-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--wa-teal);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .send-btn:hover { background: var(--wa-green); transform: scale(1.05); }
+
+        /* ─── Plan Cards ─────────────────────────────────────────── */
+
+        .plan-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 8px 0 4px;
+        }
+
+        .plan-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .plan-card:hover {
+            border-color: var(--wa-green);
+            background: rgba(37, 211, 102, 0.06);
+        }
+
+        .plan-card.selected {
+            border-color: var(--wa-green);
+            background: rgba(37, 211, 102, 0.1);
+            box-shadow: 0 0 0 1px var(--wa-green);
+        }
+
+        .plan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .plan-name {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .plan-price {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--wa-green);
+        }
+
+        .plan-details {
+            font-size: 11px;
+            color: var(--wa-text-secondary);
+        }
+
+        .plan-payout {
+            font-size: 12px;
+            color: var(--wa-green);
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        /* ─── UPI Checkout ───────────────────────────────────────── */
+
+        .upi-checkout {
+            background: linear-gradient(135deg, #2a1052, #5f259f);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .upi-amount {
+            font-size: 36px;
+            font-weight: 800;
+            margin: 12px 0;
+        }
+
+        .upi-pay-btn {
+            background: white;
+            color: var(--phonepe-purple);
+            border: none;
+            padding: 14px 40px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+            margin-top: 12px;
+            width: 100%;
+        }
+
+        .upi-pay-btn:hover { transform: scale(1.02); box-shadow: 0 4px 20px rgba(255,255,255,0.2); }
+        .upi-pay-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .upi-details {
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+            margin-top: 10px;
+        }
+
+        /* ─── Success Screen ─────────────────────────────────────── */
+
+        .success-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            text-align: center;
+            background: linear-gradient(135deg, #0B141A, #132322);
+        }
+
+        .success-check {
+            width: 80px;
+            height: 80px;
+            background: var(--wa-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+            margin-bottom: 16px;
+            animation: successBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 40px rgba(37, 211, 102, 0.3);
+        }
+
+        @keyframes successBounce {
+            0% { transform: scale(0); opacity: 0; }
+            60% { transform: scale(1.15); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .success-amount {
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--wa-green);
+            margin: 8px 0;
+            text-shadow: 0 0 30px rgba(37, 211, 102, 0.3);
+        }
+
+        .success-detail {
+            font-size: 14px;
+            color: var(--wa-text-secondary);
+            margin-top: 4px;
+        }
+
+        .success-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(37, 211, 102, 0.12);
+            color: var(--wa-green);
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-top: 16px;
+        }
+
+        .policy-id {
+            font-family: monospace;
+            background: rgba(255,255,255,0.06);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        /* ─── Payout Notification ────────────────────────────────── */
+
+        .payout-notification {
+            flex: 1;
+            background: linear-gradient(135deg, #0B1A11, #0B141A);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .confetti {
+            font-size: 40px;
+            animation: confettiDrop 0.8s ease-out;
+        }
+
+        @keyframes confettiDrop {
+            0% { transform: translateY(-20px) scale(0); opacity: 0; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .payout-amount {
+            font-size: 48px;
+            font-weight: 900;
+            color: var(--wa-green);
+            margin: 12px 0;
+            text-shadow: 0 0 40px rgba(37, 211, 102, 0.4);
+            animation: amountPulse 2s infinite;
+        }
+
+        @keyframes amountPulse {
+            0%, 100% { text-shadow: 0 0 40px rgba(37, 211, 102, 0.4); }
+            50% { text-shadow: 0 0 60px rgba(37, 211, 102, 0.6); }
+        }
+
+        .payout-badge {
+            background: rgba(37, 211, 102, 0.1);
+            border: 1px solid rgba(37, 211, 102, 0.3);
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 13px;
+            color: var(--wa-green);
+            font-weight: 600;
+            margin-top: 16px;
+        }
+
+        .payout-timer-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--wa-text-secondary);
+        }
+
+        .timer-value {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--wa-green);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ─── Side Panel ─────────────────────────────────────────── */
+
+        .info-panel {
+            max-width: 340px;
+        }
+
+        .info-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--wa-green), #34E87B);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .info-subtitle {
+            font-size: 14px;
+            color: #8b949e;
+            margin-bottom: 28px;
+            line-height: 1.6;
+        }
+
+        .step-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .step-item:hover { background: rgba(255,255,255,0.03); }
+
+        .step-item.active {
+            background: rgba(37, 211, 102, 0.06);
+            border-color: rgba(37, 211, 102, 0.2);
+        }
+
+        .step-item.completed {
+            opacity: 0.6;
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .step-item.active .step-number {
+            background: var(--wa-green);
+            color: #000;
+        }
+
+        .step-item.completed .step-number {
+            background: rgba(37, 211, 102, 0.2);
+            color: var(--wa-green);
+        }
+
+        .step-item:not(.active):not(.completed) .step-number {
+            background: rgba(255,255,255,0.06);
+            color: #8b949e;
+        }
+
+        .step-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e6edf3;
+        }
+
+        .step-desc {
+            font-size: 11px;
+            color: #8b949e;
+            margin-top: 2px;
+        }
+
+        /* ─── Typing indicator ───────────────────────────────────── */
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            align-self: flex-start;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--wa-text-secondary);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .demo-container { flex-direction: column; align-items: center; }
+            .info-panel { max-width: 100%; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <!-- Info Panel -->
+        <div class="info-panel">
+            <div style="margin-bottom: 16px; font-size: 12px; font-weight: 700; color: var(--wa-green); text-transform: uppercase; letter-spacing: 2px;">OffShift Demo</div>
+            <h1 class="info-title">Rider Journey</h1>
+            <p class="info-subtitle">
+                Experience the complete OffShift flow — from registration to automatic payout. 
+                No app downloads. No claim forms. Everything happens on WhatsApp.
+            </p>
+
+            <div class="step-list" id="stepList">
+                <div class="step-item active" data-step="0" onclick="goToScreen(0)">
+                    <div class="step-number">1</div>
+                    <div><div class="step-text">Registration</div><div class="step-desc">Register on WhatsApp in 60 seconds</div></div>
+                </div>
+                <div class="step-item" data-step="1" onclick="goToScreen(1)">
+                    <div class="step-number">2</div>
+                    <div><div class="step-text">Rain Radar Alert</div><div class="step-desc">48hr storm warning delivered</div></div>
+                </div>
+                <div class="step-item" data-step="2" onclick="goToScreen(2)">
+                    <div class="step-number">3</div>
+                    <div><div class="step-text">Plan Selection</div><div class="step-desc">Dynamic Kavach pricing — 3 tiers</div></div>
+                </div>
+                <div class="step-item" data-step="3" onclick="goToScreen(3)">
+                    <div class="step-number">4</div>
+                    <div><div class="step-text">UPI Payment</div><div class="step-desc">PhonePe one-tap checkout</div></div>
+                </div>
+                <div class="step-item" data-step="4" onclick="goToScreen(4)">
+                    <div class="step-number">5</div>
+                    <div><div class="step-text">Policy Confirmed</div><div class="step-desc">Covered in under 60 seconds</div></div>
+                </div>
+                <div class="step-item" data-step="5" onclick="goToScreen(5)">
+                    <div class="step-number">6</div>
+                    <div><div class="step-text">Auto Payout 🎉</div><div class="step-desc">₹500 sent — zero forms filed</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phone -->
+        <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-status-bar">
+                <span>9:41</span>
+                <span>📶 🔋</span>
+            </div>
+
+            <div class="screen-container">
+                <!-- Screen 0: Registration -->
+                <div class="screen active" id="screen0">
+                    <div class="wa-header">
+                        <div class="wa-avatar">🛡️</div>
+                        <div class="wa-contact-info">
+                            <div class="wa-contact-name">OffShift India <span class="wa-verified">✓ Verified</span></div>
+                            <div class="wa-contact-status">online</div>
+                        </div>
+                    </div>
+                    <div class="chat-area" id="chat0">
+                        <div class="date-divider"><span>Today</span></div>
+                    </div>
+                    <div class="input-bar">
+                        <input type="text" class="input-field" id="regInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter')handleRegStep()">
+                        <button class="send-btn" onclick="handleRegStep()">➤</button>
+                    </div>
+                </div>
+
+                <!-- Screen 1: Rain Alert -->
+                <div class="screen" id="screen1">
+                    <div class="wa-header">
+                        <div class="wa-back" onclick="goToScreen(0)">←</div>
+                        <div class="wa-avatar">🛡️</div>
+                        <div class="wa-contact-info">
+                            <div class="wa-contact-name">OffShift India</div>
+                            <div class="wa-contact-status">online</div>
+                        </div>
+                    </div>
+                    <div class="chat-area" id="chat1"></div>
+                    <div class="input-bar">
+                        <input type="text" class="input-field" placeholder="Type a message..." readonly>
+                        <button class="send-btn" disabled>➤</button>
+                    </div>
+                </div>
+
+                <!-- Screen 2: Plan Selection -->
+                <div class="screen" id="screen2">
+                    <div class="wa-header">
+                        <div class="wa-back" onclick="goToScreen(1)">←</div>
+                        <div class="wa-avatar">🛡️</div>
+                        <div class="wa-contact-info">
+                            <div class="wa-contact-name">OffShift India</div>
+                            <div class="wa-contact-status">online</div>
+                        </div>
+                    </div>
+                    <div class="chat-area" id="chat2"></div>
+                    <div class="input-bar">
+                        <input type="text" class="input-field" placeholder="Type a message..." readonly>
+                        <button class="send-btn" disabled>➤</button>
+                    </div>
+                </div>
+
+                <!-- Screen 3: UPI Checkout -->
+                <div class="screen" id="screen3">
+                    <div class="wa-header">
+                        <div class="wa-back" onclick="goToScreen(2)">←</div>
+                        <div class="wa-avatar" style="background: linear-gradient(135deg, #5f259f, #8b5cf6);">💳</div>
+                        <div class="wa-contact-info">
+                            <div class="wa-contact-name">PhonePe Payment</div>
+                            <div class="wa-contact-status">Secure UPI Payment</div>
+                        </div>
+                    </div>
+                    <div class="chat-area" id="chat3" style="background: linear-gradient(135deg, #0B141A, #1a0d30);"></div>
+                    <div class="input-bar" style="background: transparent;"></div>
+                </div>
+
+                <!-- Screen 4: Policy Confirmed -->
+                <div class="screen" id="screen4">
+                    <div class="wa-header">
+                        <div class="wa-back" onclick="goToScreen(3)">←</div>
+                        <div class="wa-avatar">🛡️</div>
+                        <div class="wa-contact-info">
+                            <div class="wa-contact-name">OffShift India</div>
+                            <div class="wa-contact-status">online</div>
+                        </div>
+                    </div>
+                    <div class="success-screen" id="chat4"></div>
+                    <div class="input-bar">
+                        <input type="text" class="input-field" placeholder="Type a message..." readonly>
+                        <button class="send-btn" onclick="goToScreen(5)">➤</button>
+                    </div>
+                </div>
+
+                <!-- Screen 5: Auto Payout -->
+                <div class="screen" id="screen5">
+                    <div class="wa-header">
+                        <div class="wa-back" onclick="goToScreen(4)">←</div>
+                        <div class="wa-avatar">🛡️</div>
+                        <div class="wa-contact-info">
+                            <div class="wa-contact-name">OffShift India</div>
+                            <div class="wa-contact-status">online</div>
+                        </div>
+                    </div>
+                    <div class="payout-notification" id="chat5"></div>
+                    <div class="input-bar">
+                        <input type="text" class="input-field" placeholder="Type a message..." readonly>
+                        <button class="send-btn" disabled>➤</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ─── State ──────────────────────────────────────────────────
+
+        let currentScreen = 0;
+        let regStep = 0;
+        const rider = { name: '', pincode: '', platform: '', upi_id: '' };
+        let selectedPlan = null;
+        const policyId = 'OS-2026-' + String(Math.floor(Math.random() * 9000) + 1000);
+        let payoutTimerInterval = null;
+
+        const time = () => {
+            const now = new Date();
+            const h = now.getHours();
+            const m = now.getMinutes().toString().padStart(2, '0');
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            return `${h % 12 || 12}:${m} ${ampm}`;
+        };
+
+        // ─── Screen Navigation ──────────────────────────────────────
+
+        function goToScreen(n) {
+            const prev = document.getElementById(`screen${currentScreen}`);
+            const next = document.getElementById(`screen${n}`);
+            
+            if (n > currentScreen) {
+                prev.classList.remove('active');
+                prev.classList.add('exit-left');
+                setTimeout(() => prev.classList.remove('exit-left'), 400);
+            } else {
+                prev.classList.remove('active');
+            }
+            
+            next.classList.add('active');
+            currentScreen = n;
+
+            // Update step list
+            document.querySelectorAll('.step-item').forEach((el, i) => {
+                el.classList.remove('active', 'completed');
+                if (i === n) el.classList.add('active');
+                else if (i < n) el.classList.add('completed');
+            });
+
+            // Initialize screen content
+            if (n === 1) initRainAlert();
+            if (n === 2) initPlanSelection();
+            if (n === 3) initCheckout();
+            if (n === 4) initPolicyConfirm();
+            if (n === 5) initPayout();
+        }
+
+        // ─── Helpers ────────────────────────────────────────────────
+
+        function addMsg(chatId, html, type = 'incoming', delay = 0) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    const chat = document.getElementById(chatId);
+                    const div = document.createElement('div');
+                    div.className = `message ${type}`;
+                    div.style.animationDelay = '0s';
+                    div.innerHTML = html + `<span class="time">${time()}${type === 'outgoing' ? ' <span class="read-receipt">✓✓</span>' : ''}</span>`;
+                    chat.appendChild(div);
+                    chat.scrollTop = chat.scrollHeight;
+                    resolve();
+                }, delay);
+            });
+        }
+
+        function showTyping(chatId, duration = 1000) {
+            return new Promise(resolve => {
+                const chat = document.getElementById(chatId);
+                const typing = document.createElement('div');
+                typing.className = 'typing-indicator';
+                typing.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+                chat.appendChild(typing);
+                chat.scrollTop = chat.scrollHeight;
+                setTimeout(() => {
+                    typing.remove();
+                    resolve();
+                }, duration);
+            });
+        }
+
+        // ─── Screen 0: Registration ────────────────────────────────
+
+        const regPrompts = [
+            { prompt: "👋 Welcome to <strong>OffShift</strong> — Smart Income Shield for delivery riders!\n\nI'll help you get covered in 60 seconds. No paperwork. No app needed.\n\nWhat's your name?", field: 'name' },
+            { prompt: "Nice to meet you, {name}! 👋\n\nWhich pincode do you deliver in?\n<span style='font-size:11px; color:var(--wa-text-secondary)'>Example: 110020 (Okhla), 122001 (Gurgaon)</span>", field: 'pincode' },
+            { prompt: "Got it — {pincode}! 📍\n\nWhich platform do you ride for?", field: 'platform', buttons: true },
+            { prompt: "Almost done! What's your UPI ID?\n<span style='font-size:11px; color:var(--wa-text-secondary)'>This is where we'll send payouts — e.g., rajesh@ybl</span>", field: 'upi_id' },
+        ];
+
+        // Start the registration flow
+        setTimeout(async () => {
+            await showTyping('chat0', 800);
+            await addMsg('chat0', regPrompts[0].prompt.replace(/\n/g, '<br>'));
+        }, 500);
+
+        function handleRegStep() {
+            const input = document.getElementById('regInput');
+            const val = input.value.trim();
+            if (!val && regStep !== 2) return;
+
+            if (regStep === 2) {
+                // Platform selection handled by buttons
+                return;
+            }
+
+            // Add user message
+            rider[regPrompts[regStep].field] = val;
+            addMsg('chat0', val, 'outgoing');
+            input.value = '';
+            regStep++;
+
+            if (regStep < regPrompts.length) {
+                setTimeout(async () => {
+                    await showTyping('chat0', 600);
+                    let prompt = regPrompts[regStep].prompt
+                        .replace('{name}', rider.name)
+                        .replace('{pincode}', rider.pincode)
+                        .replace(/\n/g, '<br>');
+                    
+                    if (regPrompts[regStep].buttons) {
+                        prompt += `<div style="display:flex;gap:8px;margin-top:10px">
+                            <div onclick="selectPlatform('zomato')" style="flex:1;text-align:center;padding:10px;background:rgba(255,71,87,0.1);border:1px solid rgba(255,71,87,0.3);border-radius:8px;cursor:pointer;font-weight:700;color:#FF4757">🔴 Zomato</div>
+                            <div onclick="selectPlatform('swiggy')" style="flex:1;text-align:center;padding:10px;background:rgba(255,159,67,0.1);border:1px solid rgba(255,159,67,0.3);border-radius:8px;cursor:pointer;font-weight:700;color:#FF9F43">🟠 Swiggy</div>
+                        </div>`;
+                    }
+                    
+                    await addMsg('chat0', prompt);
+                }, 300);
+            } else {
+                // Registration complete
+                finishRegistration();
+            }
+        }
+
+        function selectPlatform(platform) {
+            rider.platform = platform;
+            addMsg('chat0', platform.charAt(0).toUpperCase() + platform.slice(1), 'outgoing');
+            regStep++;
+            
+            setTimeout(async () => {
+                await showTyping('chat0', 600);
+                let prompt = regPrompts[regStep].prompt.replace(/\n/g, '<br>');
+                await addMsg('chat0', prompt);
+            }, 300);
+        }
+
+        async function finishRegistration() {
+            await showTyping('chat0', 1200);
+            
+            const kavachScore = 42 + Math.floor(Math.random() * 35);
+            
+            await addMsg('chat0', `
+                🎉 <strong>You're registered, ${rider.name}!</strong><br><br>
+                📍 Zone: ${rider.pincode}<br>
+                🏍️ Platform: ${rider.platform}<br>
+                💰 UPI: ${rider.upi_id}<br>
+                🛡️ Kavach Score: <span class="highlight">${kavachScore}/100</span><br><br>
+                Your zone risk has been analyzed. We'll monitor IMD weather & ${rider.platform} outages 24/7.<br><br>
+                <em style="color:var(--wa-text-secondary)">When the storm hits — the money hits first.</em>
+                <div class="message-btn" onclick="goToScreen(1)">View Rain Radar Alert →</div>
+            `);
+        }
+
+        // ─── Screen 1: Rain Alert ──────────────────────────────────
+
+        async function initRainAlert() {
+            const chat = document.getElementById('chat1');
+            if (chat.children.length > 0) return;
+
+            chat.innerHTML = '<div class="date-divider"><span>Today</span></div>';
+
+            await showTyping('chat1', 800);
+            await addMsg('chat1', `
+                🚨 <strong>RAIN RADAR ALERT</strong><br><br>
+                Hi ${rider.name || 'Rajesh'}, the <strong>IMD predicts heavy rainfall</strong> in your zone (${rider.pincode || '110020'}) this Thursday.<br><br>
+                📊 <strong>48hr Forecast:</strong><br>
+                • Thu 4 PM: 🌧️ 72mm/hr (Red Alert)<br>
+                • Thu 8 PM: ⛈️ 85mm/hr (Severe)<br>
+                • Fri 6 AM: 🌤️ 12mm/hr (Clearing)<br><br>
+                ⚠️ Delivery volumes expected to drop <strong>60-80%</strong><br><br>
+                <strong class="highlight">Get covered before the storm hits.</strong> Your Kavach-adjusted premium starts at ₹49.
+                <div class="message-btn" onclick="goToScreen(2)">🛡️ View Coverage Plans</div>
+            `);
+
+            await addMsg('chat1', `
+                <span style="font-size:12px; color: var(--wa-text-secondary)">
+                    <em>💡 3,400 riders in your zone are already covered. Average payout time: 94 seconds.</em>
+                </span>
+            `, 'incoming', 400);
+        }
+
+        // ─── Screen 2: Plan Selection ──────────────────────────────
+
+        async function initPlanSelection() {
+            const chat = document.getElementById('chat2');
+            if (chat.children.length > 0) return;
+
+            const risk = 45 + Math.floor(Math.random() * 30);
+            const p24 = 19 + Math.round((risk / 100) * 30);
+            const p7 = 79 + Math.round((risk / 100) * 70);
+            const p30 = 249 + Math.round((risk / 100) * 200);
+            
+            const bonus_hours = risk > 65 ? 8 : risk > 55 ? 4 : 2;
+
+            await showTyping('chat2', 600);
+            await addMsg('chat2', `
+                🛡️ <strong>Choose Your Shield</strong><br>
+                <span style="font-size:11px; color:var(--wa-text-secondary)">Kavach Risk Score: ${risk}/100 • Personalized pricing</span>
+
+                <div class="plan-cards">
+                    <div class="plan-card" onclick="selectPlanCard(this, 'shift_pass', ${p24})">
+                        <div class="plan-header">
+                            <span class="plan-name">🟢 Shift Pass</span>
+                            <span class="plan-price">₹${p24}</span>
+                        </div>
+                        <div class="plan-details">${24 + bonus_hours} hours (+${bonus_hours}h Bonus) • Heavy Rain + Heatwave</div>
+                        <div class="plan-payout">Max payout: ₹500</div>
+                    </div>
+                    <div class="plan-card" onclick="selectPlanCard(this, 'weekly_pass', ${p7})">
+                        <div class="plan-header">
+                            <span class="plan-name">🔵 Weekly Pass</span>
+                            <span class="plan-price">₹${p7}</span>
+                        </div>
+                        <div class="plan-details">7 days • Weather + App Outages</div>
+                        <div class="plan-payout">Max payout: ₹1,500</div>
+                    </div>
+                    <div class="plan-card" onclick="selectPlanCard(this, 'monthly_pro', ${p30})">
+                        <div class="plan-header">
+                            <span class="plan-name">🟣 Monthly Pro</span>
+                            <span class="plan-price">₹${p30}</span>
+                        </div>
+                        <div class="plan-details">30 days • All disruptions + Curfews</div>
+                        <div class="plan-payout">Max payout: ₹4,000</div>
+                    </div>
+                </div>
+            `);
+        }
+
+        function selectPlanCard(el, plan, price) {
+            document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedPlan = { type: plan, price };
+
+            // Auto-proceed after selection
+            setTimeout(() => {
+                addMsg('chat2', `I'll take the <strong>${plan.replace('_', ' ')}</strong> for ₹${price}`, 'outgoing');
+                setTimeout(() => goToScreen(3), 500);
+            }, 400);
+        }
+
+        // ─── Screen 3: UPI Checkout ────────────────────────────────
+
+        async function initCheckout() {
+            const chat = document.getElementById('chat3');
+            if (chat.children.length > 0) return;
+
+            const price = selectedPlan?.price || 49;
+            const planName = selectedPlan?.type?.replace('_', ' ') || 'Shift Pass';
+
+            chat.innerHTML = `
+                <div style="padding: 20px; margin-top: 50px;">
+                    <div class="upi-checkout">
+                        <div style="font-size: 12px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px;">Pay to OffShift India</div>
+                        <div class="upi-amount">₹${price}</div>
+                        <div style="font-size: 13px; opacity: 0.8; margin-bottom: 4px;">${planName}</div>
+                        <div style="font-size: 11px; opacity: 0.5;">Coverage starts immediately after payment</div>
+                        
+                        <div style="margin: 20px 0; padding: 14px; background: rgba(255,255,255,0.06); border-radius: 10px; text-align: left;">
+                            <div style="font-size: 12px; opacity: 0.6; margin-bottom: 6px;">PAYMENT DETAILS</div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
+                                <span style="opacity: 0.7;">UPI ID</span>
+                                <span>${rider.upi_id || 'rajesh@ybl'}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
+                                <span style="opacity: 0.7;">Merchant</span>
+                                <span>OffShift India</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                                <span style="opacity: 0.7;">Ref</span>
+                                <span style="font-family: monospace; font-size: 11px;">${policyId}</span>
+                            </div>
+                        </div>
+
+                        <button class="upi-pay-btn" id="payBtn" onclick="processPayment()">
+                            Pay ₹${price} via PhonePe
+                        </button>
+                        <div class="upi-details">🔒 Secured by RBI-regulated UPI</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function processPayment() {
+            const btn = document.getElementById('payBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Processing...';
+
+            setTimeout(() => {
+                btn.textContent = '✅ Payment Successful!';
+                btn.style.background = 'var(--wa-green)';
+                btn.style.color = '#000';
+
+                setTimeout(() => goToScreen(4), 800);
+            }, 1500);
+        }
+
+        // ─── Screen 4: Policy Confirmed ────────────────────────────
+
+        async function initPolicyConfirm() {
+            const chat = document.getElementById('chat4');
+            if (chat.innerHTML.trim()) return;
+
+            const planName = selectedPlan?.type?.replace('_', ' ') || 'Shift Pass';
+            const maxPayout = selectedPlan?.type === 'monthly_pro' ? '₹4,000' : selectedPlan?.type === 'weekly_pass' ? '₹1,500' : '₹500';
+            const duration = selectedPlan?.type === 'monthly_pro' ? '30 days' : selectedPlan?.type === 'weekly_pass' ? '7 days' : '24 hours';
+
+            chat.innerHTML = `
+                <div class="success-check">🛡️</div>
+                <div style="font-size: 22px; font-weight: 800; margin-bottom: 4px;">You're Covered! ✨</div>
+                <div style="font-size: 14px; color: var(--wa-text-secondary); margin-bottom: 16px;">Payment received. Policy is now active.</div>
+                
+                <div style="background: rgba(255,255,255,0.04); border-radius: 14px; padding: 20px; width: 100%; text-align: left; border: 1px solid rgba(37, 211, 102, 0.15);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="font-size: 12px; color: var(--wa-text-secondary);">Policy ID</span>
+                        <span class="policy-id">${policyId}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="font-size: 12px; color: var(--wa-text-secondary);">Plan</span>
+                        <span style="font-weight: 700; text-transform: capitalize;">${planName}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="font-size: 12px; color: var(--wa-text-secondary);">Duration</span>
+                        <span style="font-weight: 600;">${duration}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="font-size: 12px; color: var(--wa-text-secondary);">Max Payout</span>
+                        <span style="font-weight: 800; color: var(--wa-green);">${maxPayout}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-size: 12px; color: var(--wa-text-secondary);">UPI</span>
+                        <span>${rider.upi_id || 'rajesh@ybl'}</span>
+                    </div>
+                </div>
+
+                <div class="success-badge">
+                    🔔 We're monitoring IMD weather + ${rider.platform || 'Zomato'} 24/7
+                </div>
+
+                <div style="margin-top: 20px; font-size: 12px; color: var(--wa-text-secondary);">
+                    <em>"When the storm hits — the money hits first."</em>
+                </div>
+
+                <div class="message-btn" style="margin-top: 16px; font-size: 14px; border: none; padding: 12px 24px; background: var(--wa-green); color: #000; border-radius: 10px; font-weight: 700; cursor: pointer;" onclick="goToScreen(5)">
+                    ⛈️ Simulate Storm →
+                </div>
+            `;
+        }
+
+        // ─── Screen 5: Auto Payout ─────────────────────────────────
+
+        let payoutSeconds = 0;
+
+        async function initPayout() {
+            const chat = document.getElementById('chat5');
+            if (chat.innerHTML.trim()) return;
+
+            const maxPayout = selectedPlan?.type === 'monthly_pro' ? 4000 : selectedPlan?.type === 'weekly_pass' ? 1500 : 500;
+
+            chat.innerHTML = `
+                <div class="confetti">🎉</div>
+                <div style="font-size: 16px; font-weight: 600; margin-top: 8px; color: var(--wa-text);">Claim Auto-Triggered!</div>
+                <div class="payout-amount">₹${maxPayout.toLocaleString()}</div>
+                <div style="font-size: 14px; color: var(--wa-text-secondary);">
+                    Sent to <strong style="color: var(--wa-green)">${rider.upi_id || 'rajesh@ybl'}</strong>
+                </div>
+
+                <div class="payout-badge">
+                    ⛈️ IMD Red Alert — Heavy Rain in ${rider.pincode || 'Okhla'} (78mm/hr)
+                </div>
+
+                <div class="payout-timer-display">
+                    <span>⏱️ Processed in</span>
+                    <span class="timer-value" id="payoutTimer">0</span>
+                    <span>seconds</span>
+                </div>
+
+                <div style="margin-top: 24px; width: 100%; text-align: left;">
+                    <div style="background: rgba(255,255,255,0.04); border-radius: 12px; padding: 16px; border: 1px solid rgba(37, 211, 102, 0.1);">
+                        <div style="font-size: 11px; color: var(--wa-text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Transaction Details</div>
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
+                            <span style="color: var(--wa-text-secondary);">Policy ID</span>
+                            <span class="policy-id">${policyId}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
+                            <span style="color: var(--wa-text-secondary);">Txn Ref</span>
+                            <span class="policy-id">TXN_RZP_${Date.now()}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
+                            <span style="color: var(--wa-text-secondary);">Trigger</span>
+                            <span>IMD Red Alert</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                            <span style="color: var(--wa-text-secondary);">Forms Filed</span>
+                            <span style="color: var(--wa-green); font-weight: 700;">ZERO ✨</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; font-size: 12px; color: var(--wa-text-secondary); text-align: center;">
+                    No forms. No calls. No emails.<br>
+                    <strong style="color: var(--wa-green);">Stay safe, ${rider.name || 'Rajesh'}. Your income is protected. 💪</strong>
+                </div>
+            `;
+
+            // Animate timer
+            payoutSeconds = 0;
+            if (payoutTimerInterval) clearInterval(payoutTimerInterval);
+            payoutTimerInterval = setInterval(() => {
+                payoutSeconds++;
+                const el = document.getElementById('payoutTimer');
+                if (el) el.textContent = payoutSeconds;
+                if (payoutSeconds >= 120) {
+                    clearInterval(payoutTimerInterval);
+                }
+            }, 15); // Speed up for demo (15ms = ~2 sec to reach 120)
+        }
+    </script>
+</body>
+</html>
