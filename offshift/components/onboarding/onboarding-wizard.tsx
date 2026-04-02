@@ -60,6 +60,8 @@ export function OnboardingWizard() {
     max_payout: number;
   } | null>(null);
 
+  const [selectedPlan, setSelectedPlan] = useState<"24hr" | "7day">("24hr");
+
   const sendOtp = async () => {
     const n = phone.replace(/\D/g, "");
     if (n.length < 10) {
@@ -223,7 +225,7 @@ export function OnboardingWizard() {
         }
         toast.success("पॉलिसी सक्रिय — Policy activated");
         setPolicyCard(out.policy);
-        setScreen(5);
+        setScreen(4);
       },
       theme: { color: "#0F4C5C" },
     });
@@ -452,71 +454,83 @@ export function OnboardingWizard() {
         </Card>
       )}
 
-      {screen === 4 && premium && (
-        <Card>
+      {screen === 4 && (premium || policyCard) && (
+        <Card className={policyCard ? "border-[#0F4C5C]" : undefined}>
           <CardHeader>
-            <CardTitle>प्लान / Plans</CardTitle>
-            <p className="text-xs text-slate-500">Razorpay test checkout</p>
+            <CardTitle>{policyCard ? "पॉलिसी सक्रिय" : "प्लान / Plans"}</CardTitle>
+            <p className="text-xs text-slate-500">
+              {policyCard ? "Zero-touch payouts enabled" : "Razorpay test checkout"}
+            </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-3">
-              <button
-                type="button"
-                onClick={() => void pay("24hr")}
-                disabled={loading}
-                className="rounded-2xl border-2 border-slate-200 p-4 text-left transition hover:border-[#0F4C5C]"
-              >
-                <p className="font-semibold text-[#0F4C5C]">Aaj Ka Kavach</p>
-                <p className="text-xs text-slate-500">24 घंटे की शील्ड</p>
-                <p className="mt-2 text-lg font-bold text-[#F59E0B]">
-                  Max {formatRupees(500)} payout
+            {policyCard ? (
+              <div className="space-y-2 text-sm">
+                <p>
+                  <span className="text-slate-500">Policy ID:</span>{" "}
+                  <span className="font-mono">{policyCard.id}</span>
                 </p>
-              </button>
-              <button
-                type="button"
-                onClick={() => void pay("7day")}
-                disabled={loading}
-                className="rounded-2xl border-2 border-[#0F4C5C] bg-[#0F4C5C]/5 p-4 text-left"
-              >
-                <p className="font-semibold text-[#0F4C5C]">Hafte Ka Kavach</p>
-                <p className="text-xs text-slate-500">7 दिन</p>
-                <p className="mt-2 text-lg font-bold text-[#F59E0B]">
-                  Max {formatRupees(1500)} payout
+                <p>
+                  <span className="text-slate-500">Plan:</span> {policyCard.plan_type}
                 </p>
-              </button>
-            </div>
-            <p className="text-center text-xs text-slate-500">
-              Dynamic premium ~ {formatRupees(premium.final_premium)} (recalculated at checkout)
-            </p>
-          </CardContent>
-        </Card>
-      )}
+                <p>
+                  <span className="text-slate-500">Coverage:</span>{" "}
+                  {new Date(policyCard.coverage_start).toLocaleString("en-IN")} —{" "}
+                  {new Date(policyCard.coverage_end).toLocaleString("en-IN")}
+                </p>
+                <p>
+                  <span className="text-slate-500">Triggers:</span> Weather ✓ · App outage ✓
+                </p>
+                <Button asChild className="mt-2 w-full">
+                  <Link href="/dashboard">डैशबोर्ड पर जाएँ</Link>
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="grid gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPlan("24hr")}
+                    disabled={loading}
+                    className={
+                      selectedPlan === "24hr"
+                        ? "rounded-2xl border-2 border-[#0F4C5C] bg-[#0F4C5C]/5 p-4 text-left"
+                        : "rounded-2xl border-2 border-slate-200 p-4 text-left transition hover:border-[#0F4C5C]"
+                    }
+                  >
+                    <p className="font-semibold text-[#0F4C5C]">Aaj Ka Kavach</p>
+                    <p className="text-xs text-slate-500">24 घंटे की शील्ड</p>
+                    <p className="mt-2 text-lg font-bold text-[#F59E0B]">
+                      Max {formatRupees(500)} payout
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPlan("7day")}
+                    disabled={loading}
+                    className={
+                      selectedPlan === "7day"
+                        ? "rounded-2xl border-2 border-[#0F4C5C] bg-[#0F4C5C]/5 p-4 text-left"
+                        : "rounded-2xl border-2 border-[#0F4C5C]/30 p-4 text-left transition hover:border-[#0F4C5C]"
+                    }
+                  >
+                    <p className="font-semibold text-[#0F4C5C]">Hafte Ka Kavach</p>
+                    <p className="text-xs text-slate-500">7 दिन</p>
+                    <p className="mt-2 text-lg font-bold text-[#F59E0B]">
+                      Max {formatRupees(1500)} payout
+                    </p>
+                  </button>
+                </div>
 
-      {screen === 5 && policyCard && (
-        <Card className="border-[#0F4C5C]">
-          <CardHeader>
-            <CardTitle>Policy active</CardTitle>
-            <p className="text-xs text-slate-500">पॉलिसी सक्रिय</p>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <p>
-              <span className="text-slate-500">Policy ID:</span>{" "}
-              <span className="font-mono">{policyCard.id}</span>
-            </p>
-            <p>
-              <span className="text-slate-500">Plan:</span> {policyCard.plan_type}
-            </p>
-            <p>
-              <span className="text-slate-500">Coverage:</span>{" "}
-              {new Date(policyCard.coverage_start).toLocaleString("en-IN")} —{" "}
-              {new Date(policyCard.coverage_end).toLocaleString("en-IN")}
-            </p>
-            <p>
-              <span className="text-slate-500">Triggers:</span> Weather ✓ · App outage ✓
-            </p>
-            <Button asChild className="mt-4 w-full">
-              <Link href="/dashboard">डैशबोर्ड पर जाएँ</Link>
-            </Button>
+                <Button className="w-full bg-[#0F4C5C] hover:bg-[#0c3d4a]" onClick={() => void pay(selectedPlan)} disabled={loading}>
+                  Activate Now
+                  <span className="ml-2 text-xs font-normal text-white/80">अभी चालू करें</span>
+                </Button>
+
+                <p className="text-center text-xs text-slate-500">
+                  Dynamic premium ~ {premium ? formatRupees(premium.final_premium) : ""} (recalculated at checkout)
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
       )}
