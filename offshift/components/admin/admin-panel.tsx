@@ -92,11 +92,7 @@ export function AdminPanel() {
   }
 
   if (!stats) {
-    return (
-      <p className="p-8 text-center text-slate-600">
-        {loading ? "Loading…" : "Unauthorized"}
-      </p>
-    );
+    return null;
   }
 
   const chartData = stats.policies_by_zone.map((z) => ({
