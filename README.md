@@ -43,10 +43,17 @@
     <li><a href="#how-it-works">How It Works — End-to-End Workflow</a></li>
     <li><a href="#premium-model">The Weekly Premium Model</a></li>
     <li><a href="#ai-ml">AI/ML Integration — Kavach Engine</a></li>
-    <li><a href="#adversarial-defense"> Adversarial Defense & Anti-Spoofing Strategy</a></li>
+    <li><a href="#adversarial-defense">🛡️ Adversarial Defense & Anti-Spoofing Strategy</a></li>
     <li><a href="#tech-stack">Tech Stack</a></li>
     <li><a href="#platform-choice">Platform Choice Justification</a></li>
     <li><a href="#database-schema">Database Schema</a></li>
+    <li><a href="#phase2-registration">Phase 2 — Registration Process</a></li>
+    <li><a href="#phase2-policy">Phase 2 — Insurance Policy Management</a></li>
+    <li><a href="#phase2-premium">Phase 2 — Dynamic Premium Calculation</a></li>
+    <li><a href="#phase2-claims">Phase 2 — Claims Management & Automated Triggers</a></li>
+    <li><a href="#phase3-fraud">Phase 3 — Advanced Fraud Detection</a></li>
+    <li><a href="#phase3-payout">Phase 3 — Instant Payout System</a></li>
+    <li><a href="#phase3-dashboard">Phase 3 — Intelligent Dashboards</a></li>
     <li><a href="#getting-started">Getting Started</a></li>
     <li><a href="#roadmap">Development Roadmap</a></li>
     <li><a href="#contributors">Team & Contributors</a></li>
@@ -494,6 +501,511 @@ CREATE TABLE claims (
 
 ---
 
+<!-- PHASE 2: REGISTRATION -->
+## 📋 Phase 2 — Registration Process <a name="phase2-registration"></a>
+
+Onboarding is **WhatsApp-native, zero-download, 60 seconds flat**. No app stores. No email. No KYC documents.
+
+### Registration Flow
+
+```
+Rider texts "HI" → WhatsApp Business API
+  → Dialogflow CX bot initiates conversational flow
+  → Collects: Full Name, Pincode, Delivery Platform (Zomato/Swiggy/Both)
+  → Collects: UPI ID (validated via Razorpay Contact API)
+  → Auto-generates: Device Fingerprint (browser hash)
+  → Kavach AI runs initial zone risk scoring
+  → Rider profile created in Supabase `users` table
+  → Welcome message + plan options sent instantly
+```
+
+### Multi-Channel Registration Support
+
+| Channel | Method | Target Segment |
+|---|---|---|
+| **WhatsApp Bot** | Text "HI" to OffShift number | Primary — 95% of riders |
+| **Web PWA** | `offshift.vercel.app/register` | Admin/insurer onboarding |
+| **Voice (Hindi)** | Whisper-powered voice command on PWA | Low-literacy riders |
+
+### Data Collected at Registration
+
+| Field | Source | Purpose |
+|---|---|---|
+| Name | Rider input | Identity |
+| Phone | WhatsApp number (auto) | Auth + notifications |
+| Pincode | Rider input | Zone risk scoring |
+| UPI ID | Rider input (validated) | Instant payout destination |
+| Platform | Rider selects | Outage trigger mapping |
+| Device Fingerprint | Auto-generated browser hash | Fraud detection signal |
+| Registration Timestamp | System | Temporal fraud analysis |
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
+<!-- PHASE 2: POLICY MANAGEMENT -->
+## 🛡️ Phase 2 — Insurance Policy Management <a name="phase2-policy"></a>
+
+Policies are **sachet-sized, weekly, and rider-controlled**. No annual lock-ins. No hidden clauses.
+
+### Policy Lifecycle
+
+```
+CREATION → ACTIVE → MONITORING → TRIGGERED → CLAIMED → EXPIRED/RENEWED
+```
+
+### Available Plans
+
+| Plan | Duration | Base Premium | Max Payout | Coverage Scope |
+|---|---|---|---|---|
+| 🟢 **Shift Pass** | 24 hours | ₹49 | ₹500 | Heavy Rain + Heatwave |
+| 🔵 **Weekly Pass** | 7 days | ₹99 | ₹1,500 | Weather + App Outages |
+| 🟣 **Monthly Pro** | 30 days | ₹349 | ₹4,000 | All disruptions + Curfews + Strikes |
+
+### Policy Management Features
+
+- **Instant Activation:** Policy goes live the moment UPI payment is confirmed via Razorpay webhook
+- **Auto-Renewal via WhatsApp:** Bot sends renewal reminder 6 hours before expiry with one-tap UPI link
+- **Plan Upgrades:** Rider can upgrade mid-week (e.g., Shift Pass → Weekly Pass) — prorated billing
+- **Coverage History:** Full history of all policies, triggers, and payouts accessible via WhatsApp command `"MY HISTORY"`
+- **Family/Pod Coverage:** Riders can add dependents or form "Resilience Pods" of 5–10 riders for group discounts
+
+### Policy State Machine
+
+```
+[CREATED] ──payment confirmed──→ [ACTIVE]
+[ACTIVE]  ──duration expires───→ [EXPIRED] ──renewal──→ [ACTIVE]
+[ACTIVE]  ──trigger event──────→ [TRIGGERED] ──payout──→ [CLAIMED]
+[ACTIVE]  ──rider cancels──────→ [CANCELLED]
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
+<!-- PHASE 2: DYNAMIC PREMIUM -->
+## 💰 Phase 2 — Dynamic Premium Calculation <a name="phase2-premium"></a>
+
+Every rider gets a **personalized premium** — not a flat fee. Kavach AI adjusts ±₹10–₹30 from the base price using hyper-local risk factors.
+
+### AI Integration: Dynamic Pricing Model
+
+**The core innovation:** We use Machine Learning to adjust the Weekly premium based on hyper-local risk factors. This is NOT a lookup table — it's a trained gradient-boosted model that learns from historical weather patterns, rider behavior, and zone-specific claims data.
+
+#### ML Model Architecture: Kavach Pricing Engine
+
+| Attribute | Detail |
+|---|---|
+| **Algorithm** | XGBoost (Gradient Boosted Decision Trees) |
+| **Library** | `scikit-learn` + `xgboost` (Python), inference also in JS via ONNX |
+| **Input Features** | 10 hyper-local risk signals (see below) |
+| **Output** | Personalized weekly premium in ₹39–₹149 range |
+| **Training Data** | IMD historical rainfall (3 years, public), OpenWeatherMap API, AQICN historical, synthetic rider profiles |
+| **Retraining Schedule** | Weekly, using latest 4 weeks of claims + weather data |
+| **Inference Time** | <50ms per rider |
+
+#### Feature Engineering — 10 Hyper-Local Risk Signals
+
+```python
+# Feature vector fed to XGBoost model for each rider
+features = {
+    'pincode_risk_score': 0.73,          # 3-year IMD historical payout ratio for pincode
+    'day_of_week': 3,                     # Wednesday (mid-week = lower risk)
+    'shift_hour': 18,                     # 6 PM start = evening monsoon window
+    'imd_forecast_score': 0.85,          # High-confidence 24hr rain prediction
+    'zone_payout_history': 0.41,         # 41% historical claim rate in this zone
+    'hours_to_predicted_event': 6,       # Storm arriving in 6 hours
+    'rider_shift_pattern': 1,            # Evening rider = higher rain exposure
+    'aqi_7day_trend': 285,               # Rising AQI approaching hazardous
+    'waterlogging_zone_flag': True,      # Pincode in known waterlogging area
+    'rider_claim_frequency': 0.12,       # Rider's personal claim rate (low = discount)
+}
+# Output: premium = ₹67 (base ₹49 + ₹18 Okhla monsoon risk adjustment)
+```
+
+#### Model Training Pipeline
+
+```
+[IMD Historical Data] ──┐
+[OpenWeatherMap API]  ──┤
+[AQICN Historical]    ──┼──→ [Feature Extraction] ──→ [XGBoost Training]
+[Rider Activity Logs] ──┤                                    │
+[Claims History]      ──┘                                    ▼
+                                                    [Trained Model .pkl]
+                                                            │
+                                                    [ONNX Export for JS]
+                                                            │
+                                                    [Real-Time Inference]
+                                                    (POST /api/calculate-premium)
+```
+
+### Dynamic Pricing Rules — How ML Adjusts Your Premium
+
+| Risk Factor | Effect on Premium | Data Source | Example |
+|---|---|---|---|
+| Pincode in historically safe zone (no waterlogging) | **−₹2 to −₹5/week** | IMD flood maps | Rider in Vasant Kunj (no flooding history) saves ₹2/week |
+| Storm predicted within 6 hours | **+₹8 to +₹15** | OpenWeatherMap forecast | Cyclone approaching = premium adjusts upward |
+| Rider has zero claims in last 4 weeks | **−₹5 loyalty discount** | Supabase history | Long-term riders rewarded for low claims |
+| AQI trending above 300 for 3+ days | **+₹10 pollution surcharge** | AQICN API | Delhi winter smog = higher AQI risk |
+| Resilience Pod membership (5+ riders) | **−25% group discount** | Pod smart contract | Social incentive for group coverage |
+| Predictive weather modelling shows clear week | **Extended coverage hours at same price** | ML forecast | Clear forecast = 168hrs coverage for price of 120hrs |
+| Rider operates in known waterlogging zone | **+₹3 to +₹8/week** | IMD + municipal flood data | Okhla Industrial Area = higher water risk |
+| Weekend shift (Sat/Sun peak hours) | **+₹2 surge adjustment** | Historical delivery data | Weekend rain during peak = maximum disruption |
+
+#### Real-World Pricing Examples
+
+```
+Example 1 — Ravi (Okhla, Evening Rider, Monsoon Season):
+  Base Weekly Pass:         ₹99
+  + Okhla waterlogging:     +₹5 (known flood zone)
+  + Evening shift risk:     +₹3 (6PM–10PM monsoon window)
+  + IMD storm in 6 hours:   +₹12 (high forecast confidence)
+  − Zero claims (4 weeks):  −₹5 (loyalty discount)
+  ─────────────────────────────
+  FINAL PREMIUM:            ₹114/week
+  Coverage Hours:           168 hours (standard)
+
+Example 2 — Priya (Vasant Kunj, Morning Rider, Clear Week):
+  Base Weekly Pass:         ₹99
+  − No waterlogging zone:   −₹2 (historically safe)
+  − Morning shift (low):    −₹0 (no adjustment)
+  − Clear week forecast:    −₹0 (but gets +24hr bonus coverage)
+  − Zero claims (8 weeks):  −₹5 (loyalty discount)
+  ─────────────────────────────
+  FINAL PREMIUM:            ₹92/week
+  Coverage Hours:           192 hours (+24hr bonus for clear forecast)
+
+Example 3 — Amit (Gurugram, AQI Season):
+  Base Monthly Pro:         ₹349
+  + AQI trending 320:       +₹10 (pollution surcharge)
+  + 3-day sustained hazard: +₹5 (extended exposure)
+  − Pod member (8 riders):  −₹87 (25% group discount)
+  ─────────────────────────────
+  FINAL PREMIUM:            ₹277/month
+```
+
+### Premium Calculation API
+
+```
+POST /api/calculate-premium
+Body: { "rider_id": "uuid", "plan_type": "weekly", "pincode": "110020" }
+Response: {
+  "base_premium": 99,
+  "risk_adjustments": [
+    { "factor": "waterlogging_zone", "adjustment": +5, "source": "IMD flood map" },
+    { "factor": "evening_shift", "adjustment": +3, "source": "rider shift pattern" },
+    { "factor": "storm_forecast_6hr", "adjustment": +12, "source": "OpenWeatherMap" },
+    { "factor": "loyalty_4_weeks", "adjustment": -5, "source": "claims history" }
+  ],
+  "total_risk_adjustment": +15,
+  "final_premium": 114,
+  "coverage_hours": 168,
+  "bonus_hours": 0,
+  "model_confidence": 0.87,
+  "risk_factors": ["waterlogging_zone", "evening_shift", "forecast_rain_6hr"]
+}
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
+<!-- PHASE 2: CLAIMS MANAGEMENT -->
+## ⚡ Phase 2 — Claims Management & Automated Triggers <a name="phase2-claims"></a>
+
+**Zero-touch. Zero-form. 120 seconds from trigger to UPI deposit.**
+
+The entire claims process is **fully automated** — riders never fill a form, upload a document, or speak to an agent.
+
+### 5 Automated Parametric Triggers (Public/Mock APIs)
+
+We monitor **5 independent data sources** via cron jobs running every 15 minutes. Each trigger uses a **public API** (or mock equivalent for demo) to objectively identify disruptions that cause income loss:
+
+| # | Trigger | Threshold | Public API | Endpoint | Verification Method |
+|---|---|---|---|---|---|
+| 1 | 🌧️ **Heavy Rainfall** | >65mm/hr (IMD Red Alert) | **IMD Weather API** + OpenWeatherMap | `api.openweathermap.org/data/2.5/weather?q={pincode}` | Cross-verified: IMD confirms OWM reading |
+| 2 | 🔥 **Extreme Heat** | >45°C sustained 3+ hrs | **OpenWeatherMap API** | `api.openweathermap.org/data/2.5/forecast?q={pincode}` | 3-hour rolling average check |
+| 3 | 💨 **Hazardous AQI** | AQI >300 (Hazardous) | **AQICN API** (aqicn.org) | `api.waqi.info/feed/{city}/?token={key}` | 3-hour sustained reading required |
+| 4 | 📱 **App Outage** | Spike + 50 riders GPS-inactive | **Downdetector Scraper** + GPS cluster | Custom scraper on `downdetector.in/status/zomato` | Isolation Forest anomaly detection |
+| 5 | 🚫 **Curfew/Strike** | Govt notification + news | **NewsAPI** | `newsapi.org/v2/everything?q=curfew+{city}` | Admin dashboard manual confirmation |
+
+### Trigger API Integration Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    TRIGGER MONITOR (Node.js Cron)                   │
+│                    Runs every 15 minutes                            │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                 │
+│  │ IMD Weather  │  │ OpenWeather │  │  AQICN API  │                 │
+│  │   API        │  │  Map API    │  │             │                 │
+│  │ (Rainfall)   │  │ (Temp)      │  │ (AQI)       │                 │
+│  └──────┬───────┘  └──────┬──────┘  └──────┬──────┘                 │
+│         │                 │                 │                        │
+│  ┌──────┴─────────────────┴─────────────────┴──────┐                │
+│  │           THRESHOLD COMPARATOR                    │               │
+│  │  Rain >65mm? │ Temp >45°C? │ AQI >300?           │               │
+│  └──────────────────────┬────────────────────────────┘               │
+│                         │ YES                                        │
+│  ┌──────────────────────▼────────────────────────────┐               │
+│  │           TRIGGER EVENT LOGGER                     │              │
+│  │  → Log event type, pincode, severity, timestamp    │              │
+│  │  → Query active riders in affected zone            │              │
+│  └──────────────────────┬────────────────────────────┘               │
+│                         │                                            │
+│  ┌──────────────────────▼────────────────────────────┐               │
+│  │           KAVACH TRUST SCORER                      │              │
+│  │  → 6-signal behavioral analysis per rider          │              │
+│  │  → Output: Trust Score 0.0 – 1.0                   │              │
+│  └──────────────────────┬────────────────────────────┘               │
+│                         │                                            │
+│  ┌──────────────────────▼────────────────────────────┐               │
+│  │           TIERED PAYOUT ENGINE                     │              │
+│  │  Score >0.75  → Razorpay UPI instant (120 sec)     │              │
+│  │  Score 0.40–0.75 → WhatsApp soft-verify (3 min)    │              │
+│  │  Score <0.40  → Admin hold + auto-release (15 min) │              │
+│  └───────────────────────────────────────────────────┘               │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Mock API Response Formats
+
+Each oracle returns standardized data for the trigger monitor to evaluate:
+
+```json
+// Weather Oracle Response (IMD + OpenWeatherMap)
+{
+  "pincode": "110020",
+  "rainfall_mm_hr": 74.2,
+  "temperature_c": 32,
+  "alert_level": "RED",
+  "source": "IMD",
+  "cross_verified": true,
+  "timestamp": "2026-07-15T16:00:00+05:30"
+}
+
+// AQI Oracle Response (AQICN)
+{
+  "pincode": "110020",
+  "aqi": 342,
+  "dominant_pollutant": "PM2.5",
+  "sustained_hours": 4,
+  "alert_level": "HAZARDOUS",
+  "source": "AQICN",
+  "timestamp": "2026-11-10T08:00:00+05:30"
+}
+
+// Outage Oracle Response (Downdetector + GPS)
+{
+  "platform": "Zomato",
+  "outage_score": 87,
+  "reports_last_30min": 1240,
+  "riders_inactive_5km_cluster": 63,
+  "anomaly_detected": true,
+  "source": "Downdetector",
+  "timestamp": "2026-08-20T20:30:00+05:30"
+}
+```
+
+### Disruptions That Cause Income Loss — Trigger Mapping
+
+| Disruption | How It Causes Income Loss | How We Detect It | Avg. Daily Loss |
+|---|---|---|---|
+| **Monsoon Flooding** | Roads impassable, no deliveries for 6–12 hours | IMD Red Alert >65mm/hr | ₹400–₹800 |
+| **Extreme Heatwave** | Govt advisory to stay indoors, platforms reduce orders | Temp >45°C for 3+ hrs | ₹300–₹600 |
+| **Toxic Air Quality** | Health risk, reduced outdoor activity, fewer orders | AQI >300 sustained | ₹200–₹500 |
+| **App Platform Crash** | Cannot receive/complete orders despite good weather | Downdetector spike + GPS cluster | ₹500–₹1,000 |
+| **Curfew/Bandh/Strike** | Movement restrictions, complete shutdown | News API + admin flag | ₹800 (full day) |
+
+### Seamless Zero-Touch Claim UX — The Best Experience for Riders
+
+**Design Philosophy:** The best claim process is one the rider doesn't even know happened. Money appears in their UPI before they realize they've lost income.
+
+#### Why Zero-Touch Beats Traditional Claims
+
+| Step | Traditional Insurance | OffShift (Zero-Touch) |
+|---|---|---|
+| Claim initiation | Rider fills 3-page form | **Automatic** — system detects event |
+| Evidence submission | Upload 5+ documents, photos | **None** — API data is the evidence |
+| Human review | Agent reviews in 3–7 business days | **AI Trust Score** in <1 second |
+| Approval | Email after weeks of back-and-forth | **Instant** for 85%+ of riders |
+| Payout | Bank transfer in 15–30 days | **UPI in 120 seconds** |
+| Notifications | "Your claim is under review" emails | WhatsApp: "₹500 deposited. Stay safe." |
+
+#### The Rider Journey During a Claim (Ravi's Story)
+
+```
+🕐 3:45 PM — Ravi is delivering orders in Okhla, Delhi
+🌧️ 4:00 PM — Heavy rain starts, roads flooding rapidly
+📡 4:00 PM — OffShift cron detects IMD Red Alert for pincode 110020
+            (rainfall: 74.2mm/hr > 65mm threshold)
+🔍 4:00 PM — System queries: "Which riders have active coverage in 110020?"
+            → Ravi has Weekly Pass (active until March 25)
+🧠 4:00 PM — Kavach Trust Score calculated for Ravi:
+            GPS-Cell Tower Match:  0.95 (genuine location)
+            Accelerometer:        0.88 (outdoor vibration detected)
+            Shift History:        0.92 (regular Okhla rider)
+            Subscription Timing:  0.90 (subscribed 3 days ago)
+            Device Fingerprint:   1.00 (unique device)
+            App Activity:         0.85 (last Zomato delivery 12 min ago)
+            ─────────────────────────────────
+            TRUST SCORE:          0.91 → TIER 1 (Auto-Approve)
+💰 4:01 PM — Razorpay UPI payout initiated: ₹1,500 → rajesh@ybl
+📱 4:02 PM — WhatsApp message delivered:
+            "Hi Ravi 👋
+             🛡️ Your OffShift Weekly Shield just activated.
+
+             ₹1,500 deposited to rajesh@ybl
+             Reason: IMD Red Alert — Heavy Rain in Okhla (74.2mm/hr)
+             Ref: TXN_RZP_20260715_001
+
+             Stay safe. Your income is protected. 💪"
+
+⏱️ TOTAL TIME: 120 seconds
+📝 FORMS FILLED: 0
+📞 CALLS MADE: 0
+📧 EMAILS SENT: 0
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
+<!-- PHASE 3: ADVANCED FRAUD DETECTION -->
+## 🔍 Phase 3 — Advanced Fraud Detection <a name="phase3-fraud"></a>
+
+Beyond the 6-layer defense documented above, Phase 3 deploys **delivery-specific fraud catching** mechanisms. We don't just track where they are; we track *how they work*.
+
+### Delivery-Specific Behavioral Analysis
+
+We analyze the **temporal relationship** between delivery platform signals and claim triggers. A fraudster sitting at home lacks the "Order Lifecycle" telemetry that a genuine rider possesses.
+
+| Signal | Genuine Rider | Bad Actor (Spoofer) |
+|---|---|---|
+| **GPS Jitter** | Natural drift (3-5m) due to weather/buildings | Unnaturally static or "perfect" paths |
+| **Order Proximity** | Last delivery drop-off within 2km of claim zone | Last delivery in a completely different city/zone |
+| **App Telemetry** | Active "Online" status on Zomato/Swiggy | "Offline" status or no recent order pings |
+| **Motion Profile** | Accelerometer shows bike vibration/walking | Near-zero movement (sitting on a couch) |
+
+### Catching Fake Weather Claims via Historical Cross-Validation
+
+Every claim is cross-referenced against **three independent weather oracles**. If two oracles (e.g., IMD and OpenWeatherMap) report "Dry" while the rider claims "Heavy Rain," the claim is flagged.
+
+```python
+# Advanced Historical Cross-Validation Logic
+def validate_weather_claim(rider_pincode, event_timestamp):
+    # 1. Check Historical IMD Gridded Data (Primary Oracle)
+    imd_rainfall = fetch_imd_pincode_data(rider_pincode, event_timestamp)
+    
+    # 2. Cross-Ref with OpenWeatherMap Historical API (Secondary Oracle)
+    owm_rainfall = fetch_owm_historical(rider_pincode, event_timestamp)
+    
+    # 3. Analyze Cluster Behavior (The Social Oracle)
+    # If 50 riders in the same 2km radius are NOT claiming, but 1 is...
+    active_claims_in_vicinity = count_active_claims(rider_pincode, radius="2km")
+    
+    if (imd_rainfall < THRESHOLD) and (owm_rainfall < THRESHOLD):
+        if active_claims_in_vicinity < QUORUM_MIN:
+            return "FLAG_FOR_REVIEW" # High probability of fraud
+            
+    return "AUTO_APPROVE"
+```
+
+### Fraud Ring Detection (Isolation Forest)
+
+We use **Isolation Forest (Anomaly Detection)** to identify coordinated fraud rings. Coordinated groups leave a "Cluster Signature" that individual users do not.
+
+| Ring Signal | Normal Population | Fraud Ring Signature |
+|---|---|---|
+| **Subscription Timing** | Spread over days/weeks | 50+ subscriptions within 10 mins of an alert |
+| **Device Fingerprints** | 1 Device : 1 User | 5+ Users sharing the same `device_id` hash |
+| **Cell Tower Overlap** | Riders spread across the zone | 100% overlap on a single tower (impossible in storms) |
+| **UPI Routing** | Each rider has a unique UPI | Multiple rider accounts routing to 1-2 UPI handles |
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
+<!-- PHASE 3: INSTANT PAYOUT SYSTEM -->
+## 💸 Phase 3 — Instant Payout System (Simulated) <a name="phase3-payout"></a>
+
+We demonstrate the "Moment of Truth" — when the payout hits the worker's account in real-time. For the demo, we integrate with **Mock Payment Gateways** to simulate the entire fund-flow.
+
+### Simulated Fund-Flow (Razorpay / Stripe / UPI)
+
+| Gateway | Mode | Purpose in Demo |
+|---|---|---|
+| **Razorpay Payouts** | Test Mode | Simulates bulk UPI payouts to 500+ riders simultaneously. |
+| **Stripe Sandbox** | Test API | Demonstrates international scalability for gig workers globally. |
+| **UPI Simulator** | Mock API | Visualizes the "Notification Pop-up" on a simulated worker's phone. |
+
+### The "Moment of Truth" Workflow
+
+1.  **Trigger Confirmation**: IMD API confirms Red Alert status.
+2.  **Fund Disbursement**: Backend calls `razorpay.payouts.create()` using `rzp_test` keys.
+3.  **Instant Credit**: Funds are moved from the OffShift Liquidity Pool to the Rider's UPI VPA.
+4.  **Verification**: Webhook confirms success; Rider receives an automated WhatsApp receipt.
+
+```javascript
+// Razorpay Instant Payout Simulation (Node.js)
+const payout = await razorpay.payouts.create({
+  account_number: "781022331100", // OffShift Escrow
+  fund_account_id: rider.fund_id,
+  amount: 150000, // ₹1,500.00
+  currency: "INR",
+  mode: "UPI",
+  purpose: "payout",
+  reference_id: `CLAIM_${claim.id}`,
+});
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
+<!-- PHASE 3: INTELLIGENT DASHBOARDS -->
+## 📊 Phase 3 — Intelligent Dashboards <a name="phase3-dashboard"></a>
+
+We provide two distinct views: one for the frontline worker (Shield Status) and one for the insurer (Risk & Liquidity).
+
+### 🧑‍🚀 For Workers: The "Shield" View
+A mobile-first, haptic dashboard built for the road.
+
+*   **Earnings Protected**: Total lifetime payouts received (The "Peace of Mind" metric).
+*   **Active Weekly Coverage**: A real-time countdown of seconds remaining on the current "Rain Shield."
+*   **Claim History**: One-tap access to every past disruption event and its payout status.
+*   **Trust Score**: A gamified "Kavach Score" — workers with high scores get faster payouts and lower premiums.
+
+### 🏢 For Insurers: The "Nebula" Admin Console
+A dark-mode, high-performance dashboard for risk managers.
+
+*   **Loss Ratios**: Real-time tracking of premiums collected vs. claims paid (The "Solvency" metric).
+*   **Syndicate Alerts**: Instant flags when the Isolation Forest detects coordinated fraud clusters.
+*   **Predictive Analytics**: **"The Week Ahead"** — predicting next week's likely weather/disruption claims based on LSTM models.
+*   **Zone Heatmaps**: Visualizing rainfall patterns across Delhi/NCR in real-time, mapped against rider density.
+
+#### Next-Week Disruptive Claim Prediction (ML)
+
+```python
+# Predictive Analytics for Insurer Dashboard
+def predict_next_week_claims(pincode):
+    features = [historical_payouts, forecast_intensity, active_policies]
+    # Predicts likely liquidity drain for the coming 7 days
+    predicted_payout_volume = model.predict(features) 
+    
+    return {
+        "pincode": pincode,
+        "likely_disruption": "Heavy Rain (Tuesday)",
+        "projected_payout": "₹4,50,000",
+        "liquidity_risk": "MEDIUM"
+    }
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
 <!-- GETTING STARTED -->
 ##  Getting Started <a name="getting-started"></a>
 
@@ -567,22 +1079,39 @@ npm install npm@latest -g
 - [x] Tech stack selected — all free/open-source
 - [x] Kavach AI architecture designed (XGBoost + Isolation Forest)
 
-###  Phase 2 — Automation & Protection (March 21 – April 4)
-- [ ] WhatsApp sandbox bot live — Dialogflow CX + Twilio integration
-- [ ] Node.js cron job polling IMD + AQICN APIs every 15 minutes
-- [ ] Kavach XGBoost model trained on IMD historical data + synthetic riders
-- [ ] Razorpay UPI test mode integrated — automated payout flow end-to-end
-- [ ] Rider registration + policy management UI live on Vercel
-- [ ] Dynamic premium calculation working end-to-end
+### 🔧 Phase 2 — Automation & Protection (March 21 – April 4)
+**Theme: "Protect Your Worker"**
+- [ ] **Registration Process:** WhatsApp sandbox bot live — Dialogflow CX + Twilio integration
+- [ ] **Registration Process:** Multi-channel onboarding (WhatsApp + Web PWA + Voice Hindi)
+- [ ] **Insurance Policy Management:** Policy lifecycle engine (create → active → triggered → claimed → expired)
+- [ ] **Insurance Policy Management:** Plan selection, instant activation via UPI, auto-renewal reminders
+- [ ] **Dynamic Premium Calculation:** Kavach XGBoost model trained on IMD historical data + synthetic riders
+- [ ] **Dynamic Premium Calculation:** Hyper-local risk pricing (pincode-level, ±₹10–₹30 adjustment)
+- [ ] **Dynamic Premium Calculation:** Zone waterlogging discount (₹2 less/week for safe zones)
+- [ ] **Dynamic Premium Calculation:** Extended coverage hours via predictive weather modelling
+- [ ] **Claims Management:** Node.js cron job polling IMD + AQICN + Downdetector every 15 minutes
+- [ ] **Claims Management:** 5 automated parametric triggers (Rain, Heat, AQI, App Outage, Curfew)
+- [ ] **Claims Management:** Trust-scored tiered payout (auto/soft-verify/hold)
+- [ ] **Claims Management:** Razorpay UPI test mode — automated 120-second payout flow
+- [ ] **Claims Management:** Zero-touch WhatsApp claim notification + receipt
+- [ ] **2-Minute Demo Video:** Screen recording of registration → coverage → trigger → payout flow
 
-###  Phase 3 — Scale & Optimize (April 5–17)
-- [ ] Isolation Forest fraud ring detection deployed
-- [ ] 6-signal Trust Score engine live
-- [ ] Weighted quorum anti-spoofing active in production
-- [ ] Admin analytics dashboard with real-time Supabase data feeds
-- [ ] Rider dashboard: active coverage status, payout history
-- [ ] 50-rider alpha test in Okhla/Gurugram during actual monsoon rainfall
-- [ ] Full 5-minute demo video with live simulated disruption
+### 🚀 Phase 3 — Scale & Optimize (April 5–17)
+**Theme: "Perfect for Your Worker"**
+- [ ] **Advanced Fraud Detection:** GPS spoofing detection (cell tower + accelerometer + jitter analysis)
+- [ ] **Advanced Fraud Detection:** Fake weather claims caught via historical cross-validation
+- [ ] **Advanced Fraud Detection:** Isolation Forest fraud ring detection deployed
+- [ ] **Advanced Fraud Detection:** 6-signal Trust Score engine live
+- [ ] **Advanced Fraud Detection:** Weighted quorum anti-spoofing (500 spoofers can't trigger payout)
+- [ ] **Instant Payout System:** Razorpay test mode full integration with webhook confirmations
+- [ ] **Instant Payout System:** PhonePe sandbox for premium UPI collection
+- [ ] **Instant Payout System:** Simulated disruption → automated AI claim approval → instant payout demo
+- [ ] **Worker Dashboard:** Earnings protected, active weekly coverage, claim history, trust score
+- [ ] **Admin Dashboard (Nebula):** Loss ratios, predictive analytics, weather heatmap, fraud alerts
+- [ ] **Admin Dashboard (Nebula):** Next-week claim prediction engine with ML forecasting
+- [ ] **Admin Dashboard (Nebula):** Revenue analytics, payout queue, Syndicate Alert management
+- [ ] **5-Minute Demo Video:** Full walkthrough with simulated rainstorm → AI claim → payout
+- [ ] **Final Pitch Deck:** PDF covering persona, AI/fraud architecture, Weekly pricing viability
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

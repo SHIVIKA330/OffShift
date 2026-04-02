@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/trigger-check",
+      "schedule": "*/15 * * * *"
+    }
+  ]
+}
