@@ -1081,37 +1081,37 @@ npm install npm@latest -g
 
 ### 🔧 Phase 2 — Automation & Protection (March 21 – April 4)
 **Theme: "Protect Your Worker"**
-- [ ] **Registration Process:** WhatsApp sandbox bot live — Dialogflow CX + Twilio integration
-- [ ] **Registration Process:** Multi-channel onboarding (WhatsApp + Web PWA + Voice Hindi)
-- [ ] **Insurance Policy Management:** Policy lifecycle engine (create → active → triggered → claimed → expired)
-- [ ] **Insurance Policy Management:** Plan selection, instant activation via UPI, auto-renewal reminders
-- [ ] **Dynamic Premium Calculation:** Kavach XGBoost model trained on IMD historical data + synthetic riders
-- [ ] **Dynamic Premium Calculation:** Hyper-local risk pricing (pincode-level, ±₹10–₹30 adjustment)
-- [ ] **Dynamic Premium Calculation:** Zone waterlogging discount (₹2 less/week for safe zones)
-- [ ] **Dynamic Premium Calculation:** Extended coverage hours via predictive weather modelling
-- [ ] **Claims Management:** Node.js cron job polling IMD + AQICN + Downdetector every 15 minutes
-- [ ] **Claims Management:** 5 automated parametric triggers (Rain, Heat, AQI, App Outage, Curfew)
-- [ ] **Claims Management:** Trust-scored tiered payout (auto/soft-verify/hold)
-- [ ] **Claims Management:** Razorpay UPI test mode — automated 120-second payout flow
-- [ ] **Claims Management:** Zero-touch WhatsApp claim notification + receipt
-- [ ] **2-Minute Demo Video:** Screen recording of registration → coverage → trigger → payout flow
+- [x] **Registration Process:** WhatsApp sandbox bot live — Dialogflow CX + Twilio integration
+- [x] **Registration Process:** Multi-channel onboarding (WhatsApp + Web PWA + Voice Hindi)
+- [x] **Insurance Policy Management:** Policy lifecycle engine (create → active → triggered → claimed → expired)
+- [x] **Insurance Policy Management:** Plan selection, instant activation via UPI, auto-renewal reminders
+- [x] **Dynamic Premium Calculation:** Kavach XGBoost model trained on IMD historical data + synthetic riders
+- [x] **Dynamic Premium Calculation:** Hyper-local risk pricing (pincode-level, ±₹10–₹30 adjustment)
+- [x] **Dynamic Premium Calculation:** Zone waterlogging discount (₹2 less/week for safe zones)
+- [x] **Dynamic Premium Calculation:** Extended coverage hours via predictive weather modelling
+- [x] **Claims Management:** Node.js cron job polling IMD + AQICN + Downdetector every 15 minutes
+- [x] **Claims Management:** 5 automated parametric triggers (Rain, Heat, AQI, App Outage, Curfew)
+- [x] **Claims Management:** Trust-scored tiered payout (auto/soft-verify/hold)
+- [x] **Claims Management:** Razorpay UPI test mode — automated 120-second payout flow
+- [x] **Claims Management:** Zero-touch WhatsApp claim notification + receipt
+- [x] **2-Minute Demo Video:** Screen recording of registration → coverage → trigger → payout flow
 
 ### 🚀 Phase 3 — Scale & Optimize (April 5–17)
 **Theme: "Perfect for Your Worker"**
-- [ ] **Advanced Fraud Detection:** GPS spoofing detection (cell tower + accelerometer + jitter analysis)
-- [ ] **Advanced Fraud Detection:** Fake weather claims caught via historical cross-validation
-- [ ] **Advanced Fraud Detection:** Isolation Forest fraud ring detection deployed
-- [ ] **Advanced Fraud Detection:** 6-signal Trust Score engine live
-- [ ] **Advanced Fraud Detection:** Weighted quorum anti-spoofing (500 spoofers can't trigger payout)
-- [ ] **Instant Payout System:** Razorpay test mode full integration with webhook confirmations
-- [ ] **Instant Payout System:** PhonePe sandbox for premium UPI collection
-- [ ] **Instant Payout System:** Simulated disruption → automated AI claim approval → instant payout demo
-- [ ] **Worker Dashboard:** Earnings protected, active weekly coverage, claim history, trust score
-- [ ] **Admin Dashboard (Nebula):** Loss ratios, predictive analytics, weather heatmap, fraud alerts
-- [ ] **Admin Dashboard (Nebula):** Next-week claim prediction engine with ML forecasting
-- [ ] **Admin Dashboard (Nebula):** Revenue analytics, payout queue, Syndicate Alert management
-- [ ] **5-Minute Demo Video:** Full walkthrough with simulated rainstorm → AI claim → payout
-- [ ] **Final Pitch Deck:** PDF covering persona, AI/fraud architecture, Weekly pricing viability
+- [x] **Advanced Fraud Detection:** GPS spoofing detection (cell tower + accelerometer + jitter analysis)
+- [x] **Advanced Fraud Detection:** Fake weather claims caught via historical cross-validation
+- [x] **Advanced Fraud Detection:** Isolation Forest fraud ring detection deployed
+- [x] **Advanced Fraud Detection:** 6-signal Trust Score engine live
+- [x] **Advanced Fraud Detection:** Weighted quorum anti-spoofing (500 spoofers can't trigger payout)
+- [x] **Instant Payout System:** Razorpay test mode full integration with webhook confirmations
+- [x] **Instant Payout System:** PhonePe sandbox for premium UPI collection
+- [x] **Instant Payout System:** Simulated disruption → automated AI claim approval → instant payout demo
+- [x] **Worker Dashboard:** Earnings protected, active weekly coverage, claim history, trust score
+- [x] **Admin Dashboard (Nebula):** Loss ratios, predictive analytics, weather heatmap, fraud alerts
+- [x] **Admin Dashboard (Nebula):** Next-week claim prediction engine with ML forecasting
+- [x] **Admin Dashboard (Nebula):** Revenue analytics, payout queue, Syndicate Alert management
+- [x] **5-Minute Demo Video:** Full walkthrough with simulated rainstorm → AI claim → payout
+- [x] **Final Pitch Deck:** PDF covering persona, AI/fraud architecture, Weekly pricing viability
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
