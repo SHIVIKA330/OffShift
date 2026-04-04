@@ -20,6 +20,34 @@ CREATE TABLE workers (
   kavach_score INTEGER DEFAULT 50,
   password_hash TEXT,
   is_verified BOOLEAN DEFAULT FALSE,
+  settlement_channel TEXT DEFAULT 'UPI' CHECK (settlement_channel IN ('UPI', 'IMPS', 'RAZORPAY')),
+  upi_vpa TEXT,                      -- e.g. rider@upi
+  bank_account_number TEXT,          -- for IMPS
+  bank_ifsc TEXT,                    -- for IMPS
+  bank_account_name TEXT,            -- for IMPS
+  razorpay_fund_account_id TEXT,     -- Razorpay FundAccount ID (auto-created)
+  razorpay_contact_id TEXT,          -- Razorpay Contact ID (auto-created)
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ═══════════════════════════════════════
+-- 1b. SETTLEMENT TRANSACTIONS TABLE
+-- ═══════════════════════════════════════
+CREATE TABLE settlement_transactions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  claim_id UUID REFERENCES claims(id),
+  worker_id UUID REFERENCES workers(id),
+  amount DECIMAL(10,2) NOT NULL,
+  channel TEXT NOT NULL CHECK (channel IN ('UPI', 'IMPS', 'RAZORPAY')),
+  status TEXT DEFAULT 'INITIATED' CHECK (status IN ('INITIATED', 'PROCESSING', 'COMPLETED', 'FAILED', 'REVERSED')),
+  razorpay_payout_id TEXT,
+  razorpay_fund_account_id TEXT,
+  upi_vpa TEXT,
+  bank_ifsc TEXT,
+  bank_account TEXT,
+  reference_id TEXT,
+  failure_reason TEXT,
+  settled_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

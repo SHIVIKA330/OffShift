@@ -17,6 +17,7 @@ type ClaimRow = {
   payout_txn_id: string | null;
   trigger_severity?: string;
   zone?: string;
+  metadata?: Record<string, unknown>;
 };
 
 export function PayoutSuccessClient() {
@@ -177,15 +178,34 @@ export function PayoutSuccessClient() {
             <div className="flex justify-between items-center border-b border-outline-variant/10 pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-primary">
-                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
+                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
+                    {(claim.metadata as Record<string, unknown>)?.settlement_channel === "UPI" ? "currency_rupee"
+                      : (claim.metadata as Record<string, unknown>)?.settlement_channel === "IMPS" ? "account_balance"
+                      : "credit_card"}
+                  </span>
                 </div>
                 <div>
-                  <p className="font-body text-sm font-semibold">Destination</p>
+                  <p className="font-body text-sm font-semibold">
+                    {(claim.metadata as Record<string, unknown>)?.settlement_channel === "UPI" ? "UPI Transfer"
+                      : (claim.metadata as Record<string, unknown>)?.settlement_channel === "IMPS" ? "IMPS Bank Transfer"
+                      : "Razorpay Payout"}
+                  </p>
                   <p className="font-body text-xs text-on-surface-variant">
-                    {claim.payout_txn_id ? `Txn: ${claim.payout_txn_id.slice(0, 10)}...` : "Default IMPS Wallet (•••• 4521)"}
+                    {claim.payout_txn_id
+                      ? `Txn: ${claim.payout_txn_id.slice(0, 14)}...`
+                      : (claim.metadata as Record<string, unknown>)?.settlement_channel === "IMPS"
+                        ? "Bank Account •••• 4521"
+                        : "UPI Wallet"}
                   </p>
                 </div>
               </div>
+              <span className={`px-2 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                claim.status === "SETTLED"
+                  ? "bg-[#cbebc8] text-[#07200b]"
+                  : "bg-[#fde293] text-[#221b00]"
+              }`}>
+                {claim.status === "SETTLED" ? "Settled" : "Processing"}
+              </span>
             </div>
 
             <div className="flex justify-between items-center pb-2">

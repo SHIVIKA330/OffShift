@@ -58,9 +58,14 @@ export function OnboardingWizard() {
   const [platform, setPlatform] = useState<"zomato" | "swiggy" | "zepto">("zomato");
   const [riderId, setRiderId] = useState("");
 
-  // Screen 2 — Work Zone
+  // Screen 2 — Work Zone & Settlement
   const [zone, setZone] = useState<ZoneSlug>("mumbai");
   const [shift, setShift] = useState<ShiftType>("evening");
+  const [settlementChannel, setSettlementChannel] = useState<"UPI" | "IMPS" | "RAZORPAY">("UPI");
+  const [upiVpa, setUpiVpa] = useState("");
+  const [bankAccount, setBankAccount] = useState("");
+  const [bankIfsc, setBankIfsc] = useState("");
+  const [bankName, setBankName] = useState("");
   const [days, setDays] = useState([5]);
 
   // Screen 3 — Kavach Score
@@ -182,47 +187,97 @@ export function OnboardingWizard() {
     document.head.appendChild(s);
   }, []);
 
-  // ── Screen 4: Razorpay Checkout + Policy Creation ──
+  // ── Screen 4: Payment + Policy Creation ──
+  // Track which plan the UPI checkout is for
+  const [upiCheckoutPlan, setUpiCheckoutPlan] = useState<"24hr" | "7day">("24hr");
+  const [upiCheckoutAmount, setUpiCheckoutAmount] = useState(0);
+
+  // Register worker helper (shared between all payment channels)
+  const registerWorkerIfNeeded = async (): Promise<string | null> => {
+    let workerId = localStorage.getItem("offshift_worker_id");
+    if (workerId) return workerId;
+
+    try {
+      const regRes = await fetch("/api/workers/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          platform,
+          rider_id: riderId.toUpperCase(),
+          zone,
+          shift_type: shift,
+          active_days_per_week: days[0],
+          kavach_score: premium!.kavach_score,
+          phone: `+91${phone.replace(/\D/g, "").slice(-10)}`,
+          password,
+          settlement_channel: settlementChannel,
+          upi_vpa: settlementChannel === "UPI" ? upiVpa : undefined,
+          bank_account_number: settlementChannel === "IMPS" ? bankAccount : undefined,
+          bank_ifsc: settlementChannel === "IMPS" ? bankIfsc : undefined,
+          bank_account_name: settlementChannel === "IMPS" ? bankName : undefined,
+        }),
+      });
+      const regText = await regRes.text();
+      const regData = regText ? JSON.parse(regText) : {};
+      if (!regRes.ok) throw new Error(regData.error ?? `Registration failed (${regRes.status})`);
+      workerId = regData.worker_id;
+      localStorage.setItem("offshift_worker_id", workerId!);
+      localStorage.setItem("offshift_worker_name", name);
+      return workerId;
+    } catch (e) {
+      toast.error(String(e));
+      return null;
+    }
+  };
+
+  // Activate policy helper (shared between all payment channels)
+  const activatePolicy = async (workerId: string, plan: "24hr" | "7day", paymentId: string) => {
+    const polRes = await fetch("/api/payments/activate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        worker_id: workerId,
+        plan_type: plan,
+        zone,
+        shift_type: shift,
+        active_days: days[0],
+        platform,
+        razorpay_payment_id: paymentId,
+      }),
+    });
+    const polText = await polRes.text();
+    const polData = polText ? JSON.parse(polText) : {};
+    if (!polRes.ok) throw new Error(polData.error ?? `Policy creation failed (${polRes.status})`);
+    return polData.policy;
+  };
+
   const handlePayment = async (plan: "24hr" | "7day") => {
     if (!premium) return;
 
     const amount = plan === "24hr"
       ? Math.round(premium.final_premium * 0.6)
       : premium.final_premium;
-    const amountPaise = amount * 100;
 
-    setPayPhase("processing");
-    let workerId = localStorage.getItem("offshift_worker_id");
-    
-    if (!workerId) {
-      try {
-        const regRes = await fetch("/api/workers/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name,
-            platform,
-            rider_id: riderId.toUpperCase(),
-            zone,
-            shift_type: shift,
-            active_days_per_week: days[0],
-            kavach_score: premium.kavach_score,
-            phone: `+91${phone.replace(/\D/g, "").slice(-10)}`,
-            password,
-          }),
-        });
-        const regData = await regRes.json();
-        if (!regRes.ok) throw new Error(regData.error ?? "Registration failed");
-        workerId = regData.worker_id;
-        localStorage.setItem("offshift_worker_id", workerId!);
-        localStorage.setItem("offshift_worker_name", name);
-      } catch (e) {
-        toast.error(String(e));
-        setPayPhase("idle");
-        return;
-      }
+    // ── UPI / IMPS: Direct payment flow (no Razorpay checkout) ──
+    if (settlementChannel === "UPI" || settlementChannel === "IMPS") {
+      setUpiCheckoutPlan(plan);
+      setUpiCheckoutAmount(amount);
+      setPayPhase("processing");
+
+      const workerId = await registerWorkerIfNeeded();
+      if (!workerId) { setPayPhase("idle"); return; }
+
+      // Show UPI/IMPS checkout UI
+      setPayPhase("upi_checkout");
+      return;
     }
 
+    // ── RAZORPAY: Razorpay checkout modal ──
+    const amountPaise = amount * 100;
+    setPayPhase("processing");
+    const workerId = await registerWorkerIfNeeded();
+    if (!workerId) { setPayPhase("idle"); return; }
     setPayPhase("idle");
 
     const Razorpay = (window as unknown as { Razorpay?: new (opts: Record<string, unknown>) => { open: () => void } }).Razorpay;
@@ -247,24 +302,9 @@ export function OnboardingWizard() {
         setPayPhase("verifying");
         setMockTxnId(response.razorpay_payment_id);
         try {
-          const polRes = await fetch("/api/payments/activate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              worker_id: workerId,
-              plan_type: plan,
-              zone,
-              shift_type: shift,
-              active_days: days[0],
-              platform,
-              razorpay_payment_id: response.razorpay_payment_id,
-            }),
-          });
-          const polData = await polRes.json();
-          if (!polRes.ok) throw new Error(polData.error ?? "Policy creation failed");
-
+          const policy = await activatePolicy(workerId, plan, response.razorpay_payment_id);
           setPayPhase("done");
-          setPolicyCard(polData.policy);
+          setPolicyCard(policy);
           toast.success("🛡️ Payment successful! Policy activated!");
         } catch (e) {
           toast.error(String(e));
@@ -280,6 +320,33 @@ export function OnboardingWizard() {
     });
 
     rzp.open();
+  };
+
+  // ── UPI/IMPS: Confirm and process payment ──
+  const handleUpiConfirmPayment = async () => {
+    const workerId = localStorage.getItem("offshift_worker_id");
+    if (!workerId) { setPayPhase("idle"); return; }
+
+    setPayPhase("verifying");
+    const txnId = `upi_${Date.now()}_${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    setMockTxnId(txnId);
+
+    // Simulate UPI/IMPS processing delay
+    await new Promise((r) => setTimeout(r, 2500));
+
+    try {
+      const policy = await activatePolicy(workerId, upiCheckoutPlan, txnId);
+      setPayPhase("done");
+      setPolicyCard(policy);
+      toast.success(
+        settlementChannel === "UPI"
+          ? "✅ UPI Payment successful! Policy activated!"
+          : "✅ IMPS Transfer successful! Policy activated!"
+      );
+    } catch (e) {
+      toast.error(String(e));
+      setPayPhase("idle");
+    }
   };
 
   const band = premium ? riskBand(premium.kavach_score) : null;
@@ -590,6 +657,102 @@ export function OnboardingWizard() {
                     )}
                   </div>
 
+                  {/* ── Settlement Channel Selection ── */}
+                  <div className="flex flex-col gap-3 pt-2">
+                    <div>
+                      <label className="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant block">Payout Channel / भुगतान माध्यम</label>
+                      <span className="text-[10px] text-on-surface-variant uppercase tracking-widest">जब पॉलिसी ट्रिगर हो, पैसा कहाँ आएगा?</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        { value: "UPI" as const, icon: "currency_rupee", label: "UPI", hi: "यूपीआई" },
+                        { value: "IMPS" as const, icon: "account_balance", label: "IMPS", hi: "बैंक ट्रांसफर" },
+                        { value: "RAZORPAY" as const, icon: "credit_card", label: "Razorpay", hi: "रेज़रपे" },
+                      ].map((ch) => (
+                        <button
+                          key={ch.value}
+                          type="button"
+                          onClick={() => setSettlementChannel(ch.value)}
+                          className={`flex flex-col items-center justify-center gap-2 rounded-2xl p-4 transition-all duration-300 ${
+                            settlementChannel === ch.value
+                              ? "bg-primary text-on-primary shadow-lg scale-[1.02]"
+                              : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container"
+                          }`}
+                        >
+                          <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>{ch.icon}</span>
+                          <span className="font-label text-[10px] font-bold uppercase tracking-wider">{ch.label}</span>
+                          <span className="text-[8px] opacity-70">{ch.hi}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Conditional details per channel */}
+                    {settlementChannel === "UPI" && (
+                      <div className="animate-fade-in flex flex-col gap-2 mt-2">
+                        <label className="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant">UPI ID / यूपीआई आईडी</label>
+                        <input
+                          className={inputStyle}
+                          placeholder="rider@upi"
+                          value={upiVpa}
+                          onChange={(e) => setUpiVpa(e.target.value)}
+                        />
+                        <p className="text-[10px] text-on-surface-variant uppercase tracking-widest pl-2 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[12px] text-primary">bolt</span>
+                          Instant — पैसा सीधे UPI वॉलेट में
+                        </p>
+                      </div>
+                    )}
+
+                    {settlementChannel === "IMPS" && (
+                      <div className="animate-fade-in flex flex-col gap-3 mt-2">
+                        <div className="flex flex-col gap-2">
+                          <label className="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Account Holder Name</label>
+                          <input
+                            className={inputStyle}
+                            placeholder="Rahul Kumar"
+                            value={bankName}
+                            onChange={(e) => setBankName(e.target.value)}
+                          />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <label className="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Account Number / खाता संख्या</label>
+                          <input
+                            className={inputStyle + " font-mono"}
+                            inputMode="numeric"
+                            placeholder="1234567890"
+                            value={bankAccount}
+                            onChange={(e) => setBankAccount(e.target.value)}
+                          />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <label className="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant">IFSC Code</label>
+                          <input
+                            className={inputStyle + " font-mono uppercase"}
+                            placeholder="SBIN0001234"
+                            value={bankIfsc}
+                            onChange={(e) => setBankIfsc(e.target.value.toUpperCase())}
+                          />
+                        </div>
+                        <p className="text-[10px] text-on-surface-variant uppercase tracking-widest pl-2 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[12px] text-secondary">schedule</span>
+                          IMPS — UPI नहीं है तो बैंक में भेजेंगे
+                        </p>
+                      </div>
+                    )}
+
+                    {settlementChannel === "RAZORPAY" && (
+                      <div className="animate-fade-in mt-2 p-4 rounded-2xl bg-surface-container-low border border-outline-variant/10">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="material-symbols-outlined text-primary text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                          <span className="font-label text-xs font-bold uppercase tracking-wider">Razorpay Sandbox</span>
+                        </div>
+                        <p className="text-[10px] text-on-surface-variant uppercase tracking-widest">
+                          डेमो/हैकथॉन सिमुलेशन — No KYC needed
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
                   <button
                     className={btnPrimaryStyle}
                     onClick={() => setScreen(3)}
@@ -678,6 +841,68 @@ export function OnboardingWizard() {
                         <p className="font-body text-sm text-on-surface-variant">
                           खाता बना रहे हैं / Creating your account…
                         </p>
+                      </>
+                    ) : payPhase === "upi_checkout" ? (
+                      <>
+                        <div className="w-16 h-16 bg-primary-container rounded-full flex items-center justify-center mb-6">
+                          <span className="material-symbols-outlined text-on-primary-container text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                            {settlementChannel === "UPI" ? "currency_rupee" : "account_balance"}
+                          </span>
+                        </div>
+                        <h3 className="font-headline text-2xl font-medium mb-1">
+                          {settlementChannel === "UPI" ? "UPI Payment" : "IMPS Transfer"}
+                        </h3>
+                        <p className="font-body text-sm text-on-surface-variant mb-6">
+                          {settlementChannel === "UPI" ? "UPI से भुगतान करें" : "IMPS बैंक ट्रांसफर"}
+                        </p>
+
+                        {/* Amount */}
+                        <div className="bg-surface-container-low w-full rounded-2xl p-5 mb-5 border border-outline-variant/10">
+                          <p className="font-label text-[10px] uppercase tracking-widest text-secondary mb-2">Amount / राशि</p>
+                          <p className="font-headline text-4xl font-medium text-primary tracking-tight">₹{upiCheckoutAmount}</p>
+                          <p className="font-body text-xs text-on-surface-variant mt-1">
+                            {upiCheckoutPlan === "24hr" ? "Aaj Ka Kavach (24hr)" : "Hafte Ka Kavach (7 days)"}
+                          </p>
+                        </div>
+
+                        {/* Destination info */}
+                        <div className="bg-surface-container-low w-full rounded-2xl p-4 mb-6 border border-outline-variant/10">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                              <span className="material-symbols-outlined text-primary text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                                {settlementChannel === "UPI" ? "account_circle" : "account_balance"}
+                              </span>
+                            </div>
+                            <div className="text-left">
+                              <p className="font-body text-sm font-semibold">
+                                {settlementChannel === "UPI" ? "UPI Collect" : "Bank Transfer"}
+                              </p>
+                              <p className="font-mono text-xs text-on-surface-variant">
+                                {settlementChannel === "UPI"
+                                  ? (upiVpa || `${phone.replace(/\D/g, "").slice(-10)}@upi`)
+                                  : `A/C ••••${bankAccount.slice(-4) || "XXXX"} · ${bankIfsc || "IFSC"}`
+                                }
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Confirm button */}
+                        <button
+                          className={btnPrimaryStyle}
+                          onClick={() => void handleUpiConfirmPayment()}
+                        >
+                          <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                            {settlementChannel === "UPI" ? "currency_rupee" : "send"}
+                          </span>
+                          {settlementChannel === "UPI" ? "Pay via UPI" : "Pay via IMPS"}
+                        </button>
+                        <button
+                          className="mt-3 text-xs font-label uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors"
+                          onClick={() => setPayPhase("idle")}
+                        >
+                          Cancel / रद्द करें
+                        </button>
                       </>
                     ) : (
                       <>

@@ -17,6 +17,11 @@ export async function POST(req: Request) {
     kavach_score?: number | null;
     phone: string;
     password?: string;
+    settlement_channel?: "UPI" | "IMPS" | "RAZORPAY";
+    upi_vpa?: string;
+    bank_account_number?: string;
+    bank_ifsc?: string;
+    bank_account_name?: string;
   };
   try {
     body = await req.json();
@@ -82,27 +87,55 @@ export async function POST(req: Request) {
   // Hash password if provided
   const pw_hash = body.password ? hashPassword(body.password) : null;
 
-  // Create new worker
-  const { data: worker, error } = await supabase
-    .from("workers")
-    .insert({
-      phone: body.phone,
-      name: body.name,
-      platform: body.platform.charAt(0).toUpperCase() + body.platform.slice(1),
-      rider_id: body.rider_id.toUpperCase(),
-      zone,
-      shift_type: body.shift_type,
-      active_days_per_week: body.active_days_per_week,
-      kavach_score: ks,
-      password_hash: pw_hash,
-      is_verified: true,
-    })
-    .select("id")
-    .single();
+  // Create new worker — try with settlement fields, fallback to core fields
+  const coreFields = {
+    phone: body.phone,
+    name: body.name,
+    platform: body.platform.charAt(0).toUpperCase() + body.platform.slice(1),
+    rider_id: body.rider_id.toUpperCase(),
+    zone,
+    shift_type: body.shift_type,
+    active_days_per_week: body.active_days_per_week,
+    kavach_score: ks,
+    password_hash: pw_hash,
+    is_verified: true,
+  };
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+  const settlementFields = {
+    settlement_channel: body.settlement_channel ?? "UPI",
+    upi_vpa: body.upi_vpa ?? null,
+    bank_account_number: body.bank_account_number ?? null,
+    bank_ifsc: body.bank_ifsc ?? null,
+    bank_account_name: body.bank_account_name ?? null,
+  };
+
+  try {
+    // First try with settlement fields
+    let result = await supabase
+      .from("workers")
+      .insert({ ...coreFields, ...settlementFields })
+      .select("id")
+      .single();
+
+    // If settlement columns don't exist, retry without them
+    if (result.error && result.error.message.includes("column")) {
+      result = await supabase
+        .from("workers")
+        .insert(coreFields)
+        .select("id")
+        .single();
+    }
+
+    if (result.error) {
+      return NextResponse.json({ error: result.error.message }, { status: 400 });
+    }
+
+    return NextResponse.json({ ok: true, worker_id: result.data.id });
+  } catch (err) {
+    console.error("[register] Unhandled error:", err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Registration failed" },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json({ ok: true, worker_id: worker.id });
 }
