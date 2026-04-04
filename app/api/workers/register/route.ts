@@ -56,14 +56,27 @@ export async function POST(req: Request) {
   const supabase = createServiceRoleClient();
 
   // Check if rider_id or phone already exists
-  const { data: existing } = await supabase
+  const { data: existingByRider } = await supabase
     .from("workers")
-    .select("id")
+    .select("id, phone, name")
     .eq("rider_id", body.rider_id.toUpperCase())
-    .single();
+    .maybeSingle();
 
-  if (existing) {
-    return NextResponse.json({ ok: true, worker_id: existing.id });
+  const { data: existingByPhone } = await supabase
+    .from("workers")
+    .select("id, rider_id, name")
+    .eq("phone", body.phone)
+    .maybeSingle();
+
+  if (existingByRider) {
+    if (existingByRider.phone !== body.phone) {
+       return NextResponse.json({ error: `Rider ID ${body.rider_id} is already registered to another number.` }, { status: 400 });
+    }
+    return NextResponse.json({ ok: true, worker_id: existingByRider.id });
+  }
+
+  if (existingByPhone) {
+    return NextResponse.json({ ok: true, worker_id: existingByPhone.id });
   }
 
   // Hash password if provided
