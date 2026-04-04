@@ -46,7 +46,7 @@ export default function HomePage() {
         </section>
 
         {/* Logistics of Protection */}
-        <section className="px-8 py-20 bg-surface-container-low">
+        <section id="how-it-works" className="px-8 py-20 bg-surface-container-low">
           <div className="max-w-md mx-auto">
             <div className="flex flex-col gap-16 relative">
               {/* Step 1 */}
@@ -86,7 +86,7 @@ export default function HomePage() {
         </section>
 
         {/* Coverage Plans */}
-        <section className="px-6 py-24">
+        <section id="plans" className="px-6 py-24">
           <h2 className="font-headline text-4xl text-center mb-16">Choose your rhythm</h2>
           <div className="flex flex-col gap-8">
             {/* Shift Pass */}
@@ -176,7 +176,7 @@ export default function HomePage() {
         </section>
 
         {/* Rider Stories */}
-        <section className="px-6 py-20 bg-surface">
+        <section id="stories" className="px-6 py-20 bg-surface">
           <div className="max-w-md mx-auto">
             <h2 className="font-headline text-3xl mb-12 text-center">Words from the road</h2>
             <div className="space-y-12">
@@ -218,9 +218,10 @@ export default function HomePage() {
           <div className="grid grid-cols-2 gap-12 mb-16">
             <div className="flex flex-col gap-4">
               <h4 className="font-label text-[10px] uppercase tracking-[0.2em] text-on-primary/50">Explore</h4>
-              <a className="text-sm font-body hover:text-on-primary transition-colors" href="#">How it works</a>
-              <a className="text-sm font-body hover:text-on-primary transition-colors" href="#">Plans</a>
-              <a className="text-sm font-body hover:text-on-primary transition-colors" href="#">Stories</a>
+              <a className="text-sm font-body hover:text-on-primary transition-colors" href="#how-it-works">How it works</a>
+              <a className="text-sm font-body hover:text-on-primary transition-colors" href="#plans">Plans</a>
+              <Link className="text-sm font-body hover:text-on-primary transition-colors text-secondary-fixed font-bold underline decoration-dotted" href="/debug/bot">WhatsApp Bot (Simulator)</Link>
+              <a className="text-sm font-body hover:text-on-primary transition-colors" href="#stories">Stories</a>
             </div>
             <div className="flex flex-col gap-4">
               <h4 className="font-label text-[10px] uppercase tracking-[0.2em] text-on-primary/50">Company</h4>

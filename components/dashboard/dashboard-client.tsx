@@ -509,6 +509,20 @@ export function DashboardClient() {
 
       </main>
 
+      {/* Floating Bot Button (Demo Feature) */}
+      <Link href="/debug/bot" className="fixed bottom-24 right-6 z-50 group">
+        <div className="bg-[#25D366] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all duration-300 relative">
+          <span className="material-symbols-outlined text-3xl">smart_toy</span>
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-error rounded-full animate-ping"></div>
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-error rounded-full shadow-sm"></div>
+          
+          {/* Tooltip */}
+          <div className="absolute right-full mr-3 bg-stone-900 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+            Try WhatsApp Bot
+          </div>
+        </div>
+      </Link>
+
       {/* BottomNavBar */}
       <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pt-3 pb-8 bg-[#f9f9f7]/80 dark:bg-stone-900/80 backdrop-blur-xl shadow-[0_-4px_30px_rgba(0,0,0,0.06)] rounded-t-[32px] border-t border-outline-variant/10">
         <Link href="/">
