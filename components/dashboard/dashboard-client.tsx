@@ -41,6 +41,7 @@ export function DashboardClient() {
   const [page, setPage] = useState(0);
   const pageSize = 5;
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const doLogout = useCallback(() => {
     localStorage.removeItem("offshift_worker_id");
@@ -141,6 +142,26 @@ export function DashboardClient() {
 
   const btnPrimaryStyle = "w-full py-4 rounded-full bg-primary text-on-primary font-label text-xs font-bold uppercase tracking-widest editorial-shadow hover:scale-[1.02] transition-transform duration-300 disabled:opacity-50 disabled:scale-100 block text-center";
   const btnSecondaryStyle = "w-full py-2.5 rounded-full bg-surface-container-highest text-on-surface font-label text-[10px] font-bold uppercase tracking-widest hover:bg-surface-container transition-colors duration-300 pointer-events-auto cursor-pointer block text-center w-full"; // Explicit flex to avoid Link inline bugs
+
+  const simulateTrigger = async () => {
+    if (!active) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/debug/simulate-trigger", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ worker_id: workerId, policy_id: active.id }),
+      });
+      if (res.ok) {
+        toast.success("⛈️ Heavy Rain detected! Claim settled instantly.");
+        void load();
+      }
+    } catch (e) {
+      toast.error("Trigger failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!workerId) {
     return (
@@ -261,6 +282,13 @@ export function DashboardClient() {
             <Link href="/onboard" className="block text-center w-full py-4 rounded-full bg-surface-container-lowest text-primary font-label text-xs font-bold uppercase tracking-widest hover:scale-[1.02] transition-transform duration-300">
                Renew / नवीनीकरण
             </Link>
+            <button 
+              onClick={simulateTrigger}
+              className="mt-3 w-full py-2.5 rounded-xl border border-primary/20 bg-primary/10 text-[#cbebc8] font-label text-[10px] font-bold uppercase tracking-widest hover:bg-primary/20 transition-all flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[16px] animate-bounce">thunderstorm</span>
+              Demo: Simulate Rain Trigger
+            </button>
             <p className="font-mono text-[8px] text-on-primary/30 mt-4 text-center">ID: {active.id}</p>
           </div>
         ) : (

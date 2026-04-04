@@ -9,7 +9,21 @@ export default function BotSimulator() {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [userPhone, setUserPhone] = useState("+919876543210");
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchWorkerInfo = async () => {
+       const { createClient } = await import("@/lib/supabase/client");
+       const supabase = createClient();
+       const id = localStorage.getItem("offshift_worker_id");
+       if (id) {
+         const { data } = await supabase.from("workers").select("phone").eq("id", id).single();
+         if (data?.phone) setUserPhone(data.phone);
+       }
+    };
+    void fetchWorkerInfo();
+  }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollTo(0, scrollRef.current.scrollHeight);
@@ -31,7 +45,7 @@ export default function BotSimulator() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: { text: userText },
-          sender: "+919876543210" // Simulating a registered number
+          sender: userPhone 
         }),
       });
       const data = await res.json();
