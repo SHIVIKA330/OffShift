@@ -1,44 +1,15 @@
+/**
+ * OffShift — Kavach Risk Score & Pricing Engine
+ * Simplified, explainable scoring for parametric insurance pricing
+ */
+
 import { type ZoneSlug, ZONE_COORDS } from "@/lib/zones";
 
+// ─── Types ─────────────────────────────────────────────────────────────────
+
 export type CoverageType = "24hr" | "7day";
-
 export type ShiftType = "morning" | "evening" | "night" | "flexible";
-
 export type Platform = "zomato" | "swiggy";
-
-const ZONE_MULT: Record<ZoneSlug, number> = {
-  okhla: 1.3,
-  gurugram: 1.2,
-  noida: 1.1,
-  lajpat_nagar: 1.0,
-  rohini: 1.0,
-  dwarka: 1.0,
-};
-
-const SHIFT_MULT: Record<ShiftType, number> = {
-  night: 1.2,
-  morning: 0.9,
-  evening: 1.0,
-  flexible: 1.0,
-};
-
-export interface OpenMeteoHourlySlice {
-  /** Max hourly precipitation (mm) in next 48h */
-  maxHourlyRainNext48h: number;
-  /** Sum of hourly precip in next 48h (mm) — informational */
-  sumRainNext48h: number;
-}
-
-export interface KavachEngineInput {
-  zone: ZoneSlug;
-  shift_type: ShiftType;
-  active_days: number;
-  platform: Platform;
-  coverage_type: CoverageType;
-  /** From mock AQI API — forecast peak for surge rule */
-  aqi_forecast_peak: number;
-  openMeteo: OpenMeteoHourlySlice;
-}
 
 export interface KavachEngineResult {
   base_premium: number;
@@ -51,40 +22,87 @@ export interface KavachEngineResult {
   max_payout: number;
 }
 
-function clampScore(n: number): number {
-  return Math.min(100, Math.max(1, Math.round(n)));
+export interface OpenMeteoHourlySlice {
+  maxHourlyRainNext48h: number;
+  sumRainNext48h: number;
 }
 
-/** Heuristic 1–100 score from zone, shift, activity, AQI — explainable tiers */
-export function computeKavachScore(input: {
+export interface KavachEngineInput {
   zone: ZoneSlug;
   shift_type: ShiftType;
   active_days: number;
+  platform: Platform;
+  coverage_type: CoverageType;
   aqi_forecast_peak: number;
-}): number {
-  const zoneRisk =
-    { okhla: 38, gurugram: 32, noida: 28, lajpat_nagar: 22, rohini: 20, dwarka: 18 }[
-      input.zone
-    ] ?? 22;
-  const shiftAdj =
-    input.shift_type === "night"
-      ? 18
-      : input.shift_type === "morning"
-        ? -4
-        : input.shift_type === "evening"
-          ? 6
-          : 2;
-  const daysAdj = (7 - input.active_days) * 2;
-  const aqiAdj =
-    input.aqi_forecast_peak > 300
-      ? 22
-      : input.aqi_forecast_peak > 200
-        ? 12
-        : input.aqi_forecast_peak > 150
-          ? 6
-          : 0;
-  return clampScore(zoneRisk + shiftAdj + daysAdj + aqiAdj);
+  openMeteo: OpenMeteoHourlySlice;
 }
+
+// ─── Core Kavach Score Calculator ───────────────────────────────────────────
+
+/**
+ * Calculate Kavach Score (1–100) from zone, shift, and activity.
+ * Higher score = higher risk = higher premium.
+ */
+export const calculateKavachScore = (
+  zone: string,
+  shift: string,
+  days: number
+): number => {
+  let score = 40; // Base score
+
+  // Zone Risk (based on real Delhi flood/AQI history)
+  const zoneWeights: Record<string, number> = {
+    okhla: 25,
+    gurugram: 20,
+    noida: 10,
+    lajpat_nagar: 8,
+    rohini: 5,
+    dwarka: 3,
+    // Also support display names
+    Okhla: 25,
+    Gurugram: 20,
+    Noida: 10,
+    "Lajpat Nagar": 8,
+    Rohini: 5,
+    Dwarka: 3,
+  };
+  score += zoneWeights[zone] || 5;
+
+  // Shift Risk
+  if (shift === "night" || shift === "Night 10pm-6am") score += 15;
+  if (shift === "evening" || shift === "Evening 2pm-10pm") score += 6;
+  if (shift === "morning" || shift === "Morning 6am-2pm") score -= 5;
+  // flexible = no adjustment
+
+  // Activity Adjustment
+  if (days >= 7) score -= 10; // Loyal rider discount
+  if (days < 3) score += 10; // Irregular = harder to validate
+
+  return Math.min(Math.max(score, 1), 100);
+};
+
+// ─── Price from Score ───────────────────────────────────────────────────────
+
+/**
+ * Map Kavach Score to premium price (₹).
+ * 1-40 = LOW, 41-70 = MEDIUM, 71-100 = HIGH
+ */
+export const getPriceFromScore = (
+  score: number,
+  type: "24hr" | "7day"
+): number => {
+  if (type === "24hr") {
+    if (score <= 40) return 19;
+    if (score <= 70) return 29;
+    return 49;
+  }
+  // Weekly pricing
+  if (score <= 40) return 79;
+  if (score <= 70) return 99;
+  return 149;
+};
+
+// ─── Risk Band (for UI badges) ──────────────────────────────────────────────
 
 export function riskBand(score: number): {
   label: "LOW" | "MEDIUM" | "HIGH";
@@ -98,6 +116,24 @@ export function riskBand(score: number): {
     return { label: "MEDIUM", dayRef: 29, weekRef: 99, color: "yellow" };
   return { label: "HIGH", dayRef: 49, weekRef: 149, color: "orange" };
 }
+
+// ─── Backward-compatible aliases ────────────────────────────────────────────
+
+/** Alias for calculateKavachScore — used by register route */
+export function computeKavachScore(input: {
+  zone: ZoneSlug;
+  shift_type: ShiftType;
+  active_days: number;
+  aqi_forecast_peak?: number;
+}): number {
+  let score = calculateKavachScore(input.zone, input.shift_type, input.active_days);
+  // AQI boost (if available)
+  if (input.aqi_forecast_peak && input.aqi_forecast_peak > 300) score += 15;
+  else if (input.aqi_forecast_peak && input.aqi_forecast_peak > 200) score += 8;
+  return Math.min(Math.max(score, 1), 100);
+}
+
+// ─── Open-Meteo Weather Fetch ───────────────────────────────────────────────
 
 export async function fetchOpenMeteoRain(
   zone: ZoneSlug
@@ -115,7 +151,7 @@ export async function fetchOpenMeteoRain(
     return { maxHourlyRainNext48h: 0, sumRainNext48h: 0 };
   }
   const data = (await res.json()) as {
-    hourly?: { precipitation?: number[]; time?: string[] };
+    hourly?: { precipitation?: number[] };
   };
   const arr = data.hourly?.precipitation ?? [];
   const hours48 = Math.min(48, arr.length);
@@ -129,16 +165,35 @@ export async function fetchOpenMeteoRain(
   return { maxHourlyRainNext48h: max, sumRainNext48h: sum };
 }
 
+// ─── Full Engine (with weather + multipliers) ───────────────────────────────
+
+const ZONE_MULT: Record<string, number> = {
+  okhla: 1.3,
+  gurugram: 1.2,
+  noida: 1.1,
+  lajpat_nagar: 1.0,
+  rohini: 1.0,
+  dwarka: 1.0,
+};
+
+const SHIFT_MULT: Record<string, number> = {
+  night: 1.2,
+  morning: 0.9,
+  evening: 1.0,
+  flexible: 1.0,
+};
+
 export function runKavachEngine(input: KavachEngineInput): KavachEngineResult {
-  const base =
-    input.coverage_type === "24hr" ? 29 : input.coverage_type === "7day" ? 99 : 29;
+  const base = input.coverage_type === "24hr" ? 29 : 99;
   const zm = ZONE_MULT[input.zone] ?? 1;
   const sm = SHIFT_MULT[input.shift_type] ?? 1;
 
+  // Weather surge
   let weatherSurge = 0;
   if (input.openMeteo.maxHourlyRainNext48h > 30) weatherSurge += 10;
   if (input.aqi_forecast_peak > 200) weatherSurge += 8;
 
+  // Activity adjustment
   let activityAdj = 0;
   if (input.active_days >= 7) activityAdj -= 5;
   if (input.active_days < 3) activityAdj += 10;
@@ -147,12 +202,11 @@ export function runKavachEngine(input: KavachEngineInput): KavachEngineResult {
   raw = Math.max(9, raw);
   const finalPremium = Math.round(raw);
 
-  const kavach_score = computeKavachScore({
-    zone: input.zone,
-    shift_type: input.shift_type,
-    active_days: input.active_days,
-    aqi_forecast_peak: input.aqi_forecast_peak,
-  });
+  const kavach_score = calculateKavachScore(
+    input.zone,
+    input.shift_type,
+    input.active_days
+  );
 
   const max_payout = input.coverage_type === "24hr" ? 500 : 1500;
 

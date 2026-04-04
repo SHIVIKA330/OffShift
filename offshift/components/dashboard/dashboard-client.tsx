@@ -3,13 +3,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatRupees } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
-import type { User } from "@supabase/supabase-js";
 
 type PolicyRow = {
   id: string;
@@ -38,24 +33,29 @@ type ClaimRow = {
 
 export function DashboardClient() {
   const supabase = createClient();
-  const [user, setUser] = useState<User | null>(null);
+  const [workerId, setWorkerId] = useState<string | null>(null);
+  const [workerName, setWorkerName] = useState<string>("");
   const [policies, setPolicies] = useState<PolicyRow[]>([]);
   const [claims, setClaims] = useState<ClaimRow[]>([]);
   const [sortKey, setSortKey] = useState<"created_at" | "premium_amount">("created_at");
   const [page, setPage] = useState(0);
   const pageSize = 5;
 
+  // Get worker_id from localStorage
+  useEffect(() => {
+    const id = localStorage.getItem("offshift_worker_id");
+    const name = localStorage.getItem("offshift_worker_name");
+    setWorkerId(id);
+    setWorkerName(name ?? "Rider");
+  }, []);
+
   const load = useCallback(async () => {
-    const {
-      data: { user: u },
-    } = await supabase.auth.getUser();
-    setUser(u);
-    if (!u) return;
+    if (!workerId) return;
 
     const { data: pol } = await supabase
       .from("policies")
       .select("*")
-      .eq("worker_id", u.id)
+      .eq("worker_id", workerId)
       .order("created_at", { ascending: false });
 
     setPolicies((pol ?? []) as PolicyRow[]);
@@ -63,18 +63,19 @@ export function DashboardClient() {
     const { data: cl } = await supabase
       .from("claims")
       .select("*")
-      .eq("worker_id", u.id)
+      .eq("worker_id", workerId)
       .order("created_at", { ascending: false });
 
     setClaims((cl ?? []) as ClaimRow[]);
-  }, [supabase]);
+  }, [supabase, workerId]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
+  // Real-time claim updates
   useEffect(() => {
-    if (!user) return;
+    if (!workerId) return;
 
     const ch = supabase
       .channel("claims-live")
@@ -84,11 +85,11 @@ export function DashboardClient() {
           event: "*",
           schema: "public",
           table: "claims",
-          filter: `worker_id=eq.${user.id}`,
+          filter: `worker_id=eq.${workerId}`,
         },
         (payload) => {
-          toast.message("Claim update", {
-            description: `${(payload.new as ClaimRow)?.status ?? "updated"}`,
+          toast.message("Claim update / दावा अपडेट", {
+            description: `Status: ${(payload.new as ClaimRow)?.status ?? "updated"}`,
           });
           void load();
         }
@@ -98,7 +99,7 @@ export function DashboardClient() {
     return () => {
       void supabase.removeChannel(ch);
     };
-  }, [supabase, user, load]);
+  }, [supabase, workerId, load]);
 
   const active = policies.find((p) => p.status === "ACTIVE");
 
@@ -118,10 +119,9 @@ export function DashboardClient() {
   const coveragePct = active
     ? Math.min(
         100,
-        (Date.now() - new Date(active.coverage_start).getTime()) /
-          (new Date(active.coverage_end).getTime() -
-            new Date(active.coverage_start).getTime()) *
-            100
+        ((Date.now() - new Date(active.coverage_start).getTime()) /
+          (new Date(active.coverage_end).getTime() - new Date(active.coverage_start).getTime())) *
+          100
       )
     : 0;
 
@@ -132,210 +132,324 @@ export function DashboardClient() {
       new Date(c.created_at) <= new Date(active.coverage_end)
   );
 
-  if (!user) {
+  const btnPrimaryStyle = "w-full py-4 rounded-full bg-primary text-on-primary font-label text-xs font-bold uppercase tracking-widest editorial-shadow hover:scale-[1.02] transition-transform duration-300 disabled:opacity-50 disabled:scale-100 block text-center";
+  const btnSecondaryStyle = "w-full py-2.5 rounded-full bg-surface-container-highest text-on-surface font-label text-[10px] font-bold uppercase tracking-widest hover:bg-surface-container transition-colors duration-300 pointer-events-auto cursor-pointer block text-center w-full"; // Explicit flex to avoid Link inline bugs
+
+  if (!workerId) {
     return (
-      <div className="px-4 py-12 text-center">
-        <p className="text-slate-600">लोड हो रहा है…</p>
+      <div className="bg-surface text-on-surface font-body min-h-screen flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+          <span className="material-symbols-outlined text-4xl text-primary">person_off</span>
+        </div>
+        <h2 className="font-headline text-3xl mb-2">No login found</h2>
+        <p className="font-body text-sm text-on-surface-variant mb-8">
+          कोई लॉगिन नहीं मिला
+        </p>
+        <Link href="/onboard" className={btnPrimaryStyle + " max-w-xs"}>
+           साइन अप करें / Sign up
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-lg space-y-4 px-4 py-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-[#0F4C5C]">Dashboard</h1>
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/">Home</Link>
-        </Button>
-      </div>
+    <div className="bg-surface text-on-surface font-body min-h-screen pb-32">
+      {/* TopAppBar */}
+      <header className="fixed top-0 w-full z-50 bg-[#f9f9f7] dark:bg-stone-950 backdrop-blur-md opacity-90 flex justify-between items-center px-6 py-4 border-b border-outline-variant/10">
+        <Link href="/">
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-primary hover:opacity-70 transition-opacity duration-300 ease-in-out cursor-pointer" data-icon="menu">menu</span>
+            <h1 className="text-2xl font-semibold tracking-tighter text-primary font-['Newsreader']">OffShift</h1>
+          </div>
+        </Link>
+        <Link href="/dashboard">
+          <div className="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant/15 flex items-center justify-center overflow-hidden hover:opacity-70 transition-opacity duration-300 ease-in-out cursor-pointer">
+            <img alt="Profile" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC95G_7XgTmO5BqUuzbpLEgXc7-4kMwgCwl1NZw8mlK-DYoiUVWMcs8CASgIcEn4bniG4AFJQPWeNnEaea2aFik8TwfLAgBfIYYlBRzLUQ4o6KSF_NIedBXY5gsc2wPRlxD5468OoFmFIWauikoZ8utGhQ5RzulaTjDTz3wVw6E3yv4VoWMS77huuVwTAm0tIBzuqrglIPdMrl_rd4e6eHeCTOGkh98SQ9tAlSWlW5zVJnwhw3GinFy5WantT8l860hX3GbCv0Owww"/>
+          </div>
+        </Link>
+      </header>
 
-      {active && (
-        <Card className="border-[#0F4C5C]/30">
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Active policy</CardTitle>
-              <span className="flex items-center gap-1 text-xs font-medium text-emerald-600">
+      <main className="pt-28 px-4 sm:px-6 max-w-lg mx-auto space-y-6">
+        
+        {/* User Greeting Header */}
+        <div className="mb-2 pl-2">
+          <h1 className="font-headline text-4xl mb-1 text-primary">Dashboard</h1>
+          <p className="font-body text-sm text-on-surface-variant flex items-center gap-2">
+            नमस्ते, <strong className="text-on-surface">{workerName}</strong>
+          </p>
+        </div>
+
+        {/* ── Active Policy Card ── */}
+        {active ? (
+          <div className="bg-primary text-on-primary p-7 rounded-[32px] editorial-shadow relative overflow-hidden">
+            {/* Soft decorative background element */}
+            <div className="absolute -right-10 -top-10 w-40 h-40 bg-surface/10 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h3 className="font-headline text-2xl font-medium">Active Policy</h3>
+                <p className="font-body text-xs text-on-primary/70 mt-1">सक्रिय पॉलिसी</p>
+              </div>
+              <span className="flex items-center gap-1.5 px-3 py-1 bg-[#cbebc8] text-[#07200b] rounded-full font-label text-[10px] uppercase font-bold tracking-widest shadow-sm">
                 <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75"></span>
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600"></span>
                 </span>
-                ACTIVE
+                LIVE
               </span>
             </div>
-            <p className="text-xs text-slate-500">सक्रिय पॉलिसी</p>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <p className="font-mono text-xs">{active.id}</p>
-            <p>
-              Plan: <strong>{active.plan_type}</strong> · Max{" "}
-              {formatRupees(Number(active.max_payout))}
-            </p>
-            <p className="text-xs text-slate-600">
-              {new Date(active.coverage_start).toLocaleString("en-IN")} →{" "}
-              {new Date(active.coverage_end).toLocaleString("en-IN")}
-            </p>
-            <div className="flex flex-wrap gap-2 pt-1">
-              <Badge variant={active.trigger_weather ? "success" : "outline"}>
-                Weather {active.trigger_weather ? "✓" : "—"}
-              </Badge>
-              <Badge variant={active.trigger_outage ? "success" : "outline"}>
-                App outage {active.trigger_outage ? "✓" : "—"}
-              </Badge>
+
+            <div className="space-y-4 mb-6">
+              <div className="flex justify-between border-b border-on-primary/10 pb-2">
+                <span className="font-label text-xs uppercase tracking-widest text-on-primary/70">Plan</span>
+                <span className="font-body font-semibold text-sm">{active.plan_type === "24hr" ? "Aaj Ka Kavach" : "Hafte Ka Kavach"}</span>
+              </div>
+              <div className="flex justify-between border-b border-on-primary/10 pb-2">
+                <span className="font-label text-xs uppercase tracking-widest text-on-primary/70">Coverage</span>
+                <span className="font-body text-xs text-right opacity-90">
+                  {new Date(active.coverage_start).toLocaleString("en-IN", {month: 'short', day: 'numeric', hour: '2-digit'})} → {new Date(active.coverage_end).toLocaleString("en-IN", {month: 'short', day: 'numeric', hour: '2-digit'})}
+                </span>
+              </div>
+              <div className="flex justify-between pb-1">
+                <span className="font-label text-xs uppercase tracking-widest text-on-primary/70">Max Payout</span>
+                <span className="font-headline text-lg text-[#cbebc8]">{formatRupees(Number(active.max_payout))}</span>
+              </div>
             </div>
+
+            <div className="flex flex-wrap gap-2 mb-6">
+              <div className={`px-3 py-1 rounded-full font-label text-[10px] uppercase tracking-widest flex items-center gap-1 border ${active.trigger_weather ? 'bg-on-primary/10 border-transparent text-[#cbebc8]' : 'border-on-primary/20 text-on-primary/40'}`}>
+                {active.trigger_weather ? <span className="material-symbols-outlined text-[14px]">check</span> : null} Weather
+              </div>
+              <div className={`px-3 py-1 rounded-full font-label text-[10px] uppercase tracking-widest flex items-center gap-1 border ${active.trigger_outage ? 'bg-on-primary/10 border-transparent text-[#cbebc8]' : 'border-on-primary/20 text-on-primary/40'}`}>
+                {active.trigger_outage ? <span className="material-symbols-outlined text-[14px]">check</span> : null} Outage
+              </div>
+            </div>
+
             {active.next_premium_due_at && (
-              <p className="text-xs">
-                Next premium:{" "}
-                {new Date(active.next_premium_due_at).toLocaleDateString("en-IN")}
+              <p className="font-label text-[10px] uppercase tracking-widest text-on-primary/60 mb-4 text-center">
+                Next premium: {new Date(active.next_premium_due_at).toLocaleDateString("en-IN")}
               </p>
             )}
-            <Button className="w-full" variant="secondary" asChild>
-              <Link href="/onboard">Renew / नवीनीकरण</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      )}
 
-      {!active && policies[0] && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">No active policy</CardTitle>
-            <p className="text-xs text-slate-500">कोई सक्रिय पॉलिसी नहीं</p>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link href="/onboard">Buy Kavach</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {active && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Coverage timeline</CardTitle>
-            <p className="text-xs text-slate-500">कवरेज टाइमलाइन</p>
-          </CardHeader>
-          <CardContent>
-            <div className="h-3 w-full overflow-hidden rounded-full bg-slate-200">
-              <div
-                className="h-full bg-[#0F4C5C] transition-all"
-                style={{ width: `${coveragePct}%` }}
-              />
-            </div>
-            <p className="mt-2 text-xs text-slate-600">
-              Triggers this window:{" "}
-              {triggersDuring.length > 0
-                ? triggersDuring.map((c) => c.trigger_type).join(", ")
-                : "None yet"}
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <CardTitle className="text-base">Policy history</CardTitle>
-              <p className="text-xs text-slate-500">पुरानी पॉलिसियाँ</p>
-            </div>
-            <select
-              className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
-              value={sortKey}
-              onChange={(e) =>
-                setSortKey(e.target.value as "created_at" | "premium_amount")
-              }
-            >
-              <option value="created_at">Sort by date</option>
-              <option value="premium_amount">Sort by premium</option>
-            </select>
+            <Link href="/onboard" className="block text-center w-full py-4 rounded-full bg-surface-container-lowest text-primary font-label text-xs font-bold uppercase tracking-widest hover:scale-[1.02] transition-transform duration-300">
+               Renew / नवीनीकरण
+            </Link>
+            <p className="font-mono text-[8px] text-on-primary/30 mt-4 text-center">ID: {active.id}</p>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {slice.map((p) => {
-            const paidClaims = claims.filter(
-              (c) =>
-                c.policy_id === p.id &&
-                c.status === "SETTLED" &&
-                new Date(c.created_at) >= new Date(p.created_at)
-            );
-            return (
+        ) : (
+          <div className="bg-surface-container-lowest p-8 rounded-[32px] editorial-shadow border border-outline-variant/10 text-center">
+            <div className="w-16 h-16 bg-surface-container-low rounded-full flex items-center justify-center mx-auto mb-4 text-secondary">
+              <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>gpp_maybe</span>
+            </div>
+            <h3 className="font-headline text-2xl font-medium mb-1">No Active Policy</h3>
+            <p className="font-body text-sm text-on-surface-variant mb-6">कोई सक्रिय पॉलिसी नहीं</p>
+            <Link href="/onboard" className={btnPrimaryStyle}>
+              Buy Kavach Now
+            </Link>
+          </div>
+        )}
+
+        {/* ── Coverage Timeline Card ── */}
+        {active && (
+          <div className="bg-surface-container-lowest p-6 rounded-[32px] editorial-shadow border border-outline-variant/10">
+            <h3 className="font-headline text-xl font-medium mb-1">Coverage Timeline</h3>
+            <p className="font-label text-[10px] uppercase tracking-widest text-secondary mb-5">कवरेज टाइमलाइन</p>
+            
+            <div className="h-3 w-full rounded-full bg-surface-container overflow-hidden">
               <div
-                key={p.id}
-                className="flex flex-col gap-1 rounded-xl border border-slate-100 p-3 text-sm"
+                className="h-full bg-primary transition-all duration-1000 ease-in-out relative rounded-full"
+                style={{ width: `${Math.max(2, coveragePct)}%` }} // Minimum 2% visibility
               >
-                <div className="flex justify-between">
-                  <span className="font-medium">{p.plan_type}</span>
-                  <Badge variant={p.status === "ACTIVE" ? "success" : "outline"}>
-                    {p.status}
-                  </Badge>
-                </div>
-                <p className="text-xs text-slate-500">
-                  {new Date(p.coverage_start).toLocaleDateString("en-IN")} —{" "}
-                  {new Date(p.coverage_end).toLocaleDateString("en-IN")}
-                </p>
-                <p>
-                  Premium {formatRupees(Number(p.premium_amount))} · Payouts{" "}
-                  {formatRupees(Number(p.payout_total))}
-                </p>
-                <p className="text-xs text-slate-500">
-                  Claims (approx. period): {paidClaims.length} settled
-                </p>
+                <div className="absolute right-0 top-0 bottom-0 w-4 bg-white/20 rounded-full animate-pulse"></div>
               </div>
-            );
-          })}
-          <div className="flex justify-between pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page === 0}
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
-            >
-              Prev
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={(page + 1) * pageSize >= sortedHistory.length}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Next
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Claims</CardTitle>
-          <p className="text-xs text-slate-500">दावे — real-time</p>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {claims.length === 0 && (
-            <p className="text-sm text-slate-500">No claims yet.</p>
-          )}
-          {claims.map((c) => (
-            <div
-              key={c.id}
-              className="rounded-xl border border-slate-100 p-3 text-sm"
-            >
-              <div className="flex justify-between">
-                <span>{c.trigger_type}</span>
-                <Badge variant="outline">{c.status}</Badge>
-              </div>
-              <p className="text-xs text-slate-500">
-                {new Date(c.created_at).toLocaleString("en-IN")}
-              </p>
+            </div>
+            
+            <div className="mt-4 flex items-start gap-2 text-xs font-body text-on-surface-variant bg-surface-container-low p-3 rounded-xl border border-outline-variant/5">
+              <span className="material-symbols-outlined text-[16px] text-secondary">history</span>
               <p>
-                {formatRupees(Number(c.payout_amount))}{" "}
-                {c.payout_txn_id && (
-                  <span className="font-mono text-xs">· {c.payout_txn_id}</span>
-                )}
+                Triggers detected this window:{" "}
+                <strong className="text-on-surface">{triggersDuring.length > 0 ? triggersDuring.map((c) => c.trigger_type).join(", ") : "None yet"}</strong>
               </p>
             </div>
-          ))}
-        </CardContent>
-      </Card>
+          </div>
+        )}
+
+        {/* ── Policy History List ── */}
+        <div className="pt-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-4 pl-2 pr-1">
+            <div>
+              <h3 className="font-headline text-2xl font-medium">Policy History</h3>
+              <p className="font-label text-[10px] uppercase tracking-widest text-secondary">पुरानी पॉलिसियाँ</p>
+            </div>
+            <div className="relative">
+              <select
+                className="appearance-none bg-surface-container-lowest border border-outline-variant/20 font-label text-[10px] uppercase tracking-widest font-bold px-4 py-2 pr-8 rounded-full outline-none focus:ring-1 focus:ring-primary shadow-sm cursor-pointer"
+                value={sortKey}
+                onChange={(e) => setSortKey(e.target.value as "created_at" | "premium_amount")}
+              >
+                <option value="created_at">Sort by Date</option>
+                <option value="premium_amount">Sort by Premium</option>
+              </select>
+              <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-on-surface-variant pointer-events-none">expand_more</span>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {slice.length === 0 && (
+              <div className="bg-surface-container-lowest p-6 rounded-[24px] text-center border border-outline-variant/10 border-dashed">
+                <span className="font-body text-sm text-on-surface-variant italic">No previous policies found.</span>
+              </div>
+            )}
+            
+            {slice.map((p) => {
+              const paidClaims = claims.filter(
+                (c) => c.policy_id === p.id && c.status === "SETTLED" && new Date(c.created_at) >= new Date(p.created_at)
+              );
+              return (
+                <div key={p.id} className="bg-surface-container-lowest p-5 rounded-[24px] editorial-shadow border border-outline-variant/10 flex flex-col gap-3">
+                  <div className="flex justify-between items-center border-b border-outline-variant/10 pb-3">
+                    <span className="font-headline text-lg font-medium">{p.plan_type === "24hr" ? "Aaj Ka Kavach" : "Hafte Ka Kavach"}</span>
+                    <span className={`px-2 py-0.5 rounded-md font-label text-[9px] uppercase font-bold tracking-widest ${p.status === "ACTIVE" ? 'bg-[#cbebc8] text-[#07200b]' : 'bg-surface-container-high text-on-surface-variant border border-outline-variant/20'}`}>
+                      {p.status}
+                    </span>
+                  </div>
+                  
+                  <div className="flex gap-4 items-center">
+                    <div className="flex-1">
+                       <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-1">Coverage Window</p>
+                       <p className="font-body text-xs text-on-surface">
+                         {new Date(p.coverage_start).toLocaleDateString("en-IN")} → {new Date(p.coverage_end).toLocaleDateString("en-IN")}
+                       </p>
+                    </div>
+                    <div className="text-right">
+                       <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-1">Premium</p>
+                       <p className="font-body text-sm font-semibold">{formatRupees(Number(p.premium_amount))}</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-surface-container/30 px-3 py-2 rounded-lg flex justify-between items-center text-xs font-body mt-1">
+                    <span className="text-on-surface-variant"><span className="font-semibold text-on-surface">{paidClaims.length}</span> claims settled</span>
+                    <span className="text-secondary font-semibold border-l border-outline-variant/20 pl-3">Total paid out: {formatRupees(Number(p.payout_total))}</span>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Pagination Controls */}
+            {sortedHistory.length > pageSize && (
+              <div className="flex gap-2 pt-2">
+                <button
+                  className="flex-1 py-3 rounded-xl bg-surface-container-lowest border border-outline-variant/10 font-label text-[10px] uppercase font-bold tracking-widest text-on-surface-variant disabled:opacity-30 disabled:bg-surface hover:bg-surface-container-low transition-colors"
+                  disabled={page === 0}
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                >
+                  Prev
+                </button>
+                <button
+                  className="flex-1 py-3 rounded-xl bg-surface-container-lowest border border-outline-variant/10 font-label text-[10px] uppercase font-bold tracking-widest text-on-surface-variant disabled:opacity-30 disabled:bg-surface hover:bg-surface-container-low transition-colors"
+                  disabled={(page + 1) * pageSize >= sortedHistory.length}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Live Claims Card ── */}
+        <div className="pt-4">
+          <div className="mb-4 pl-2">
+            <h3 className="font-headline text-2xl font-medium flex items-center gap-2">
+              Live Claims <span className="relative flex h-2 w-2 ml-1"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span></span>
+            </h3>
+            <p className="font-label text-[10px] uppercase tracking-widest text-secondary">दावे — Real-Time</p>
+          </div>
+
+          <div className="space-y-3">
+            {claims.length === 0 && (
+              <div className="bg-surface-container-lowest p-6 rounded-[24px] text-center border border-outline-variant/10 border-dashed">
+                <span className="font-body text-sm text-on-surface-variant italic">No claims triggered yet.</span>
+              </div>
+            )}
+            
+            {claims.map((c) => {
+               // Determine icon based on trigger_type
+               let icon = "bolt";
+               if (c.trigger_type === "RAIN") icon = "water_drop";
+               if (c.trigger_type === "AQI") icon = "air";
+               if (c.trigger_type === "OUTAGE") icon = "app_blocking";
+
+               return (
+                <div key={c.id} className="bg-surface-container-lowest p-5 rounded-[24px] editorial-shadow border border-outline-variant/10 relative overflow-hidden group hover:border-primary/20 transition-colors cursor-pointer">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-primary/20 group-hover:bg-primary transition-colors"></div>
+                  
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
+                        <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span>
+                      </div>
+                      <div>
+                        <p className="font-headline text-lg font-medium">{c.trigger_type}</p>
+                        <p className="font-body text-[11px] text-on-surface-variant">
+                          {new Date(c.created_at).toLocaleString("en-IN", {month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'})}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                       <span className={`px-2 py-1 rounded-md font-label text-[9px] uppercase font-bold tracking-widest block mb-1 w-max ml-auto ${
+                         c.status === "SETTLED" ? 'bg-primary-container text-on-primary-container' 
+                         : c.status === "TRIGGERED" ? 'bg-amber-100 text-amber-800 animate-pulse' 
+                         : 'bg-surface-container-high text-on-surface-variant border border-outline-variant/20'
+                       }`}>
+                         {c.status}
+                       </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-outline-variant/10 flex justify-between items-end">
+                    <div>
+                      {c.payout_txn_id && (
+                        <p className="font-mono text-[9px] text-on-surface-variant/80 uppercase">TXN: {c.payout_txn_id.slice(0,10)}...</p>
+                      )}
+                    </div>
+                    <p className="font-headline text-xl text-primary font-medium">{formatRupees(Number(c.payout_amount))}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+      </main>
+
+      {/* BottomNavBar */}
+      <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pt-3 pb-8 bg-[#f9f9f7]/80 dark:bg-stone-900/80 backdrop-blur-xl shadow-[0_-4px_30px_rgba(0,0,0,0.06)] rounded-t-[32px] border-t border-outline-variant/10">
+        <Link href="/">
+          <div className="flex flex-col items-center justify-center text-stone-500 p-2 hover:text-primary transition-colors duration-200 cursor-pointer">
+            <span className="material-symbols-outlined mb-1" data-icon="home_app_logo">home_app_logo</span>
+            <span className="font-['Manrope'] text-[11px] font-medium uppercase tracking-wider">Home</span>
+          </div>
+        </Link>
+        <Link href="/dashboard">
+          <div className="flex flex-col items-center justify-center bg-primary text-on-primary rounded-full px-5 py-2 scale-95 duration-200 cursor-pointer editorial-shadow">
+            <span className="material-symbols-outlined mb-1 text-[18px]" data-icon="verified_user">dashboard</span>
+            <span className="font-['Manrope'] text-[11px] font-medium uppercase tracking-wider">Dash</span>
+          </div>
+        </Link>
+        <Link href="/payout-success">
+          <div className="flex flex-col items-center justify-center text-stone-500 p-2 hover:text-primary transition-colors duration-200 cursor-pointer">
+            <span className="material-symbols-outlined mb-1" data-icon="request_quote">request_quote</span>
+            <span className="font-['Manrope'] text-[11px] font-medium uppercase tracking-wider">Claims</span>
+          </div>
+        </Link>
+        <Link href="/dashboard">
+          <div className="flex flex-col items-center justify-center text-stone-500 p-2 hover:text-primary transition-colors duration-200 cursor-pointer">
+            <span className="material-symbols-outlined mb-1" data-icon="account_circle">account_circle</span>
+            <span className="font-['Manrope'] text-[11px] font-medium uppercase tracking-wider">Profile</span>
+          </div>
+        </Link>
+      </nav>
     </div>
   );
 }
