@@ -1,10 +1,5 @@
 <a name="readme-top"></a>
 
-<div align="center">
-  <a href="https://github.com/SHIVIKA330/OffShift">
-    <img src="offshift_static_minimal.png" alt="OffShift Logo" width="400">
-  </a>
-
   <h1>OffShift — Smart Income Shield</h1>
   <h3><em>"When the storm hits — the money hits first."</em></h3>
 
