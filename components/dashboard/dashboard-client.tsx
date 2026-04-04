@@ -109,7 +109,9 @@ export function DashboardClient() {
     };
   }, [supabase, workerId, load]);
 
-  const active = policies.find((p) => p.status === "ACTIVE");
+  const active = useMemo(() => {
+    return policies.find((p) => p.status.toUpperCase() === "ACTIVE");
+  }, [policies]);
 
   const sortedHistory = useMemo(() => {
     const arr = [...policies];

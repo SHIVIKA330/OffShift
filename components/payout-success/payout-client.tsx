@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { formatRupees } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
 
@@ -88,11 +89,34 @@ export function PayoutSuccessClient() {
         <span className="material-symbols-outlined text-error text-6xl" style={{ fontVariationSettings: "'FILL' 1" }}>error</span>
         <h2 className="font-headline text-2xl mb-2">Claim Not Found</h2>
         <p className="text-on-surface-variant text-sm">{error}</p>
-        <Link href="/dashboard">
-          <button className="mt-6 bg-primary text-on-primary px-8 py-3 rounded-full font-label text-xs font-bold uppercase tracking-widest editorial-shadow">
-            Return to Dashboard
+        <div className="flex gap-4">
+          <Link href="/dashboard">
+            <button className="bg-surface-container-highest text-on-surface px-6 py-3 rounded-full font-label text-xs font-bold uppercase tracking-widest editorial-shadow hover:scale-105 transition-all">
+              Back
+            </button>
+          </Link>
+          <button 
+            onClick={async () => {
+              const workerId = localStorage.getItem("offshift_worker_id");
+              const { data: pol } = await supabase.from("policies").select("id").eq("worker_id", workerId).eq("status", "ACTIVE").order("created_at", { ascending: false }).limit(1).single();
+              if (pol) {
+                await fetch("/api/debug/simulate-trigger", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ worker_id: workerId, policy_id: pol.id }),
+                });
+                toast.success("⛈️ Triggering demo payout...");
+                setTimeout(() => window.location.reload(), 1500);
+              } else {
+                toast.error("Buy a policy first!");
+              }
+            }}
+            className="bg-primary text-on-primary px-6 py-3 rounded-full font-label text-xs font-bold uppercase tracking-widest editorial-shadow flex items-center gap-2 hover:scale-105 transition-all"
+          >
+            <span className="material-symbols-outlined text-[16px]">thunderstorm</span>
+            Trigger Demo Claim
           </button>
-        </Link>
+        </div>
       </div>
     );
   }

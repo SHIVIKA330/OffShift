@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 
 export default function BotSimulator() {
   const [messages, setMessages] = useState<{ role: "user" | "bot"; text: string }[]>([
@@ -14,7 +15,6 @@ export default function BotSimulator() {
 
   useEffect(() => {
     const fetchWorkerInfo = async () => {
-       const { createClient } = await import("@/lib/supabase/client");
        const supabase = createClient();
        const id = localStorage.getItem("offshift_worker_id");
        if (id) {
