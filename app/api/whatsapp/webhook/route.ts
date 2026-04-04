@@ -3,6 +3,13 @@ import { createServiceRoleClient } from "@/lib/supabase-service";
 
 export const dynamic = "force-dynamic";
 
+export async function GET(req: Request) {
+  return NextResponse.json({
+    status: "OffShift WhatsApp Bot is Live!",
+    usage: "Please send a POST request with the 'message' and 'sender' keys to test conversational flows."
+  });
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -16,7 +23,7 @@ export async function POST(req: Request) {
     switch (message) {
       case "hi":
       case "hello":
-        reply = "👋 Welcome to OffShift — Smart Income Shield!\n\nTo get started, please use our secure 60-second onboarding link:\nhttps://offshift.vercel.app/onboard\n\nOr reply STATUS to check your current coverage.";
+        reply = "👋 Welcome to OffShift — Smart Income Shield!\n\nTo get started, please use our secure 60-second onboarding link:\nhttps://offshift-9iok.onrender.com/onboard\n\nOr reply STATUS to check your current coverage.";
         break;
 
       case "status":
@@ -47,7 +54,7 @@ export async function POST(req: Request) {
         break;
 
       case "renew":
-        reply = "To renew your OffShift coverage, please visit:\nhttps://offshift.vercel.app/onboard\n\nYour Kavach risk score will be recalculated for the dynamic premium.";
+        reply = "To renew your OffShift coverage, please visit:\nhttps://offshift-9iok.onrender.com/onboard\n\nYour Kavach risk score will be recalculated for the dynamic premium.";
         break;
 
       default:

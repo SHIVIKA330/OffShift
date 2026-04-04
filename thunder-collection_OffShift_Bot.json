@@ -1,0 +1,51 @@
+{
+    "client": "Thunder Client",
+    "collectionName": "OffShift WhatsApp Bot",
+    "dateExported": "2026-04-04T13:21:00.000Z",
+    "version": "1.1",
+    "folders": [],
+    "requests": [
+        {
+            "containerId": "",
+            "sortNum": 10000,
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "colId": "offshift-bot-collection",
+            "name": "Test HI Command",
+            "url": "http://localhost:3001/api/whatsapp/webhook",
+            "method": "POST",
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"message\": {\n    \"text\": \"hi\"\n  },\n  \"sender\": \"+919876543210\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "containerId": "",
+            "sortNum": 20000,
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "colId": "offshift-bot-collection",
+            "name": "Test STATUS Command",
+            "url": "http://localhost:3000/api/whatsapp/webhook",
+            "method": "POST",
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"message\": {\n    \"text\": \"status\"\n  },\n  \"sender\": \"+919876543210\"\n}",
+                "form": []
+            },
+            "tests": []
+        }
+    ]
+}
