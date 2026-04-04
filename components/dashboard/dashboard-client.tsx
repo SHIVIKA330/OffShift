@@ -42,6 +42,8 @@ export function DashboardClient() {
   const pageSize = 5;
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [riderId, setRiderId] = useState<string>("");
+  const [platform, setPlatform] = useState<string>("");
 
   const doLogout = useCallback(() => {
     localStorage.removeItem("offshift_worker_id");
@@ -59,6 +61,20 @@ export function DashboardClient() {
 
   const load = useCallback(async () => {
     if (!workerId) return;
+
+    // Fetch Worker Profile info
+    const { data: worker } = await supabase
+      .from("workers")
+      .select("name, rider_id, platform")
+      .eq("id", workerId)
+      .single();
+    
+    if (worker) {
+      setWorkerName(worker.name);
+      setRiderId(worker.rider_id);
+      setPlatform(worker.platform);
+      localStorage.setItem("offshift_worker_name", worker.name);
+    }
 
     const { data: pol } = await supabase
       .from("policies")
@@ -200,9 +216,14 @@ export function DashboardClient() {
           </div>
           {isProfileOpen && (
             <div className="absolute right-0 top-12 mt-2 w-48 bg-surface-container-lowest rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-outline-variant/10 overflow-hidden z-50">
-              <div className="px-4 py-3 border-b border-outline-variant/10">
-                <p className="text-sm font-semibold">{workerName}</p>
-                <p className="text-xs text-on-surface-variant font-mono truncate">{workerId}</p>
+              <div className="px-4 py-3 border-b border-outline-variant/10 bg-surface-container-low/30">
+                <div className="flex items-center gap-2 mb-1">
+                   <span className="text-sm">{(platform === "Zomato" ? "🍽️" : platform === "Swiggy" ? "🛵" : "⚡")}</span>
+                   <p className="text-sm font-bold text-primary">{workerName}</p>
+                </div>
+                <p className="text-[10px] font-bold text-on-surface-variant font-mono uppercase tracking-widest bg-surface-container rounded px-2 py-0.5 w-max">
+                  {riderId || workerId?.slice(0,8)}
+                </p>
               </div>
               <button 
                 onClick={doLogout}
@@ -221,9 +242,14 @@ export function DashboardClient() {
         {/* User Greeting Header */}
         <div className="mb-2 pl-2">
           <h1 className="font-headline text-4xl mb-1 text-primary">Dashboard</h1>
-          <p className="font-body text-sm text-on-surface-variant flex items-center gap-2">
-            नमस्ते, <strong className="text-on-surface">{workerName}</strong>
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="font-body text-sm text-on-surface-variant">
+              नमस्ते, <strong className="text-on-surface">{workerName}</strong>
+            </span>
+            <span className="bg-surface-container-high text-primary px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-widest border border-outline-variant/10">
+              {riderId}
+            </span>
+          </div>
         </div>
 
         {/* ── Active Policy Card ── */}
