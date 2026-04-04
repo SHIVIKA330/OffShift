@@ -1,10 +1,5 @@
 <a name="readme-top"></a>
 
-<div align="center">
-  <a href="https://github.com/SHIVIKA330/OffShift">
-    <img src="offshift_static_minimal.png" alt="OffShift Logo" width="400">
-  </a>
-
   <h1>OffShift — Smart Income Shield</h1>
   <h3><em>"When the storm hits — the money hits first."</em></h3>
 
@@ -16,18 +11,21 @@
     <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
     <img src="https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="WhatsApp"/>
     <img src="https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white" alt="scikit-learn"/>
-    <img src="https://img.shields.io/badge/Infrastructure_Cost-₹0-success?style=for-the-badge" alt="Zero Cost"/>
   </p>
 
   <p>
     An AI-powered parametric insurance platform for India's 12 million gig delivery workers.<br/>
     <strong>Zero claim forms. Zero paperwork. Automatic UPI payout in 120 seconds.</strong>
     <br/><br/>
-    <a href="https://youtu.be/-H7DZOUcolM?si=UAGWT9GT7QqNVLQC"> View Demo</a>
+    <a href="https://offshift-9iok.onrender.com"><strong>🚀 LIVE DEMO</strong></a>
     ·
+    <a href="https://offshift-9iok.onrender.com/debug/bot"><strong>🤖 Bot Simulator</strong></a>
+    ·
+    <a href="https://youtu.be/-H7DZOUcolM?si=UAGWT9GT7QqNVLQC"> View Demo phase 1 Video</a>
+    ·
+    <a href="https://www.youtube.com/watch?v=zkxA6ojrw6w"> View Demo phase 2 Video</a>
+    .
     <a href="./OffShift — Smart Income Shield _ Guidewire DEVTrails 2026.pdf"> View Presentation</a>
-    ·
-    <a href="https://github.com/SHIVIKA330/OffShift/issues"> Report Bug</a>
   </p>
 </div>
 
@@ -1178,7 +1176,7 @@ Built with purpose and late nights by the OffShift team for **Guidewire DEVTrail
 
 **OffShift Team — DEVTrails 2026 — shivikaj47@gmail.com**
 
-Project (try out link): [https://v0-off-shift-projects.vercel.app/](https://v0-off-shift-projects.vercel.app/)
+Project (live site): [https://offshift-9iok.onrender.com/](https://offshift-9iok.onrender.com/)
 
 ---
 
