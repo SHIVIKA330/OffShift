@@ -4,12 +4,14 @@
  */
 
 import { type ZoneSlug, ZONE_COORDS } from "@/lib/zones";
+import { getTriggerProbability } from "@/lib/actuarial";
+import { computeWorkerTier, tierPremiumDiscount } from "@/lib/underwriting";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
 export type CoverageType = "24hr" | "7day";
 export type ShiftType = "morning" | "evening" | "night" | "flexible";
-export type Platform = "zomato" | "swiggy";
+export type Platform = "zomato" | "swiggy" | "zepto";
 
 export interface KavachEngineResult {
   base_premium: number;
@@ -85,6 +87,7 @@ export const calculateKavachScore = (
 
 /**
  * Map Kavach Score to premium price (₹).
+ * Per DEVTrails spec: Target ₹20–₹50 per worker per week
  * 1-40 = LOW, 41-70 = MEDIUM, 71-100 = HIGH
  */
 export const getPriceFromScore = (
@@ -92,14 +95,14 @@ export const getPriceFromScore = (
   type: "24hr" | "7day"
 ): number => {
   if (type === "24hr") {
-    if (score <= 40) return 19;
-    if (score <= 70) return 29;
-    return 49;
+    if (score <= 40) return 9;
+    if (score <= 70) return 15;
+    return 25;
   }
-  // Weekly pricing
-  if (score <= 40) return 79;
-  if (score <= 70) return 99;
-  return 149;
+  // Weekly pricing — target ₹20-₹50
+  if (score <= 40) return 21;
+  if (score <= 70) return 35;
+  return 49;
 };
 
 // ─── Risk Band (for UI badges) ──────────────────────────────────────────────
@@ -111,10 +114,10 @@ export function riskBand(score: number): {
   color: "green" | "yellow" | "orange";
 } {
   if (score <= 40)
-    return { label: "LOW", dayRef: 19, weekRef: 79, color: "green" };
+    return { label: "LOW", dayRef: 9, weekRef: 21, color: "green" };
   if (score <= 70)
-    return { label: "MEDIUM", dayRef: 29, weekRef: 99, color: "yellow" };
-  return { label: "HIGH", dayRef: 49, weekRef: 149, color: "orange" };
+    return { label: "MEDIUM", dayRef: 15, weekRef: 35, color: "yellow" };
+  return { label: "HIGH", dayRef: 25, weekRef: 49, color: "orange" };
 }
 
 // ─── Backward-compatible aliases ────────────────────────────────────────────
@@ -184,22 +187,37 @@ const SHIFT_MULT: Record<string, number> = {
 };
 
 export function runKavachEngine(input: KavachEngineInput): KavachEngineResult {
-  const base = input.coverage_type === "24hr" ? 29 : 99;
+  // ── Actuarial pricing formula (DEVTrails spec) ──
+  // Base = P(trigger) × avg_income_lost_per_day × days_exposed
+  const trigProb = getTriggerProbability(input.zone);
+  const avgIncomeLostPerDay = 900; // ₹900 avg daily gig income
+  const daysExposed = input.coverage_type === "24hr" ? 1 : 7;
+  const pTrigger = trigProb.combined_weekly;
+
+  // Actuarial base: probability × income × days × BCR target factor
+  const bcrFactor = 0.65; // Target BCR 0.65 (65 paise per ₹1)
+  const actuarialBase = pTrigger * avgIncomeLostPerDay * daysExposed * bcrFactor;
+
   const zm = ZONE_MULT[input.zone] ?? 1;
   const sm = SHIFT_MULT[input.shift_type] ?? 1;
 
-  // Weather surge
+  // Tier-based discount
+  const tier = computeWorkerTier(input.active_days);
+  const tierAdj = tierPremiumDiscount(tier);
+
+  // Weather surge (real-time adjustment)
   let weatherSurge = 0;
-  if (input.openMeteo.maxHourlyRainNext48h > 30) weatherSurge += 10;
-  if (input.aqi_forecast_peak > 200) weatherSurge += 8;
+  if (input.openMeteo.maxHourlyRainNext48h > 30) weatherSurge += 3;
+  if (input.aqi_forecast_peak > 200) weatherSurge += 2;
 
-  // Activity adjustment
-  let activityAdj = 0;
-  if (input.active_days >= 7) activityAdj -= 5;
-  if (input.active_days < 3) activityAdj += 10;
+  let raw = actuarialBase * zm * sm * tierAdj + weatherSurge;
 
-  let raw = base * zm * sm + weatherSurge + activityAdj;
-  raw = Math.max(9, raw);
+  // Clamp to target range: ₹20-₹50/week, ₹9-₹25/day
+  if (input.coverage_type === "24hr") {
+    raw = Math.max(9, Math.min(25, raw));
+  } else {
+    raw = Math.max(20, Math.min(50, raw));
+  }
   const finalPremium = Math.round(raw);
 
   const kavach_score = calculateKavachScore(
@@ -211,11 +229,11 @@ export function runKavachEngine(input: KavachEngineInput): KavachEngineResult {
   const max_payout = input.coverage_type === "24hr" ? 500 : 1500;
 
   return {
-    base_premium: base,
+    base_premium: Math.round(actuarialBase),
     zone_multiplier: zm,
     shift_multiplier: sm,
     weather_surge: weatherSurge,
-    activity_adjustment: activityAdj,
+    activity_adjustment: Math.round((tierAdj - 1) * 100) / 100,
     final_premium: finalPremium,
     kavach_score,
     max_payout,

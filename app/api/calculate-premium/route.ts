@@ -10,7 +10,8 @@ import {
   type Platform,
   type ShiftType,
 } from "@/lib/kavach-engine";
-import { getMockAqiForZone } from "@/lib/mock-data";
+import { getAQIForZone } from "@/lib/cpcb-feed";
+import { computeWorkerTier } from "@/lib/underwriting";
 import { getRedis } from "@/lib/redis";
 import { normalizeZone, ZONE_COORDS, type ZoneSlug } from "@/lib/zones";
 
@@ -40,7 +41,7 @@ export async function POST(req: Request) {
     !["morning", "evening", "night", "flexible"].includes(body.shift_type) ||
     body.active_days < 1 ||
     body.active_days > 7 ||
-    !["zomato", "swiggy"].includes(body.platform) ||
+    !["zomato", "swiggy", "zepto"].includes(body.platform.toLowerCase()) ||
     !["24hr", "7day"].includes(body.coverage_type)
   ) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
@@ -64,8 +65,8 @@ export async function POST(req: Request) {
   const score = calculateKavachScore(zone, body.shift_type, body.active_days);
   const premium = getPriceFromScore(score, body.coverage_type);
 
-  // ── Full engine for detailed breakdown ──
-  const aqi = getMockAqiForZone(zone);
+  // ── Full engine with real AQI feed ──
+  const aqi = await getAQIForZone(zone);
   const openMeteo = await fetchOpenMeteoRain(zone);
   const engine = runKavachEngine({
     zone,
@@ -76,6 +77,8 @@ export async function POST(req: Request) {
     aqi_forecast_peak: aqi.aqi_forecast_peak,
     openMeteo,
   });
+
+  const tier = computeWorkerTier(body.active_days);
 
   // ── NVIDIA-powered Hindi explanation ──
   let explanation_hindi: string;
@@ -102,6 +105,7 @@ export async function POST(req: Request) {
   const payload = {
     kavach_score: score,
     premium,
+    tier,
     base_premium: engine.base_premium,
     zone_multiplier: engine.zone_multiplier,
     shift_multiplier: engine.shift_multiplier,

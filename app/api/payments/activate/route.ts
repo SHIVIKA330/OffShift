@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
-
 import {
   fetchOpenMeteoRain,
   runKavachEngine,
   type CoverageType,
   type ShiftType,
 } from "@/lib/kavach-engine";
-import { getMockAqiForZone } from "@/lib/mock-data";
+import { getAQIForZone } from "@/lib/cpcb-feed";
 import { createServiceRoleClient } from "@/lib/supabase-service";
 import { normalizeZone } from "@/lib/zones";
+import { checkEligibility, getZoneRiskPools, computeWorkerTier } from "@/lib/underwriting";
 
 export async function POST(req: Request) {
   try {
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
       zone: string;
       shift_type: ShiftType;
       active_days: number;
-      platform: "zomato" | "swiggy";
+      platform: "zomato" | "swiggy" | "zepto";
       razorpay_payment_id?: string;
     };
     try {
@@ -36,14 +36,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid zone" }, { status: 400 });
     }
 
-    // Calculate premium
-    const aqi = getMockAqiForZone(zone);
+    // ── Underwriting Gate (DEVTrails Spec) ──
+    const underwriting = checkEligibility({
+      platform: body.platform,
+      activeDaysPerWeek: body.active_days,
+      zone,
+    });
+
+    if (!underwriting.eligible) {
+      return NextResponse.json({ error: underwriting.rejectionReason }, { status: 403 });
+    }
+
+    const pools = getZoneRiskPools(zone);
+    const tier = computeWorkerTier(body.active_days);
+
+    // Calculate premium with real AQI feed
+    const aqi = await getAQIForZone(zone);
     const openMeteo = await fetchOpenMeteoRain(zone);
     const engine = runKavachEngine({
       zone,
       shift_type: body.shift_type,
       active_days: body.active_days,
-      platform: body.platform,
+      platform: body.platform as any,
       coverage_type: body.plan_type,
       aqi_forecast_peak: aqi.aqi_forecast_peak,
       openMeteo,
@@ -58,7 +72,9 @@ export async function POST(req: Request) {
       end.setDate(end.getDate() + 7);
     }
 
-    const max_payout = body.plan_type === "24hr" ? 500 : 1500;
+    // Tier-adjusted max payout
+    const base_max = body.plan_type === "24hr" ? 500 : 1500;
+    const tier_max = Math.round(base_max * (tier === "BASIC" ? 0.4 : tier === "STANDARD" ? 0.7 : 1.0));
 
     const supabase = createServiceRoleClient();
 
@@ -68,13 +84,15 @@ export async function POST(req: Request) {
         worker_id: body.worker_id,
         plan_type: body.plan_type,
         premium_amount: engine.final_premium,
-        max_payout,
+        max_payout: tier_max,
         coverage_start: start.toISOString(),
         coverage_end: end.toISOString(),
         status: "ACTIVE",
+        risk_pool: pools[0] || "GENERAL",
         next_premium_due_at: end.toISOString(),
+        razorpay_payment_id: body.razorpay_payment_id,
       })
-      .select("id, coverage_start, coverage_end, plan_type, max_payout, status")
+      .select("id, coverage_start, coverage_end, plan_type, max_payout, status, risk_pool")
       .single();
 
     if (error || !policy) {
@@ -87,6 +105,8 @@ export async function POST(req: Request) {
     return NextResponse.json({
       policy,
       premium_paid: engine.final_premium,
+      underwriting_tier: tier,
+      warnings: underwriting.warnings,
     });
   } catch (err) {
     console.error("[activate] Unhandled error:", err);

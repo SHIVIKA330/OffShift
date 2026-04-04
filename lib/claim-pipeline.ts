@@ -1,6 +1,7 @@
-import { runFraudDetection } from "@/lib/claude";
-import { executeMockPayout } from "@/lib/payout-mock";
 import { createServiceRoleClient } from "@/lib/supabase-service";
+import { executeSettlement } from "@/lib/settlement-engine";
+import { runFraudDetection } from "@/lib/claude";
+import { RiskPool } from "@/lib/underwriting";
 
 export async function processClaimPipeline(claimId: string): Promise<void> {
   const supabase = createServiceRoleClient();
@@ -105,12 +106,13 @@ export async function processClaimPipeline(claimId: string): Promise<void> {
 
   await supabase.from("claims").update({ status: "APPROVED" }).eq("id", claimId);
 
-  const payoutResult = await executeMockPayout(
+  // ── Multi-Channel Settlement (DEVTrails Spec) ──
+  const payoutResult = await executeSettlement(
     claimId,
     Number(claim.payout_amount)
   );
 
-  if (payoutResult.success) {
+  if (payoutResult.status === "COMPLETED") {
     await supabase
       .from("claims")
       .update({

@@ -5,15 +5,21 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
 import { Slider } from "@/components/ui/slider";
-import { riskBand, type ShiftType } from "@/lib/kavach-engine";
+import { riskBand, type ShiftType, type Platform } from "@/lib/kavach-engine";
+import { calculateKavachScore, getPriceFromScore, runKavachEngine } from "@/lib/kavach-engine";
+import { computeWorkerTier, tierPayoutMultiplier, type WorkerTier } from "@/lib/underwriting";
+import { Check, Info, Shield, Zap, CloudRain, AlertTriangle, Landmark, QrCode } from "lucide-react";
 import { formatRupees } from "@/lib/format";
 import { ZONE_STATES, type ZoneSlug } from "@/lib/zones";
 
 type PremiumRes = {
-  final_premium: number;
   kavach_score: number;
   max_payout: number;
   explanation_hindi: string;
+  tier: WorkerTier;
+  day_price: number;
+  week_price: number;
+  final_premium: number;
 };
 
 const SHIFTS: { value: ShiftType; label: string; hi: string }[] = [
@@ -152,20 +158,30 @@ export function OnboardingWizard() {
       setPremium(null);
       await new Promise((r) => setTimeout(r, 2000));
       try {
-        const res = await fetch("/api/calculate-premium", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            zone,
-            shift_type: shift,
-            active_days: days[0],
-            platform,
-            coverage_type: "7day",
-          }),
+        const aqi = 150 + Math.floor(Math.random() * 200); // Demo mock
+        const tier = computeWorkerTier(days[0]);
+        
+        const engine = runKavachEngine({
+          zone,
+          shift_type: shift,
+          active_days: days[0],
+          platform,
+          coverage_type: "7day",
+          aqi_forecast_peak: aqi,
+          openMeteo: { maxHourlyRainNext48h: 10, sumRainNext48h: 20 },
         });
-        const data = (await res.json()) as PremiumRes & { error?: string };
-        if (!res.ok) throw new Error(data.error ?? "calc failed");
-        if (!cancelled) setPremium(data);
+
+        if (!cancelled) {
+          setPremium({
+            kavach_score: engine.kavach_score,
+            tier: tier,
+            day_price: getPriceFromScore(engine.kavach_score, "24hr"),
+            week_price: getPriceFromScore(engine.kavach_score, "7day"),
+            final_premium: getPriceFromScore(engine.kavach_score, "7day"),
+            max_payout: 500 * tierPayoutMultiplier(tier),
+            explanation_hindi: "Based on your activity and zone risk profile."
+          });
+        }
       } catch (e) {
         if (!cancelled) toast.error(String(e));
       } finally {
@@ -256,8 +272,8 @@ export function OnboardingWizard() {
     if (!premium) return;
 
     const amount = plan === "24hr"
-      ? Math.round(premium.final_premium * 0.6)
-      : premium.final_premium;
+      ? premium.day_price
+      : premium.week_price;
 
     // ── UPI / IMPS: Direct payment flow (no Razorpay checkout) ──
     if (settlementChannel === "UPI" || settlementChannel === "IMPS") {
@@ -644,10 +660,10 @@ export function OnboardingWizard() {
                         step={1}
                         className="mb-8"
                       />
-                      <div className="flex justify-center items-end gap-1">
-                        <span className="font-headline text-5xl font-medium text-primary">{days[0]}</span>
-                        <span className="font-body text-lg text-on-surface-variant pb-1">दिन</span>
-                      </div>
+                      <div className="flex justify-between text-sm mb-4">
+                      <span className="text-slate-500">Max Payout</span>
+                      <span className="font-bold text-slate-900">₹{Math.round(500 * tierPayoutMultiplier(premium?.tier || 'STANDARD'))}</span>
+                    </div>
                     </div>
                     {days[0] < 5 && (
                       <div className="mt-4 p-3 rounded-xl bg-error-container text-on-error-container text-xs font-body text-center flex items-center justify-center gap-2">
