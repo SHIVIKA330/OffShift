@@ -40,6 +40,13 @@ export function DashboardClient() {
   const [sortKey, setSortKey] = useState<"created_at" | "premium_amount">("created_at");
   const [page, setPage] = useState(0);
   const pageSize = 5;
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  const doLogout = useCallback(() => {
+    localStorage.removeItem("offshift_worker_id");
+    localStorage.removeItem("offshift_worker_name");
+    window.location.href = "/";
+  }, []);
 
   // Get worker_id from localStorage
   useEffect(() => {
@@ -162,11 +169,28 @@ export function DashboardClient() {
             <h1 className="text-2xl font-semibold tracking-tighter text-primary font-['Newsreader']">OffShift</h1>
           </div>
         </Link>
-        <Link href="/dashboard">
-          <div className="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant/15 flex items-center justify-center overflow-hidden hover:opacity-70 transition-opacity duration-300 ease-in-out cursor-pointer">
+        <div className="relative">
+          <div 
+            onClick={() => setIsProfileOpen(!isProfileOpen)}
+            className="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant/15 flex items-center justify-center overflow-hidden hover:opacity-70 transition-opacity duration-300 ease-in-out cursor-pointer">
             <img alt="Profile" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC95G_7XgTmO5BqUuzbpLEgXc7-4kMwgCwl1NZw8mlK-DYoiUVWMcs8CASgIcEn4bniG4AFJQPWeNnEaea2aFik8TwfLAgBfIYYlBRzLUQ4o6KSF_NIedBXY5gsc2wPRlxD5468OoFmFIWauikoZ8utGhQ5RzulaTjDTz3wVw6E3yv4VoWMS77huuVwTAm0tIBzuqrglIPdMrl_rd4e6eHeCTOGkh98SQ9tAlSWlW5zVJnwhw3GinFy5WantT8l860hX3GbCv0Owww"/>
           </div>
-        </Link>
+          {isProfileOpen && (
+            <div className="absolute right-0 top-12 mt-2 w-48 bg-surface-container-lowest rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-outline-variant/10 overflow-hidden z-50">
+              <div className="px-4 py-3 border-b border-outline-variant/10">
+                <p className="text-sm font-semibold">{workerName}</p>
+                <p className="text-xs text-on-surface-variant font-mono truncate">{workerId}</p>
+              </div>
+              <button 
+                onClick={doLogout}
+                className="w-full px-4 py-3 text-left text-sm text-error hover:bg-error-container/10 transition-colors flex items-center gap-2 font-medium"
+              >
+                <span className="material-symbols-outlined text-[18px]">logout</span>
+                लॉग आउट / Log Out
+              </button>
+            </div>
+          )}
+        </div>
       </header>
 
       <main className="pt-28 px-4 sm:px-6 max-w-lg mx-auto space-y-6">
@@ -218,10 +242,13 @@ export function DashboardClient() {
 
             <div className="flex flex-wrap gap-2 mb-6">
               <div className={`px-3 py-1 rounded-full font-label text-[10px] uppercase tracking-widest flex items-center gap-1 border ${active.trigger_weather ? 'bg-on-primary/10 border-transparent text-[#cbebc8]' : 'border-on-primary/20 text-on-primary/40'}`}>
-                {active.trigger_weather ? <span className="material-symbols-outlined text-[14px]">check</span> : null} Weather
+                {active.trigger_weather ? <span className="material-symbols-outlined text-[14px]">check</span> : null} Weather (Heat, Rain, AQI)
               </div>
               <div className={`px-3 py-1 rounded-full font-label text-[10px] uppercase tracking-widest flex items-center gap-1 border ${active.trigger_outage ? 'bg-on-primary/10 border-transparent text-[#cbebc8]' : 'border-on-primary/20 text-on-primary/40'}`}>
                 {active.trigger_outage ? <span className="material-symbols-outlined text-[14px]">check</span> : null} Outage
+              </div>
+              <div className="px-3 py-1 rounded-full font-label text-[10px] uppercase tracking-widest flex items-center gap-1 border bg-on-primary/10 border-transparent text-[#cbebc8]">
+                <span className="material-symbols-outlined text-[14px]">check</span> Social (Curfews)
               </div>
             </div>
 

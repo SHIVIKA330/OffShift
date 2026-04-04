@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { processClaimPipeline } from "@/lib/claim-pipeline";
-import { getMockAqiForZone, getMockDowndetector } from "@/lib/mock-data";
+import { getMockAqiForZone, getMockDowndetector, getMockHeat, getMockCurfew } from "@/lib/mock-data";
 import { createServiceRoleClient } from "@/lib/supabase-service";
 import {
   fetchHourlyPrecipitationMm,
@@ -107,6 +107,8 @@ export async function GET(req: Request) {
     rain: [] as string[],
     aqi: [] as string[],
     outage: [] as string[],
+    heat: [] as string[],
+    curfew: [] as string[],
     errors: [] as string[],
   };
 
@@ -364,6 +366,128 @@ export async function GET(req: Request) {
       }
     } catch (e) {
       summary.errors.push(`outage ${platform}: ${String(e)}`);
+    }
+  }
+
+  // ═══════════════════════════════════════
+  // TRIGGER 4 — Extreme Heat (Weather Oracle)
+  // ═══════════════════════════════════════
+  for (const zone of zones) {
+    try {
+      const heat = getMockHeat(zone);
+      if (!heat.is_heatwave) continue;
+
+      const dedupeKey = `trig:heat:${zone}:${hourBucket}`;
+      if (redis) {
+        const set = await redis.set(dedupeKey, "1", { nx: true, ex: 86400 }); // daily
+        if (set === null) continue;
+      }
+
+      await supabase.from("trigger_events").insert({
+        zone,
+        trigger_type: "HEAT",
+        severity: String(heat.temperature_celsius) + "C",
+        severity_value: heat.temperature_celsius,
+        metadata: { source: "IMD_MOCK" },
+      });
+
+      const { data: policies } = await supabase
+        .from("policies")
+        .select("id, worker_id, max_payout, trigger_weather, workers!inner(zone, shift_type)")
+        .eq("status", "ACTIVE");
+
+      const list = (policies ?? []).filter((p: { workers: unknown; trigger_weather: boolean }) => {
+        const m = workerMeta(p.workers);
+        return m.zone === zone && p.trigger_weather && (m.shift_type === "morning" || m.shift_type === "flexible");
+      });
+
+      let triggered = 0;
+      for (const p of list) {
+        const pol = p as { id: string; worker_id: string; max_payout: number };
+        if (await hasClaimToday(supabase, pol.id, "HEAT")) continue;
+        const payout = Math.round(Number(pol.max_payout) * 0.5); // 50% payout daily
+        const { data: claim, error } = await supabase
+          .from("claims")
+          .insert({
+            policy_id: pol.id,
+            worker_id: pol.worker_id,
+            trigger_type: "HEAT",
+            trigger_severity: `${heat.temperature_celsius}°C`,
+            zone,
+            payout_amount: payout,
+            status: "TRIGGERED",
+          })
+          .select("id")
+          .single();
+        if (!error && claim) {
+          triggered++;
+          await processClaimPipeline(claim.id);
+        }
+      }
+      summary.heat.push(`${zone}:${triggered}`);
+    } catch (e) {
+      summary.errors.push(`heat ${zone}: ${String(e)}`);
+    }
+  }
+
+  // ═══════════════════════════════════════
+  // TRIGGER 5 — Unplanned Curfew / Blockade
+  // ═══════════════════════════════════════
+  for (const zone of zones) {
+    try {
+      const curfew = getMockCurfew(zone);
+      if (!curfew.has_curfew) continue;
+
+      const dedupeKey = `trig:curfew:${zone}:${hourBucket}`;
+      if (redis) {
+        const set = await redis.set(dedupeKey, "1", { nx: true, ex: 86400 });
+        if (set === null) continue;
+      }
+
+      await supabase.from("trigger_events").insert({
+        zone,
+        trigger_type: "CURFEW",
+        severity: "Section 144",
+        severity_value: 100,
+        metadata: { reason: curfew.reason },
+      });
+
+      const { data: policies } = await supabase
+        .from("policies")
+        .select("id, worker_id, max_payout, workers!inner(zone)")
+        .eq("status", "ACTIVE");
+
+      const list = (policies ?? []).filter((p: { workers: unknown }) => {
+        return workerMeta(p.workers).zone === zone;
+      });
+
+      let triggered = 0;
+      for (const p of list) {
+        const pol = p as { id: string; worker_id: string; max_payout: number };
+        if (await hasClaimToday(supabase, pol.id, "CURFEW")) continue;
+        // Full max payout for social curfews
+        const payout = Math.round(Number(pol.max_payout)); 
+        const { data: claim, error } = await supabase
+          .from("claims")
+          .insert({
+            policy_id: pol.id,
+            worker_id: pol.worker_id,
+            trigger_type: "CURFEW",
+            trigger_severity: `Section 144`,
+            zone,
+            payout_amount: payout,
+            status: "TRIGGERED",
+          })
+          .select("id")
+          .single();
+        if (!error && claim) {
+          triggered++;
+          await processClaimPipeline(claim.id);
+        }
+      }
+      summary.curfew.push(`${zone}:${triggered}`);
+    } catch (e) {
+      summary.errors.push(`curfew ${zone}: ${String(e)}`);
     }
   }
 

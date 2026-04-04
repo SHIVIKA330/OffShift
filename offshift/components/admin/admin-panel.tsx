@@ -161,15 +161,74 @@ export function AdminPanel() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Totals</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-slate-700">
-          <p>Premiums collected: {formatRupees(stats.total_premiums)}</p>
-          <p>Payouts settled: {formatRupees(stats.total_payouts)}</p>
-        </CardContent>
-      </Card>
+      <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle>Totals</CardTitle>
+            <p className="text-xs text-slate-500">Overview of capital flow</p>
+          </CardHeader>
+          <CardContent className="text-sm text-slate-700 space-y-2">
+            <div className="flex justify-between pb-2 border-b">
+              <span>Premiums collected</span>
+              <span className="font-semibold">{formatRupees(stats.total_premiums)}</span>
+            </div>
+            <div className="flex justify-between pb-2 border-b">
+              <span>Payouts settled</span>
+              <span className="font-semibold">{formatRupees(stats.total_payouts)}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-red-200">
+          <CardHeader>
+            <CardTitle className="text-red-700 flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px]">warning</span> Syndicate Alerts
+            </CardTitle>
+            <p className="text-xs text-slate-500">Isolation Forest Detection Flags</p>
+          </CardHeader>
+          <CardContent className="text-sm space-y-3">
+            <div className="p-3 bg-red-50 rounded-lg border border-red-100 flex items-start gap-2">
+              <div className="w-2 h-2 mt-1.5 rounded-full bg-red-500 animate-pulse"></div>
+              <div>
+                <p className="font-semibold text-red-900 text-xs">GPS Cluster Anomaly (Okhla)</p>
+                <p className="text-[10px] text-red-700 mt-1">45 accounts sharing identical device kinematics and location within 2 meters. Payouts halted.</p>
+              </div>
+            </div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex items-start gap-2 opacity-60">
+              <div className="w-2 h-2 mt-1.5 rounded-full bg-slate-400"></div>
+              <div>
+                <p className="font-semibold text-slate-700 text-xs">Subscription Spike (Dwarka)</p>
+                <p className="text-[10px] text-slate-500 mt-1">Resolved: Correlated to organic referral campaign.</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-[#0F4C5C]/5 border-[#0F4C5C]/10">
+          <CardHeader>
+            <CardTitle className="text-[#0F4C5C] flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px]">psychology</span> The Week Ahead
+            </CardTitle>
+            <p className="text-xs text-slate-500">Predictive Analytics (XGBoost)</p>
+          </CardHeader>
+          <CardContent className="text-sm space-y-3">
+            <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+               <p className="text-xs font-bold text-slate-800">High Risk: Monsoon (Thursday)</p>
+               <p className="text-[10px] text-slate-600 mt-1 mb-2">Confidence: 87% • Expected liquidity hit: ~₹1,20,000</p>
+               <div className="w-full bg-slate-100 rounded-full h-1.5">
+                  <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: '87%' }}></div>
+               </div>
+            </div>
+            <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+               <p className="text-xs font-bold text-slate-800">Medium Risk: Swiggy Down</p>
+               <p className="text-[10px] text-slate-600 mt-1 mb-2">Confidence: 24% • Based on weekend server loads</p>
+               <div className="w-full bg-slate-100 rounded-full h-1.5">
+                  <div className="bg-[#0F4C5C] h-1.5 rounded-full" style={{ width: '24%' }}></div>
+               </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

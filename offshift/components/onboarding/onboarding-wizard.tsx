@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Slider } from "@/components/ui/slider";
 import { riskBand, type ShiftType } from "@/lib/kavach-engine";
 import { formatRupees } from "@/lib/format";
-import { ZONE_OPTIONS, type ZoneSlug } from "@/lib/zones";
+import { ZONE_STATES, type ZoneSlug } from "@/lib/zones";
 
 type PremiumRes = {
   final_premium: number;
@@ -37,6 +37,16 @@ export function OnboardingWizard() {
   const [screen, setScreen] = useState(0); // 0 = auth chooser/login, 1-4 = signup flow
   const [loading, setLoading] = useState(false);
 
+  // Check if already logged in to skip auth screens
+  useEffect(() => {
+    const id = localStorage.getItem("offshift_worker_id");
+    const uname = localStorage.getItem("offshift_worker_name");
+    if (id && screen === 0) {
+      if (uname) setName(uname);
+      setScreen(2); // Skip directly to Work Zone selection for renewals
+    }
+  }, [screen]);
+
   // Login fields
   const [loginPhone, setLoginPhone] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -49,7 +59,7 @@ export function OnboardingWizard() {
   const [riderId, setRiderId] = useState("");
 
   // Screen 2 — Work Zone
-  const [zone, setZone] = useState<ZoneSlug>("okhla");
+  const [zone, setZone] = useState<ZoneSlug>("mumbai");
   const [shift, setShift] = useState<ShiftType>("evening");
   const [days, setDays] = useState([5]);
 
@@ -182,32 +192,35 @@ export function OnboardingWizard() {
     const amountPaise = amount * 100;
 
     setPayPhase("processing");
-    let workerId: string;
-    try {
-      const regRes = await fetch("/api/workers/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          platform,
-          rider_id: riderId.toUpperCase(),
-          zone,
-          shift_type: shift,
-          active_days_per_week: days[0],
-          kavach_score: premium.kavach_score,
-          phone: `+91${phone.replace(/\D/g, "").slice(-10)}`,
-          password,
-        }),
-      });
-      const regData = await regRes.json();
-      if (!regRes.ok) throw new Error(regData.error ?? "Registration failed");
-      workerId = regData.worker_id;
-      localStorage.setItem("offshift_worker_id", workerId);
-      localStorage.setItem("offshift_worker_name", name);
-    } catch (e) {
-      toast.error(String(e));
-      setPayPhase("idle");
-      return;
+    let workerId = localStorage.getItem("offshift_worker_id");
+    
+    if (!workerId) {
+      try {
+        const regRes = await fetch("/api/workers/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            platform,
+            rider_id: riderId.toUpperCase(),
+            zone,
+            shift_type: shift,
+            active_days_per_week: days[0],
+            kavach_score: premium.kavach_score,
+            phone: `+91${phone.replace(/\D/g, "").slice(-10)}`,
+            password,
+          }),
+        });
+        const regData = await regRes.json();
+        if (!regRes.ok) throw new Error(regData.error ?? "Registration failed");
+        workerId = regData.worker_id;
+        localStorage.setItem("offshift_worker_id", workerId!);
+        localStorage.setItem("offshift_worker_name", name);
+      } catch (e) {
+        toast.error(String(e));
+        setPayPhase("idle");
+        return;
+      }
     }
 
     setPayPhase("idle");
@@ -226,8 +239,8 @@ export function OnboardingWizard() {
       description: plan === "24hr" ? "Aaj Ka Kavach (24hr)" : "Hafte Ka Kavach (7 days)",
       image: "https://api.dicebear.com/9.x/shapes/svg?seed=offshift",
       prefill: {
-        name,
-        contact: `+91${phone.replace(/\D/g, "").slice(-10)}`,
+        name: name || localStorage.getItem("offshift_worker_name") || "Rider",
+        contact: phone ? `+91${phone.replace(/\D/g, "").slice(-10)}` : "",
       },
       theme: { color: "#273528" },
       handler: async (response: { razorpay_payment_id: string }) => {
@@ -512,29 +525,28 @@ export function OnboardingWizard() {
                     <span className="material-symbols-outlined text-primary text-2xl">location_on</span>
                   </div>
                   <h2 className="font-headline text-4xl font-medium mb-3">Work Zone</h2>
-                  <p className="font-body text-sm text-on-surface-variant">Delhi NCR — Ward-level data</p>
+                  <p className="font-body text-sm text-on-surface-variant">All-India Coverage — Localized IMD data</p>
                 </div>
 
                 <div className="space-y-6">
                   <div className="flex flex-col gap-2">
-                    <label className="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant">City / शहर</label>
-                    <input className={inputStyle + " opacity-70 pointer-events-none"} readOnly value="Delhi NCR" />
-                  </div>
-                  
-                  <div className="flex flex-col gap-2">
                     <div>
-                      <label className="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant block">Primary zone (ward)</label>
-                      <span className="text-[10px] text-on-surface-variant uppercase tracking-widest">प्राथमिक ज़ोन</span>
+                      <label className="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant block">Location (State & City)</label>
+                      <span className="text-[10px] text-on-surface-variant uppercase tracking-widest">स्थान (राज्य और शहर)</span>
                     </div>
                     <select
-                      className={inputStyle + " appearance-none cursor-pointer"}
+                      className={inputStyle + " appearance-none cursor-pointer text-base"}
                       value={zone}
                       onChange={(e) => setZone(e.target.value as ZoneSlug)}
                     >
-                      {ZONE_OPTIONS.map((z) => (
-                        <option key={z.value} value={z.value}>
-                          {z.label}
-                        </option>
+                      {ZONE_STATES.map((st) => (
+                        <optgroup key={st.state} label={st.state} className="font-bold text-on-surface-variant">
+                          {st.cities.map((z) => (
+                            <option key={z.value} value={z.value} className="font-normal text-on-surface">
+                              {z.label}
+                            </option>
+                          ))}
+                        </optgroup>
                       ))}
                     </select>
                   </div>
