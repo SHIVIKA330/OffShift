@@ -21,8 +21,10 @@
     ·
     <a href="https://offshift-9iok.onrender.com/debug/bot"><strong>🤖 Bot Simulator</strong></a>
     ·
-    <a href="https://youtu.be/-H7DZOUcolM?si=UAGWT9GT7QqNVLQC"> View Demo Video</a>
+    <a href="https://youtu.be/-H7DZOUcolM?si=UAGWT9GT7QqNVLQC"> View Demo phase 1 Video</a>
     ·
+    <a href="https://www.youtube.com/watch?v=zkxA6ojrw6w"> View Demo phase 1 Video</a>
+    .
     <a href="./OffShift — Smart Income Shield _ Guidewire DEVTrails 2026.pdf"> View Presentation</a>
   </p>
 </div>
