@@ -72,7 +72,9 @@ async function getSilentPingRatio(
     .select("worker_id, workers!inner(zone)")
     .eq("status", "ACTIVE");
 
-  const rows = (policies ?? []).filter((p: { workers: unknown }) => workerZone(p.workers) === zone);
+  const rows = (policies ?? []).filter(
+    (p: { workers: unknown }) => workerZone(p.workers) === zone
+  );
   const workerIds = Array.from(
     new Set(rows.map((r: { worker_id: string }) => r.worker_id))
   );
@@ -118,9 +120,13 @@ export async function GET(req: Request) {
   });
   const hourBucket = istNow.replace(/[-:]/g, "").slice(0, 11);
 
+  // ═══════════════════════════════════════
+  // TRIGGER 1 — Heavy Rain (Weather Oracle)
+  // ═══════════════════════════════════════
   for (const zone of zones) {
     try {
-      const { currentHourMm, maxNext6hMm } = await fetchHourlyPrecipitationMm(zone);
+      const { currentHourMm, maxNext6hMm } =
+        await fetchHourlyPrecipitationMm(zone);
       const mm = Math.max(currentHourMm, maxNext6hMm);
       if (mm < 20) continue;
 
@@ -137,16 +143,24 @@ export async function GET(req: Request) {
         )
         .eq("status", "ACTIVE");
 
-      const list = (policies ?? []).filter((p: { workers: unknown; trigger_weather: boolean }) => {
-        const m = workerMeta(p.workers);
-        return (
-          m.zone === zone &&
-          p.trigger_weather &&
-          shiftMatchesCurrentIST(
-            (m.shift_type ?? "flexible") as "morning" | "evening" | "night" | "flexible"
-          )
-        );
-      });
+      const list = (
+        policies ?? []
+      ).filter(
+        (p: { workers: unknown; trigger_weather: boolean }) => {
+          const m = workerMeta(p.workers);
+          return (
+            m.zone === zone &&
+            p.trigger_weather &&
+            shiftMatchesCurrentIST(
+              (m.shift_type ?? "flexible") as
+                | "morning"
+                | "evening"
+                | "night"
+                | "flexible"
+            )
+          );
+        }
+      );
 
       let triggered = 0;
       for (const p of list) {
@@ -155,7 +169,7 @@ export async function GET(req: Request) {
           worker_id: string;
           max_payout: number;
         };
-        if (await hasClaimToday(supabase, pol.id, "heavy_rain")) continue;
+        if (await hasClaimToday(supabase, pol.id, "RAIN")) continue;
         const frac = rainPayoutFraction(mm);
         if (frac <= 0) continue;
         const payout = Math.round(Number(pol.max_payout) * frac);
@@ -164,7 +178,7 @@ export async function GET(req: Request) {
           .insert({
             policy_id: pol.id,
             worker_id: pol.worker_id,
-            trigger_type: "heavy_rain",
+            trigger_type: "RAIN",
             trigger_severity: `${mm}mm/hr`,
             zone,
             payout_amount: payout,
@@ -180,8 +194,9 @@ export async function GET(req: Request) {
 
       await supabase.from("trigger_events").insert({
         zone,
-        trigger_type: "heavy_rain",
+        trigger_type: "RAIN",
         severity: String(mm),
+        severity_value: mm,
         hourly_rain_mm: mm,
         workers_triggered: triggered,
         metadata: { currentHourMm, maxNext6hMm },
@@ -192,6 +207,9 @@ export async function GET(req: Request) {
     }
   }
 
+  // ═══════════════════════════════════════
+  // TRIGGER 2 — AQI Spike (Mock CPCB)
+  // ═══════════════════════════════════════
   for (const zone of zones) {
     try {
       const aqi = getMockAqiForZone(zone);
@@ -207,8 +225,9 @@ export async function GET(req: Request) {
 
       await supabase.from("trigger_events").insert({
         zone,
-        trigger_type: "aqi_spike",
+        trigger_type: "AQI",
         severity: String(aqi.aqi_current),
+        severity_value: aqi.aqi_current,
         aqi_value: aqi.aqi_current,
         metadata: { forecast_peak: aqi.aqi_forecast_peak },
       });
@@ -220,23 +239,27 @@ export async function GET(req: Request) {
         )
         .eq("status", "ACTIVE");
 
-      const list = (policies ?? []).filter((p: { workers: unknown; trigger_weather: boolean }) => {
-        const m = workerMeta(p.workers);
-        return m.zone === zone && p.trigger_weather;
-      });
+      const list = (
+        policies ?? []
+      ).filter(
+        (p: { workers: unknown; trigger_weather: boolean }) => {
+          const m = workerMeta(p.workers);
+          return m.zone === zone && p.trigger_weather;
+        }
+      );
 
       let triggered = 0;
       for (const p of list) {
         const pol = p as { id: string; worker_id: string; max_payout: number };
-        if (await hasClaimToday(supabase, pol.id, "aqi_spike")) continue;
+        if (await hasClaimToday(supabase, pol.id, "AQI")) continue;
         const payout = Math.round(Number(pol.max_payout) * payoutFrac);
         const { data: claim, error } = await supabase
           .from("claims")
           .insert({
             policy_id: pol.id,
             worker_id: pol.worker_id,
-            trigger_type: "aqi_spike",
-            trigger_severity: String(aqi.aqi_current),
+            trigger_type: "AQI",
+            trigger_severity: `AQI ${aqi.aqi_current}`,
             zone,
             payout_amount: payout,
             status: "TRIGGERED",
@@ -254,6 +277,9 @@ export async function GET(req: Request) {
     }
   }
 
+  // ═══════════════════════════════════════
+  // TRIGGER 3 — Platform App Outage
+  // ═══════════════════════════════════════
   for (const platform of ["zomato", "swiggy"] as const) {
     try {
       const dd = getMockDowndetector(platform);
@@ -262,7 +288,10 @@ export async function GET(req: Request) {
       for (const zone of zones) {
         const dedupeKey = `trig:out:${platform}:${zone}:${hourBucket}`;
         if (redis) {
-          const set = await redis.set(dedupeKey, "1", { nx: true, ex: 3600 });
+          const set = await redis.set(dedupeKey, "1", {
+            nx: true,
+            ex: 3600,
+          });
           if (set === null) continue;
         }
 
@@ -274,8 +303,9 @@ export async function GET(req: Request) {
 
         await supabase.from("trigger_events").insert({
           zone,
-          trigger_type: "app_outage",
+          trigger_type: "OUTAGE",
           severity: String(dd.report_count),
+          severity_value: dd.report_count,
           platform,
           metadata: { silent_ping_ratio: ratio, ...dd },
         });
@@ -298,7 +328,11 @@ export async function GET(req: Request) {
               m.platform === platform &&
               p.trigger_outage &&
               shiftMatchesCurrentIST(
-                (m.shift_type ?? "flexible") as "morning" | "evening" | "night" | "flexible"
+                (m.shift_type ?? "flexible") as
+                  | "morning"
+                  | "evening"
+                  | "night"
+                  | "flexible"
               )
             );
           }
@@ -307,13 +341,13 @@ export async function GET(req: Request) {
         let triggered = 0;
         for (const p of list) {
           const pol = p as { id: string; worker_id: string };
-          if (await hasClaimToday(supabase, pol.id, "app_outage")) continue;
+          if (await hasClaimToday(supabase, pol.id, "OUTAGE")) continue;
           const { data: claim, error } = await supabase
             .from("claims")
             .insert({
               policy_id: pol.id,
               worker_id: pol.worker_id,
-              trigger_type: "app_outage",
+              trigger_type: "OUTAGE",
               trigger_severity: `${dd.report_count} reports`,
               zone,
               payout_amount: payoutCap,
