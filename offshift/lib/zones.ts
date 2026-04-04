@@ -151,6 +151,8 @@ export const ZONE_COORDS: Record<ZoneSlug, { lat: number; lng: number; label: st
   ludhiana: { lat: 30.9010, lng: 75.8573, label: "Ludhiana" },
 };
 
+export const ZONE_OPTIONS = ZONE_STATES.flatMap((s) => s.cities);
+
 export function normalizeZone(z: string): ZoneSlug | null {
   const k = z.toLowerCase().replace(/\s+/g, "_");
   if (k in ZONE_COORDS) return k as ZoneSlug;
