@@ -6,12 +6,22 @@ export async function POST(req: Request) {
     const { worker_id, policy_id } = await req.json();
     const supabase = createServiceRoleClient();
 
+    // 0. Get the worker's zone first (required by DB)
+    const { data: worker } = await supabase
+      .from("workers")
+      .select("zone")
+      .eq("id", worker_id)
+      .single();
+
+    const zone = worker?.zone || "unknown";
+
     // 1. Create a mock claim
     const { data: claim, error: claimErr } = await supabase
       .from("claims")
       .insert({
         worker_id,
         policy_id,
+        zone, // Fixed: Added missing zone
         trigger_type: "RAIN",
         payout_amount: 500,
         status: "SETTLED",

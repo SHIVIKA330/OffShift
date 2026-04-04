@@ -173,9 +173,12 @@ export function DashboardClient() {
       if (res.ok) {
         toast.success("⛈️ Heavy Rain detected! Claim settled instantly.");
         void load();
+      } else {
+        const errorData = await res.json();
+        toast.error(`Trigger failed: ${errorData.error || "Server error"}`);
       }
     } catch (e) {
-      toast.error("Trigger failed");
+      toast.error("Trigger connection failed");
     } finally {
       setLoading(false);
     }
