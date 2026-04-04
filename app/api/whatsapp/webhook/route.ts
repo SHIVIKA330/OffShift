@@ -35,13 +35,15 @@ export async function POST(req: Request) {
           .single();
 
         if (user) {
-          // Check for active policies
+          // Check for any active policies (sorted by newest)
           const { data: policies } = await supabase
             .from("policies")
             .select("*")
             .eq("worker_id", user.id)
             .eq("status", "ACTIVE")
-            .single();
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
 
           if (policies) {
             reply = `🛡️ Hi ${user.name},\nYour Kavach is ACTIVE.\nExpires on: ${new Date(policies.coverage_end).toLocaleDateString("en-IN")}\nStay safe out there!`;
