@@ -25,7 +25,7 @@
     ·
     <a href="https://www.youtube.com/watch?v=zkxA6ojrw6w"> View Demo phase 2 Video</a>
     .
-    <a href="https://github.com/SHIVIKA330/OffShift/releases/download/v1.0.0/OffShift-v1.0.apk"> App Demo</a>
+    <a href="https://github.com/SHIVIKA330/OffShift/releases/download/v1.0.0/OffShift-v1.0.apk"> App Demo (Try it on phone)</a>
     .
     <a href="./OffShift — Smart Income Shield _ Guidewire DEVTrails 2026.pdf"> View Presentation</a>
   </p>
