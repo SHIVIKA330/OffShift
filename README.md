@@ -17,9 +17,9 @@
     An AI-powered parametric insurance platform for India's 12 million gig delivery workers.<br/>
     <strong>Zero claim forms. Zero paperwork. Automatic UPI payout in 120 seconds.</strong>
     <br/><br/>
-    <a href="https://offshift-9iok.onrender.com"><strong>🚀 LIVE DEMO</strong></a>
+    <a href="https://offshift-9iok.onrender.com"><strong> LIVE DEMO</strong></a>
     ·
-    <a href="https://offshift-9iok.onrender.com/debug/bot"><strong>🤖 Bot Simulator</strong></a>
+    <a href="https://offshift-9iok.onrender.com/debug/bot"><strong> Bot Simulator</strong></a>
     ·
     <a href="https://youtu.be/-H7DZOUcolM?si=UAGWT9GT7QqNVLQC"> View Demo phase 1 Video</a>
     ·
