@@ -6,6 +6,7 @@ function hash(s: string) {
   return Math.abs(h);
 }
 
+/** @deprecated Use fetchCurrentAqi from trigger-monitor.ts instead */
 export function getMockAqiForZone(zone: ZoneSlug): {
   zone: ZoneSlug;
   aqi_current: number;
@@ -41,6 +42,7 @@ export function getMockDowndetector(platform: "zomato" | "swiggy" | "zepto" | st
   };
 }
 
+/** @deprecated Use fetchHourlyTemperatureC from trigger-monitor.ts instead */
 export function getMockHeat(zone: ZoneSlug) {
   const isHot = ["jaipur", "jodhpur", "delhi_new", "okhla", "gurugram", "ahmedabad", "surat"].includes(zone);
   const temp = isHot ? 45 + (hash(zone) % 4) : 32 + (hash(zone) % 8);

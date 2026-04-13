@@ -44,6 +44,33 @@ export function DashboardClient() {
   const [loading, setLoading] = useState(false);
   const [riderId, setRiderId] = useState<string>("");
   const [platform, setPlatform] = useState<string>("");
+  const [zone, setZone] = useState<string>("");
+  const [weatherStatus, setWeatherStatus] = useState<{
+    rain_mm: number;
+    temp_c: number;
+    aqi: number;
+    is_rain_alert: boolean;
+    is_heat_alert: boolean;
+    is_aqi_alert: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!zone) return;
+    const fetchWeather = async () => {
+      try {
+        const res = await fetch(`/api/weather-status?zone=${zone}`);
+        if (res.ok) {
+          const data = await res.json();
+          setWeatherStatus(data);
+        }
+      } catch (e) {
+        console.error("Weather fetch failed", e);
+      }
+    };
+    void fetchWeather();
+    const interval = setInterval(fetchWeather, 5 * 60 * 1000); // refresh every 5 mins
+    return () => clearInterval(interval);
+  }, [zone]);
 
   const doLogout = useCallback(() => {
     localStorage.removeItem("offshift_worker_id");
@@ -65,7 +92,7 @@ export function DashboardClient() {
     // Fetch Worker Profile info
     const { data: worker } = await supabase
       .from("workers")
-      .select("name, rider_id, platform")
+      .select("name, rider_id, platform, zone")
       .eq("id", workerId)
       .single();
     
@@ -73,6 +100,7 @@ export function DashboardClient() {
       setWorkerName(worker.name);
       setRiderId(worker.rider_id);
       setPlatform(worker.platform);
+      setZone(worker.zone);
       localStorage.setItem("offshift_worker_name", worker.name);
     }
 
@@ -357,6 +385,39 @@ export function DashboardClient() {
                 <strong className="text-on-surface">{triggersDuring.length > 0 ? triggersDuring.map((c) => c.trigger_type).join(", ") : "None yet"}</strong>
               </p>
             </div>
+          </div>
+        )}
+
+        {/* ── Weather Widget ── */}
+        {active && weatherStatus && (
+          <div className="bg-surface-container-lowest p-6 rounded-[32px] editorial-shadow border border-outline-variant/10">
+            <h3 className="font-headline text-xl font-medium mb-1">Current Weather & Triggers</h3>
+            <p className="font-label text-[10px] uppercase tracking-widest text-secondary mb-5">Zone: {zone.toUpperCase()}</p>
+            
+            <div className="grid grid-cols-3 gap-3">
+              <div className={`p-4 rounded-2xl flex flex-col items-center justify-center text-center transition-colors ${weatherStatus.is_rain_alert ? 'bg-primary text-on-primary animate-pulse' : 'bg-surface-container-low text-on-surface'}`}>
+                <span className="material-symbols-outlined mb-2 text-2xl" style={{ fontVariationSettings: weatherStatus.is_rain_alert ? "'FILL' 1" : "'FILL' 0" }}>water_drop</span>
+                <span className="font-headline font-semibold text-lg">{weatherStatus.rain_mm.toFixed(1)} <span className="text-xs font-normal">mm/hr</span></span>
+                <span className="font-label text-[9px] uppercase tracking-wider opacity-80 mt-1">Rain</span>
+              </div>
+              <div className={`p-4 rounded-2xl flex flex-col items-center justify-center text-center transition-colors ${weatherStatus.is_heat_alert ? 'bg-error text-on-error animate-pulse' : 'bg-surface-container-low text-on-surface'}`}>
+                <span className="material-symbols-outlined mb-2 text-2xl" style={{ fontVariationSettings: weatherStatus.is_heat_alert ? "'FILL' 1" : "'FILL' 0" }}>thermostat</span>
+                <span className="font-headline font-semibold text-lg">{weatherStatus.temp_c.toFixed(1)} <span className="text-xs font-normal">°C</span></span>
+                <span className="font-label text-[9px] uppercase tracking-wider opacity-80 mt-1">Heat</span>
+              </div>
+              <div className={`p-4 rounded-2xl flex flex-col items-center justify-center text-center transition-colors ${weatherStatus.is_aqi_alert ? 'bg-[#fde293] text-[#221b00] animate-pulse' : 'bg-surface-container-low text-on-surface'}`}>
+                <span className="material-symbols-outlined mb-2 text-2xl" style={{ fontVariationSettings: weatherStatus.is_aqi_alert ? "'FILL' 1" : "'FILL' 0" }}>air</span>
+                <span className="font-headline font-semibold text-lg">{weatherStatus.aqi}</span>
+                <span className="font-label text-[9px] uppercase tracking-wider opacity-80 mt-1">AQI</span>
+              </div>
+            </div>
+
+            {(weatherStatus.is_rain_alert || weatherStatus.is_heat_alert || weatherStatus.is_aqi_alert) && (
+              <div className="mt-4 p-3 rounded-xl bg-error-container/20 text-error flex items-center justify-center gap-2 font-label text-[10px] uppercase tracking-widest border border-error/20">
+                <span className="material-symbols-outlined text-[14px]">warning</span>
+                Trigger Conditions Active
+              </div>
+            )}
           </div>
         )}
 

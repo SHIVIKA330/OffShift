@@ -5,6 +5,8 @@ import { getMockAqiForZone, getMockDowndetector, getMockHeat, getMockCurfew } fr
 import { createServiceRoleClient } from "@/lib/supabase-service";
 import {
   fetchHourlyPrecipitationMm,
+  fetchHourlyTemperatureC,
+  fetchCurrentAqi,
   rainPayoutFraction,
   shiftMatchesCurrentIST,
 } from "@/lib/trigger-monitor";
@@ -214,7 +216,7 @@ export async function GET(req: Request) {
   // ═══════════════════════════════════════
   for (const zone of zones) {
     try {
-      const aqi = getMockAqiForZone(zone);
+      const aqi = await fetchCurrentAqi(zone);
       if (aqi.aqi_current <= 300) continue;
 
       const dedupeKey = `trig:aqi:${zone}:${hourBucket}`;
@@ -374,8 +376,9 @@ export async function GET(req: Request) {
   // ═══════════════════════════════════════
   for (const zone of zones) {
     try {
-      const heat = getMockHeat(zone);
-      if (!heat.is_heatwave) continue;
+      const tempC = await fetchHourlyTemperatureC(zone);
+      const is_heatwave = tempC >= 45;
+      if (!is_heatwave) continue;
 
       const dedupeKey = `trig:heat:${zone}:${hourBucket}`;
       if (redis) {
@@ -386,9 +389,9 @@ export async function GET(req: Request) {
       await supabase.from("trigger_events").insert({
         zone,
         trigger_type: "HEAT",
-        severity: String(heat.temperature_celsius) + "C",
-        severity_value: heat.temperature_celsius,
-        metadata: { source: "IMD_MOCK" },
+        severity: String(tempC) + "C",
+        severity_value: tempC,
+        metadata: { source: "OPEN_METEO" },
       });
 
       const { data: policies } = await supabase
@@ -412,7 +415,7 @@ export async function GET(req: Request) {
             policy_id: pol.id,
             worker_id: pol.worker_id,
             trigger_type: "HEAT",
-            trigger_severity: `${heat.temperature_celsius}°C`,
+            trigger_severity: `${tempC}°C`,
             zone,
             payout_amount: payout,
             status: "TRIGGERED",

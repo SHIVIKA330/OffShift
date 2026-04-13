@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HeroWeather } from "@/components/ui/hero-weather";
 
 export default function HomePage() {
   return (
@@ -42,6 +43,9 @@ export default function HomePage() {
                   Get Covered
               </button>
             </Link>
+            
+            <HeroWeather zone="delhi_new" />
+            
           </div>
         </section>
 
