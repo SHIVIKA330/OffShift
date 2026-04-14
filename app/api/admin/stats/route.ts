@@ -64,6 +64,13 @@ export async function GET() {
 
   const { data: allPrem } = await supabase.from("policies").select("premium_amount");
   const { data: allPayout } = await supabase.from("claims").select("payout_amount").in("status", ["SETTLED"]);
+  
+  // Phase D: Fetch recent claims to demonstrate Fraud AI
+  const { data: recentClaims } = await supabase
+    .from("claims")
+    .select("id, status, payout_amount, disruption_type, created_at, policy_id, policies(worker_id, workers(name, zone))")
+    .order("created_at", { ascending: false })
+    .limit(6);
 
   const totalPremiums = (allPrem ?? []).reduce(
     (a, p) => a + Number(p.premium_amount),
@@ -88,6 +95,7 @@ export async function GET() {
     loss_ratio: lossRatio,
     total_premiums: totalPremiums,
     total_payouts: totalPayouts,
+    recent_claims: recentClaims ?? [],
     enrollments_suspended: enrollmentsSuspended,
     bcr_target_min: 0.55,
     bcr_target_max: 0.7,

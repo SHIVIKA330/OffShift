@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { formatRupees } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
+import EligibilityProgress from "@/components/EligibilityProgress";
 
 type PolicyRow = {
   id: string;
@@ -282,6 +283,9 @@ export function DashboardClient() {
             </span>
           </div>
         </div>
+
+        {/* ── Eligibility Progress ── */}
+        {riderId && <EligibilityProgress riderId={riderId} />}
 
         {/* ── Active Policy Card ── */}
         {active ? (

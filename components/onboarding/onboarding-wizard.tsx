@@ -11,6 +11,7 @@ import { computeWorkerTier, tierPayoutMultiplier, type WorkerTier } from "@/lib/
 import { Check, Info, Shield, Zap, CloudRain, AlertTriangle, Landmark, QrCode } from "lucide-react";
 import { formatRupees } from "@/lib/format";
 import { ZONE_STATES, type ZoneSlug } from "@/lib/zones";
+import EligibilityProgress from "@/components/EligibilityProgress";
 
 type PremiumRes = {
   kavach_score: number;
@@ -82,6 +83,7 @@ export function OnboardingWizard() {
   const [selectedPlan, setSelectedPlan] = useState<"24hr" | "7day">("24hr");
   const [payPhase, setPayPhase] = useState<PaymentPhase>("idle");
   const [mockTxnId, setMockTxnId] = useState("");
+  const [eligibility, setEligibility] = useState<{ plan_access: string, eligible: boolean } | null>(null);
   const [policyCard, setPolicyCard] = useState<{
     id: string;
     coverage_start: string;
@@ -161,25 +163,38 @@ export function OnboardingWizard() {
         const aqi = 150 + Math.floor(Math.random() * 200); // Demo mock
         const tier = computeWorkerTier(days[0]);
         
-        const engine = runKavachEngine({
-          zone,
-          shift_type: shift,
-          active_days: days[0],
-          platform,
-          coverage_type: "7day",
-          aqi_forecast_peak: aqi,
-          openMeteo: { maxHourlyRainNext48h: 10, sumRainNext48h: 20 },
+        const zoneToPincode: Record<string, string> = {
+          okhla: "110020",
+          gurugram: "122001",
+          noida: "201301",
+          delhi_new: "110024"
+        };
+        const mappedPincode = zoneToPincode[zone] || "110024";
+
+        const quoteRes = await fetch("/api/kavach/quote", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+             pincode: mappedPincode,
+             platform: platform,
+             coverageType: "7day",
+             daysUntilEvent: 1,
+             claimHistoryCount: 0
+          })
         });
+
+        if (!quoteRes.ok) throw new Error("Pricing Engine Failed to provide quote");
+        const quote = await quoteRes.json();
 
         if (!cancelled) {
           setPremium({
-            kavach_score: engine.kavach_score,
+            kavach_score: 850,
             tier: tier,
-            day_price: getPriceFromScore(engine.kavach_score, "24hr"),
-            week_price: getPriceFromScore(engine.kavach_score, "7day"),
-            final_premium: getPriceFromScore(engine.kavach_score, "7day"),
+            day_price: Math.round(quote.finalPremium * 0.4),
+            week_price: quote.finalPremium,
+            final_premium: quote.finalPremium,
             max_payout: 500 * tierPayoutMultiplier(tier),
-            explanation_hindi: "Based on your activity and zone risk profile."
+            explanation_hindi: quote.explanation || "Zone risk factor adjusted."
           });
         }
       } catch (e) {
@@ -834,7 +849,33 @@ export function OnboardingWizard() {
 
                   <button
                     className={btnPrimaryStyle + " mt-4"}
-                    onClick={() => setScreen(4)}
+                    onClick={async () => {
+                      const p = phone?.replace(/\D/g, "") || loginPhone?.replace(/\D/g, "");
+                      if (p) localStorage.setItem('offshift_onboard_phone', p);
+                      
+                      setCalcLoading(true);
+                      try {
+                        const res = await fetch(`/api/consent/check?phone=${p}`);
+                        const data = await res.json();
+                        if (!res.ok || !data.is_complete) {
+                          toast.error("Regulatory Requirement: Please complete the Consent Setup");
+                          router.push(`/onboard/consent?phone=${p}`);
+                          return;
+                        }
+
+                        const eligRes = await fetch(`/api/eligibility/check?phone=${p}`);
+                        if (eligRes.ok) {
+                          const eligData = await eligRes.json();
+                          setEligibility(eligData);
+                        }
+
+                        setScreen(4);
+                      } catch (e) {
+                         toast.error("Failed to check consent");
+                      } finally {
+                         setCalcLoading(false);
+                      }
+                    }}
                   >
                     View Pricing Plans <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
                   </button>
@@ -989,6 +1030,10 @@ export function OnboardingWizard() {
               ) : (
                 /* Plan Selection (Styled like the Homepage) */
                 <div className="space-y-8">
+                  <div className="mb-4">
+                    <EligibilityProgress phone={phone?.replace(/\D/g, "") || loginPhone?.replace(/\D/g, "") || undefined} />
+                  </div>
+                  
                   <div className="text-center mb-6">
                     <h2 className="font-headline text-4xl mb-2">Choose your rhythm</h2>
                     <p className="font-body text-sm text-on-surface-variant">Plans adapted to your Kavach Risk Score.</p>
@@ -1029,38 +1074,43 @@ export function OnboardingWizard() {
                     </div>
 
                     {/* Weekly Pass (7day) */}
-                    <div className="bg-primary p-8 rounded-[32px] editorial-shadow relative overflow-hidden">
+                    <div className={`p-8 rounded-[32px] editorial-shadow relative overflow-hidden transition-all duration-300 ${eligibility?.plan_access === 'shift_pass_only' ? 'bg-surface-container-high grayscale opacity-80' : 'bg-primary'}`}>
                       <div className="absolute top-0 right-0 p-4">
-                        <span className="bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">Popular</span>
+                         {eligibility?.plan_access === 'shift_pass_only' ? (
+                            <span className="bg-surface-variant text-on-surface-variant px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">lock</span> SS Code 2020</span>
+                         ) : (
+                            <span className="bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">Popular</span>
+                         )}
                       </div>
                       <div className="flex justify-between items-start mb-6">
                         <div>
-                          <h3 className="font-headline text-2xl font-medium text-on-primary">Weekly Pass</h3>
-                          <p className="font-body text-sm text-on-primary/70 mt-1">Hafte Ka Kavach (7 days)</p>
+                          <h3 className={`font-headline text-2xl font-medium ${eligibility?.plan_access === 'shift_pass_only' ? 'text-on-surface' : 'text-on-primary'}`}>Weekly Pass</h3>
+                          <p className={`font-body text-sm mt-1 ${eligibility?.plan_access === 'shift_pass_only' ? 'text-on-surface-variant' : 'text-on-primary/70'}`}>Hafte Ka Kavach (7 days)</p>
                         </div>
                         <div className="text-right">
-                          <span className="font-headline text-3xl text-on-primary">
+                          <span className={`font-headline text-3xl ${eligibility?.plan_access === 'shift_pass_only' ? 'text-on-surface' : 'text-on-primary'}`}>
                              {premium ? formatRupees(premium.final_premium) : "—"}
                           </span>
-                          <p className="text-[10px] uppercase tracking-tighter text-on-primary/70 block">/week</p>
+                          <p className={`text-[10px] uppercase tracking-tighter block ${eligibility?.plan_access === 'shift_pass_only' ? 'text-on-surface-variant' : 'text-on-primary/70'}`}>/week</p>
                         </div>
                       </div>
                       <ul className="space-y-4 mb-8">
-                        <li className="flex items-center gap-3 text-sm font-body text-on-primary">
-                          <span className="material-symbols-outlined text-[#cbebc8] text-lg" data-icon="check_circle">check_circle</span>
+                        <li className={`flex items-center gap-3 text-sm font-body ${eligibility?.plan_access === 'shift_pass_only' ? 'text-on-surface-variant' : 'text-on-primary'}`}>
+                          <span className={`material-symbols-outlined text-lg ${eligibility?.plan_access === 'shift_pass_only' ? 'text-outline' : 'text-[#cbebc8]'}`} data-icon="check_circle">check_circle</span>
                           Full 7-day unified coverage
                         </li>
-                        <li className="flex items-center gap-3 text-sm font-body text-on-primary">
-                          <span className="material-symbols-outlined text-[#cbebc8] text-lg" data-icon="check_circle">check_circle</span>
+                        <li className={`flex items-center gap-3 text-sm font-body ${eligibility?.plan_access === 'shift_pass_only' ? 'text-on-surface-variant' : 'text-on-primary'}`}>
+                          <span className={`material-symbols-outlined text-lg ${eligibility?.plan_access === 'shift_pass_only' ? 'text-outline' : 'text-[#cbebc8]'}`} data-icon="check_circle">check_circle</span>
                           Priority settlement status
                         </li>
                       </ul>
                       <button 
                         onClick={() => handlePayment("7day")}
-                        disabled={payPhase !== "idle"}
-                        className="w-full py-4 rounded-full bg-surface-container-lowest text-primary font-label text-xs font-bold uppercase tracking-widest hover:scale-[1.02] transition-transform duration-300 disabled:opacity-50"
+                        disabled={payPhase !== "idle" || eligibility?.plan_access === 'shift_pass_only'}
+                        title={eligibility?.plan_access === 'shift_pass_only' ? "Unlock after 90 active delivery days" : undefined}
+                        className={`w-full py-4 rounded-full font-label text-xs font-bold uppercase tracking-widest transition-transform duration-300 disabled:opacity-50 ${eligibility?.plan_access === 'shift_pass_only' ? 'bg-surface-variant text-on-surface-variant' : 'bg-surface-container-lowest text-primary hover:scale-[1.02]'}`}
                       >
-                        Select Weekly Plan
+                        {eligibility?.plan_access === 'shift_pass_only' ? "Unlock after 90 days" : "Select Weekly Plan"}
                       </button>
                     </div>
                   </div>

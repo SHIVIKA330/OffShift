@@ -1,0 +1,994 @@
+[
+  {
+    "pincode": "110001",
+    "area": "Connaught Place",
+    "district": "Central Delhi",
+    "state": "Delhi",
+    "lat": 28.6315,
+    "lon": 77.2167
+  },
+  {
+    "pincode": "110002",
+    "area": "Darya Ganj",
+    "district": "Central Delhi",
+    "state": "Delhi",
+    "lat": 28.64,
+    "lon": 77.24
+  },
+  {
+    "pincode": "110003",
+    "area": "Civil Lines",
+    "district": "North Delhi",
+    "state": "Delhi",
+    "lat": 28.68,
+    "lon": 77.22
+  },
+  {
+    "pincode": "110005",
+    "area": "Karol Bagh",
+    "district": "Central Delhi",
+    "state": "Delhi",
+    "lat": 28.6514,
+    "lon": 77.1907
+  },
+  {
+    "pincode": "110006",
+    "area": "Paharganj",
+    "district": "Central Delhi",
+    "state": "Delhi",
+    "lat": 28.6454,
+    "lon": 77.2141
+  },
+  {
+    "pincode": "110007",
+    "area": "Kamla Nagar",
+    "district": "North Delhi",
+    "state": "Delhi",
+    "lat": 28.6871,
+    "lon": 77.2056
+  },
+  {
+    "pincode": "110008",
+    "area": "Patel Nagar",
+    "district": "West Delhi",
+    "state": "Delhi",
+    "lat": 28.6514,
+    "lon": 77.1667
+  },
+  {
+    "pincode": "110009",
+    "area": "Tis Hazari",
+    "district": "North Delhi",
+    "state": "Delhi",
+    "lat": 28.6621,
+    "lon": 77.2268
+  },
+  {
+    "pincode": "110010",
+    "area": "Gandhi Nagar",
+    "district": "East Delhi",
+    "state": "Delhi",
+    "lat": 28.67,
+    "lon": 77.27
+  },
+  {
+    "pincode": "110011",
+    "area": "Rajinder Nagar",
+    "district": "Central Delhi",
+    "state": "Delhi",
+    "lat": 28.642,
+    "lon": 77.18
+  },
+  {
+    "pincode": "110012",
+    "area": "Malkaganj",
+    "district": "North Delhi",
+    "state": "Delhi",
+    "lat": 28.68,
+    "lon": 77.19
+  },
+  {
+    "pincode": "110013",
+    "area": "Azad Nagar",
+    "district": "West Delhi",
+    "state": "Delhi",
+    "lat": 28.65,
+    "lon": 77.15
+  },
+  {
+    "pincode": "110014",
+    "area": "Jangpura",
+    "district": "South Delhi",
+    "state": "Delhi",
+    "lat": 28.58,
+    "lon": 77.24
+  },
+  {
+    "pincode": "110015",
+    "area": "Rajouri Garden",
+    "district": "West Delhi",
+    "state": "Delhi",
+    "lat": 28.6485,
+    "lon": 77.122
+  },
+  {
+    "pincode": "110016",
+    "area": "Hauz Khas",
+    "district": "South Delhi",
+    "state": "Delhi",
+    "lat": 28.5494,
+    "lon": 77.2001
+  },
+  {
+    "pincode": "110017",
+    "area": "Malviya Nagar",
+    "district": "South Delhi",
+    "state": "Delhi",
+    "lat": 28.53,
+    "lon": 77.21
+  },
+  {
+    "pincode": "110018",
+    "area": "Tilak Nagar",
+    "district": "West Delhi",
+    "state": "Delhi",
+    "lat": 28.64,
+    "lon": 77.09
+  },
+  {
+    "pincode": "110019",
+    "area": "Kalkaji",
+    "district": "South Delhi",
+    "state": "Delhi",
+    "lat": 28.54,
+    "lon": 77.26
+  },
+  {
+    "pincode": "110020",
+    "area": "Okhla",
+    "district": "South Delhi",
+    "state": "Delhi",
+    "lat": 28.53,
+    "lon": 77.27
+  },
+  {
+    "pincode": "110021",
+    "area": "Saket",
+    "district": "South Delhi",
+    "state": "Delhi",
+    "lat": 28.5244,
+    "lon": 77.2066
+  },
+  {
+    "pincode": "110022",
+    "area": "Vasant Vihar",
+    "district": "South West Delhi",
+    "state": "Delhi",
+    "lat": 28.5574,
+    "lon": 77.1584
+  },
+  {
+    "pincode": "110023",
+    "area": "Lodi Colony",
+    "district": "South Delhi",
+    "state": "Delhi",
+    "lat": 28.5874,
+    "lon": 77.2279
+  },
+  {
+    "pincode": "110024",
+    "area": "Lajpat Nagar",
+    "district": "South Delhi",
+    "state": "Delhi",
+    "lat": 28.57,
+    "lon": 77.24
+  },
+  {
+    "pincode": "110025",
+    "area": "Nizamuddin",
+    "district": "South Delhi",
+    "state": "Delhi",
+    "lat": 28.59,
+    "lon": 77.25
+  },
+  {
+    "pincode": "110026",
+    "area": "Lodhi Road",
+    "district": "New Delhi",
+    "state": "Delhi",
+    "lat": 28.5951,
+    "lon": 77.227
+  },
+  {
+    "pincode": "110027",
+    "area": "Nehru Place",
+    "district": "South Delhi",
+    "state": "Delhi",
+    "lat": 28.5494,
+    "lon": 77.251
+  },
+  {
+    "pincode": "110028",
+    "area": "Vasant Kunj",
+    "district": "South West Delhi",
+    "state": "Delhi",
+    "lat": 28.527,
+    "lon": 77.154
+  },
+  {
+    "pincode": "110029",
+    "area": "South Extension",
+    "district": "South Delhi",
+    "state": "Delhi",
+    "lat": 28.57,
+    "lon": 77.22
+  },
+  {
+    "pincode": "110030",
+    "area": "Mehrauli",
+    "district": "South Delhi",
+    "state": "Delhi",
+    "lat": 28.5244,
+    "lon": 77.1855
+  },
+  {
+    "pincode": "110031",
+    "area": "Shahdara",
+    "district": "Shahdara",
+    "state": "Delhi",
+    "lat": 28.67,
+    "lon": 77.29
+  },
+  {
+    "pincode": "110032",
+    "area": "Vivek Vihar",
+    "district": "East Delhi",
+    "state": "Delhi",
+    "lat": 28.67,
+    "lon": 77.32
+  },
+  {
+    "pincode": "110033",
+    "area": "Shalimar Bagh",
+    "district": "North West Delhi",
+    "state": "Delhi",
+    "lat": 28.72,
+    "lon": 77.17
+  },
+  {
+    "pincode": "110034",
+    "area": "Pitampura",
+    "district": "North West Delhi",
+    "state": "Delhi",
+    "lat": 28.71,
+    "lon": 77.13
+  },
+  {
+    "pincode": "110035",
+    "area": "Model Town",
+    "district": "North Delhi",
+    "state": "Delhi",
+    "lat": 28.71,
+    "lon": 77.19
+  },
+  {
+    "pincode": "110036",
+    "area": "Alipur",
+    "district": "North Delhi",
+    "state": "Delhi",
+    "lat": 28.79,
+    "lon": 77.15
+  },
+  {
+    "pincode": "110037",
+    "area": "Palam",
+    "district": "South West Delhi",
+    "state": "Delhi",
+    "lat": 28.58,
+    "lon": 77.08
+  },
+  {
+    "pincode": "110038",
+    "area": "Punjabi Bagh",
+    "district": "West Delhi",
+    "state": "Delhi",
+    "lat": 28.67,
+    "lon": 77.12
+  },
+  {
+    "pincode": "110039",
+    "area": "Narela",
+    "district": "North Delhi",
+    "state": "Delhi",
+    "lat": 28.85,
+    "lon": 77.09
+  },
+  {
+    "pincode": "110040",
+    "area": "Mundka",
+    "district": "West Delhi",
+    "state": "Delhi",
+    "lat": 28.684,
+    "lon": 77.025
+  },
+  {
+    "pincode": "110041",
+    "area": "Nangloi",
+    "district": "West Delhi",
+    "state": "Delhi",
+    "lat": 28.68,
+    "lon": 77.06
+  },
+  {
+    "pincode": "110042",
+    "area": "Mangolpuri",
+    "district": "North West Delhi",
+    "state": "Delhi",
+    "lat": 28.7,
+    "lon": 77.08
+  },
+  {
+    "pincode": "110043",
+    "area": "Laxmi Nagar",
+    "district": "East Delhi",
+    "state": "Delhi",
+    "lat": 28.63,
+    "lon": 77.28
+  },
+  {
+    "pincode": "110044",
+    "area": "Badarpur",
+    "district": "South Delhi",
+    "state": "Delhi",
+    "lat": 28.51,
+    "lon": 77.3
+  },
+  {
+    "pincode": "110045",
+    "area": "Kirari",
+    "district": "North West Delhi",
+    "state": "Delhi",
+    "lat": 28.74,
+    "lon": 77.06
+  },
+  {
+    "pincode": "110046",
+    "area": "Sultanpuri",
+    "district": "North West Delhi",
+    "state": "Delhi",
+    "lat": 28.71,
+    "lon": 77.07
+  },
+  {
+    "pincode": "110047",
+    "area": "Chattarpur",
+    "district": "South Delhi",
+    "state": "Delhi",
+    "lat": 28.5,
+    "lon": 77.17
+  },
+  {
+    "pincode": "110048",
+    "area": "RK Puram",
+    "district": "South West Delhi",
+    "state": "Delhi",
+    "lat": 28.57,
+    "lon": 77.17
+  },
+  {
+    "pincode": "110049",
+    "area": "East of Kailash",
+    "district": "South Delhi",
+    "state": "Delhi",
+    "lat": 28.557,
+    "lon": 77.25
+  },
+  {
+    "pincode": "110051",
+    "area": "Krishna Nagar",
+    "district": "East Delhi",
+    "state": "Delhi",
+    "lat": 28.65,
+    "lon": 77.28
+  },
+  {
+    "pincode": "110052",
+    "area": "Paschim Vihar",
+    "district": "West Delhi",
+    "state": "Delhi",
+    "lat": 28.67,
+    "lon": 77.09
+  },
+  {
+    "pincode": "110053",
+    "area": "Timarpur",
+    "district": "North Delhi",
+    "state": "Delhi",
+    "lat": 28.7,
+    "lon": 77.21
+  },
+  {
+    "pincode": "110054",
+    "area": "Delhi Cantonment",
+    "district": "South West Delhi",
+    "state": "Delhi",
+    "lat": 28.58,
+    "lon": 77.13
+  },
+  {
+    "pincode": "110055",
+    "area": "Sadar Bazar",
+    "district": "North Delhi",
+    "state": "Delhi",
+    "lat": 28.66,
+    "lon": 77.21
+  },
+  {
+    "pincode": "110056",
+    "area": "Ashok Vihar",
+    "district": "North West Delhi",
+    "state": "Delhi",
+    "lat": 28.69,
+    "lon": 77.17
+  },
+  {
+    "pincode": "110057",
+    "area": "Vasant Vihar South",
+    "district": "South West Delhi",
+    "state": "Delhi",
+    "lat": 28.55,
+    "lon": 77.15
+  },
+  {
+    "pincode": "110058",
+    "area": "Janakpuri",
+    "district": "West Delhi",
+    "state": "Delhi",
+    "lat": 28.62,
+    "lon": 77.08
+  },
+  {
+    "pincode": "110059",
+    "area": "Vikaspuri",
+    "district": "West Delhi",
+    "state": "Delhi",
+    "lat": 28.64,
+    "lon": 77.07
+  },
+  {
+    "pincode": "110060",
+    "area": "Hari Nagar",
+    "district": "West Delhi",
+    "state": "Delhi",
+    "lat": 28.63,
+    "lon": 77.11
+  },
+  {
+    "pincode": "110061",
+    "area": "Chanakyapuri",
+    "district": "New Delhi",
+    "state": "Delhi",
+    "lat": 28.59,
+    "lon": 77.18
+  },
+  {
+    "pincode": "110062",
+    "area": "Janakpuri West",
+    "district": "West Delhi",
+    "state": "Delhi",
+    "lat": 28.62,
+    "lon": 77.07
+  },
+  {
+    "pincode": "110063",
+    "area": "Tagore Garden",
+    "district": "West Delhi",
+    "state": "Delhi",
+    "lat": 28.65,
+    "lon": 77.11
+  },
+  {
+    "pincode": "110064",
+    "area": "Kapashera",
+    "district": "South West Delhi",
+    "state": "Delhi",
+    "lat": 28.52,
+    "lon": 77.07
+  },
+  {
+    "pincode": "110065",
+    "area": "Bijwasan",
+    "district": "South West Delhi",
+    "state": "Delhi",
+    "lat": 28.53,
+    "lon": 77.07
+  },
+  {
+    "pincode": "110066",
+    "area": "Najafgarh",
+    "district": "South West Delhi",
+    "state": "Delhi",
+    "lat": 28.61,
+    "lon": 76.98
+  },
+  {
+    "pincode": "110067",
+    "area": "Munirka",
+    "district": "South West Delhi",
+    "state": "Delhi",
+    "lat": 28.56,
+    "lon": 77.17
+  },
+  {
+    "pincode": "110068",
+    "area": "Naraina",
+    "district": "West Delhi",
+    "state": "Delhi",
+    "lat": 28.62,
+    "lon": 77.14
+  },
+  {
+    "pincode": "110069",
+    "area": "Delhi GPO",
+    "district": "Central Delhi",
+    "state": "Delhi",
+    "lat": 28.63,
+    "lon": 77.22
+  },
+  {
+    "pincode": "110070",
+    "area": "Sagarpur",
+    "district": "South West Delhi",
+    "state": "Delhi",
+    "lat": 28.6,
+    "lon": 77.08
+  },
+  {
+    "pincode": "110071",
+    "area": "Moti Bagh",
+    "district": "South West Delhi",
+    "state": "Delhi",
+    "lat": 28.58,
+    "lon": 77.16
+  },
+  {
+    "pincode": "110072",
+    "area": "Palam Colony",
+    "district": "South West Delhi",
+    "state": "Delhi",
+    "lat": 28.58,
+    "lon": 77.07
+  },
+  {
+    "pincode": "110073",
+    "area": "Mahipalpur",
+    "district": "South West Delhi",
+    "state": "Delhi",
+    "lat": 28.55,
+    "lon": 77.11
+  },
+  {
+    "pincode": "110074",
+    "area": "Dwarka Sector 5",
+    "district": "South West Delhi",
+    "state": "Delhi",
+    "lat": 28.59,
+    "lon": 77.05
+  },
+  {
+    "pincode": "110075",
+    "area": "Dwarka",
+    "district": "South West Delhi",
+    "state": "Delhi",
+    "lat": 28.5921,
+    "lon": 77.046
+  },
+  {
+    "pincode": "110076",
+    "area": "Dwarka Sector 23",
+    "district": "South West Delhi",
+    "state": "Delhi",
+    "lat": 28.57,
+    "lon": 77.02
+  },
+  {
+    "pincode": "110077",
+    "area": "Dwarka Sector 15",
+    "district": "South West Delhi",
+    "state": "Delhi",
+    "lat": 28.58,
+    "lon": 77.03
+  },
+  {
+    "pincode": "110078",
+    "area": "Dwarka Sector 10",
+    "district": "South West Delhi",
+    "state": "Delhi",
+    "lat": 28.58,
+    "lon": 77.04
+  },
+  {
+    "pincode": "110080",
+    "area": "Rohini Sector 11",
+    "district": "North West Delhi",
+    "state": "Delhi",
+    "lat": 28.73,
+    "lon": 77.13
+  },
+  {
+    "pincode": "110081",
+    "area": "Kanjhawala",
+    "district": "North West Delhi",
+    "state": "Delhi",
+    "lat": 28.77,
+    "lon": 77.01
+  },
+  {
+    "pincode": "110082",
+    "area": "Bawana",
+    "district": "North Delhi",
+    "state": "Delhi",
+    "lat": 28.78,
+    "lon": 77.04
+  },
+  {
+    "pincode": "110083",
+    "area": "Sahibabad",
+    "district": "North West Delhi",
+    "state": "Delhi",
+    "lat": 28.72,
+    "lon": 77.11
+  },
+  {
+    "pincode": "110084",
+    "area": "Wazirpur",
+    "district": "North West Delhi",
+    "state": "Delhi",
+    "lat": 28.69,
+    "lon": 77.16
+  },
+  {
+    "pincode": "110085",
+    "area": "Rohini",
+    "district": "North West Delhi",
+    "state": "Delhi",
+    "lat": 28.7325,
+    "lon": 77.118
+  },
+  {
+    "pincode": "110086",
+    "area": "Rohini Sector 16",
+    "district": "North West Delhi",
+    "state": "Delhi",
+    "lat": 28.74,
+    "lon": 77.12
+  },
+  {
+    "pincode": "110087",
+    "area": "Rohini Sector 24",
+    "district": "North West Delhi",
+    "state": "Delhi",
+    "lat": 28.75,
+    "lon": 77.11
+  },
+  {
+    "pincode": "110088",
+    "area": "Rohini Sector 3",
+    "district": "North West Delhi",
+    "state": "Delhi",
+    "lat": 28.71,
+    "lon": 77.12
+  },
+  {
+    "pincode": "110089",
+    "area": "Rohini Sector 7",
+    "district": "North West Delhi",
+    "state": "Delhi",
+    "lat": 28.72,
+    "lon": 77.11
+  },
+  {
+    "pincode": "110091",
+    "area": "Dilshad Garden",
+    "district": "East Delhi",
+    "state": "Delhi",
+    "lat": 28.68,
+    "lon": 77.32
+  },
+  {
+    "pincode": "110092",
+    "area": "Anand Vihar",
+    "district": "East Delhi",
+    "state": "Delhi",
+    "lat": 28.65,
+    "lon": 77.32
+  },
+  {
+    "pincode": "110093",
+    "area": "Nand Nagri",
+    "district": "North East Delhi",
+    "state": "Delhi",
+    "lat": 28.69,
+    "lon": 77.31
+  },
+  {
+    "pincode": "110094",
+    "area": "Mayur Vihar Phase 3",
+    "district": "East Delhi",
+    "state": "Delhi",
+    "lat": 28.61,
+    "lon": 77.32
+  },
+  {
+    "pincode": "110095",
+    "area": "Kondli",
+    "district": "East Delhi",
+    "state": "Delhi",
+    "lat": 28.61,
+    "lon": 77.33
+  },
+  {
+    "pincode": "110096",
+    "area": "Mayur Vihar",
+    "district": "East Delhi",
+    "state": "Delhi",
+    "lat": 28.61,
+    "lon": 77.3
+  },
+  {
+    "pincode": "110097",
+    "area": "New Ashok Nagar",
+    "district": "East Delhi",
+    "state": "Delhi",
+    "lat": 28.59,
+    "lon": 77.31
+  },
+  {
+    "pincode": "122001",
+    "area": "Gurgaon City",
+    "district": "Gurgaon",
+    "state": "Haryana",
+    "lat": 28.4595,
+    "lon": 77.0266
+  },
+  {
+    "pincode": "122002",
+    "area": "MG Road Gurgaon",
+    "district": "Gurgaon",
+    "state": "Haryana",
+    "lat": 28.48,
+    "lon": 77.03
+  },
+  {
+    "pincode": "122003",
+    "area": "DLF Phase 1",
+    "district": "Gurgaon",
+    "state": "Haryana",
+    "lat": 28.47,
+    "lon": 77.09
+  },
+  {
+    "pincode": "122006",
+    "area": "Sohna Road",
+    "district": "Gurgaon",
+    "state": "Haryana",
+    "lat": 28.42,
+    "lon": 77.06
+  },
+  {
+    "pincode": "122009",
+    "area": "Sector 56 Gurgaon",
+    "district": "Gurgaon",
+    "state": "Haryana",
+    "lat": 28.42,
+    "lon": 77.09
+  },
+  {
+    "pincode": "122015",
+    "area": "Udyog Vihar",
+    "district": "Gurgaon",
+    "state": "Haryana",
+    "lat": 28.5,
+    "lon": 77.07
+  },
+  {
+    "pincode": "122018",
+    "area": "Cyber City",
+    "district": "Gurgaon",
+    "state": "Haryana",
+    "lat": 28.494,
+    "lon": 77.088
+  },
+  {
+    "pincode": "201301",
+    "area": "Noida Sector 15",
+    "district": "Gautam Buddh Nagar",
+    "state": "UP",
+    "lat": 28.5855,
+    "lon": 77.31
+  },
+  {
+    "pincode": "201303",
+    "area": "Noida Sector 62",
+    "district": "Gautam Buddh Nagar",
+    "state": "UP",
+    "lat": 28.62,
+    "lon": 77.36
+  },
+  {
+    "pincode": "201304",
+    "area": "Noida Sector 18",
+    "district": "Gautam Buddh Nagar",
+    "state": "UP",
+    "lat": 28.57,
+    "lon": 77.32
+  },
+  {
+    "pincode": "201305",
+    "area": "Noida Sector 37",
+    "district": "Gautam Buddh Nagar",
+    "state": "UP",
+    "lat": 28.56,
+    "lon": 77.35
+  },
+  {
+    "pincode": "201306",
+    "area": "Greater Noida",
+    "district": "Gautam Buddh Nagar",
+    "state": "UP",
+    "lat": 28.4744,
+    "lon": 77.504
+  },
+  {
+    "pincode": "201307",
+    "area": "Greater Noida West",
+    "district": "Gautam Buddh Nagar",
+    "state": "UP",
+    "lat": 28.57,
+    "lon": 77.43
+  },
+  {
+    "pincode": "201310",
+    "area": "Noida Sector 128",
+    "district": "Gautam Buddh Nagar",
+    "state": "UP",
+    "lat": 28.51,
+    "lon": 77.38
+  },
+  {
+    "pincode": "201312",
+    "area": "Noida Extension",
+    "district": "Gautam Buddh Nagar",
+    "state": "UP",
+    "lat": 28.59,
+    "lon": 77.39
+  },
+  {
+    "pincode": "201314",
+    "area": "Techzone",
+    "district": "Gautam Buddh Nagar",
+    "state": "UP",
+    "lat": 28.46,
+    "lon": 77.51
+  },
+  {
+    "pincode": "121001",
+    "area": "Faridabad",
+    "district": "Faridabad",
+    "state": "Haryana",
+    "lat": 28.4089,
+    "lon": 77.3178
+  },
+  {
+    "pincode": "121002",
+    "area": "Faridabad NIT",
+    "district": "Faridabad",
+    "state": "Haryana",
+    "lat": 28.39,
+    "lon": 77.3
+  },
+  {
+    "pincode": "121003",
+    "area": "Faridabad Old",
+    "district": "Faridabad",
+    "state": "Haryana",
+    "lat": 28.41,
+    "lon": 77.29
+  },
+  {
+    "pincode": "121004",
+    "area": "Ballabgarh",
+    "district": "Faridabad",
+    "state": "Haryana",
+    "lat": 28.34,
+    "lon": 77.32
+  },
+  {
+    "pincode": "121005",
+    "area": "Faridabad Sector 15",
+    "district": "Faridabad",
+    "state": "Haryana",
+    "lat": 28.39,
+    "lon": 77.31
+  },
+  {
+    "pincode": "121006",
+    "area": "Faridabad Sector 21",
+    "district": "Faridabad",
+    "state": "Haryana",
+    "lat": 28.41,
+    "lon": 77.31
+  },
+  {
+    "pincode": "121007",
+    "area": "Surajkund",
+    "district": "Faridabad",
+    "state": "Haryana",
+    "lat": 28.49,
+    "lon": 77.29
+  },
+  {
+    "pincode": "301001",
+    "area": "Ghaziabad Railway",
+    "district": "Ghaziabad",
+    "state": "UP",
+    "lat": 28.6692,
+    "lon": 77.4538
+  },
+  {
+    "pincode": "201001",
+    "area": "Ghaziabad City",
+    "district": "Ghaziabad",
+    "state": "UP",
+    "lat": 28.6692,
+    "lon": 77.4538
+  },
+  {
+    "pincode": "201002",
+    "area": "Ghaziabad Loni",
+    "district": "Ghaziabad",
+    "state": "UP",
+    "lat": 28.75,
+    "lon": 77.28
+  },
+  {
+    "pincode": "201005",
+    "area": "Ghaziabad Mohan Nagar",
+    "district": "Ghaziabad",
+    "state": "UP",
+    "lat": 28.67,
+    "lon": 77.42
+  },
+  {
+    "pincode": "201009",
+    "area": "Indirapuram",
+    "district": "Ghaziabad",
+    "state": "UP",
+    "lat": 28.64,
+    "lon": 77.37
+  },
+  {
+    "pincode": "201010",
+    "area": "Vaishali",
+    "district": "Ghaziabad",
+    "state": "UP",
+    "lat": 28.64,
+    "lon": 77.34
+  },
+  {
+    "pincode": "201012",
+    "area": "Raj Nagar Extension",
+    "district": "Ghaziabad",
+    "state": "UP",
+    "lat": 28.71,
+    "lon": 77.46
+  },
+  {
+    "pincode": "201014",
+    "area": "Crossings Republik",
+    "district": "Ghaziabad",
+    "state": "UP",
+    "lat": 28.62,
+    "lon": 77.41
+  }
+]

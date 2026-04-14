@@ -1117,6 +1117,39 @@ npm install npm@latest -g
 
 ---
 
+<!-- PHASE 3 / HACKATHON EVALUATION  -->
+## 🏆 Phase 3 Architecture & Hackathon Evaluation <a name="hackathon-evaluation"></a>
+
+### Phase 3 Architecture
+- `POST /api/demo/trigger-weather` - IMD Simulation Event
+- `POST /api/demo/trigger-outage` - Zomato Platform Disruption Event  
+- `POST /api/demo/concurrent-disruption` - Rain + Outage Combination
+- `POST /api/demo/gps-spoof` - Static Spoofed Coordinate Simulation
+- `POST /api/demo/fraud-test` - ML Temporal Anomaly Validation
+- `POST /api/demo/zone-crossing` - Mobility Engine Cross-Zone Resolver
+- `POST /api/demo/eligibility-check` - 90-Day Engagement Verification
+
+### Dataset Sources
+We processed ~2500 consecutive daily records representing the IMD Red Alert timeline in Delhi NCR to derive actuarial viability.
+**Generate synthetic data:**
+\`\`\`bash
+curl "https://archive-api.open-meteo.com/v1/archive?latitude=28.6139&longitude=77.2090&start_date=2018-01-01&end_date=2024-12-31&daily=precipitation_sum&timezone=Asia%2FKolkata" > data/delhi_weather_2018_2024.json
+\`\`\`
+
+### Regulatory Compliance
+**IRDAI (Insurance Regulatory and Development Authority of India):** We prove parameter accuracy and financial sustainability by correlating historical trigger likelihood against loss ratios, locking our theoretical risk below the 70% threshold (verified dynamically on [Actuarial Proof](/actuarial)). 
+**SS Code 2020 (Social Security):** OffShift respects unorganized sector mandates by forcing a 90-day platform engagement history gate. Short-term shift passes bypass this, but comprehensive Monthly coverage mandates proof-of-work (verified in [Eligibility Check](/api/eligibility/check)).
+**DPDP Act 2023 (Digital Data Protection):** Compliant, isolated consent gathering. Location streams cannot be monitored invisibly. IP hashes log cryptographic affirmations in multi-step wizard logic (verified on [Consent Flow](/onboard/consent)).
+
+### ⚖️ Judge Quick Links
+- **Live site:** [https://offshift-9iok.onrender.com](https://offshift-9iok.onrender.com)
+- **Demo admin panel:** [/admin/demo](/admin/demo) *(DEMO_MODE=true)*
+- **Compliance checklist:** [/admin/compliance](/admin/compliance)
+- **Actuarial proof:** [/actuarial](/actuarial)
+- **Consent flow:** [/onboard/consent](/onboard/consent)
+
+---
+
 <!-- CONTRIBUTORS -->
 ##  Team & Contributors <a name="contributors"></a>
 

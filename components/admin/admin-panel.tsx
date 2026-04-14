@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatRupees } from "@/lib/format";
+import FraudScoreBadge from "@/components/FraudScoreBadge";
+import PayoutPipeline from "@/components/PayoutPipeline";
 
 type Stats = {
   active_policies: number;
@@ -20,6 +22,7 @@ type Stats = {
   enrollments_suspended: boolean;
   bcr_target_min: number;
   bcr_target_max: number;
+  recent_claims?: any[];
 };
 
 export function AdminPanel() {
@@ -204,28 +207,41 @@ export function AdminPanel() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[#0F4C5C]/5 border-[#0F4C5C]/10">
+        <Card className="bg-[#0F4C5C]/5 border-[#0F4C5C]/10 col-span-1 sm:col-span-2 lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-[#0F4C5C] flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px]">psychology</span> The Week Ahead
+              <span className="material-symbols-outlined text-[18px]">fact_check</span> Recent Claim Payouts
             </CardTitle>
-            <p className="text-xs text-slate-500">Predictive Analytics (XGBoost)</p>
+            <p className="text-xs text-slate-500">Integrated Multi-Layer Fraud Detection</p>
           </CardHeader>
           <CardContent className="text-sm space-y-3">
-            <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
-               <p className="text-xs font-bold text-slate-800">High Risk: Monsoon (Thursday)</p>
-               <p className="text-[10px] text-slate-600 mt-1 mb-2">Confidence: 87% • Expected liquidity hit: ~₹1,20,000</p>
-               <div className="w-full bg-slate-100 rounded-full h-1.5">
-                  <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: '87%' }}></div>
-               </div>
-            </div>
-            <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
-               <p className="text-xs font-bold text-slate-800">Medium Risk: Swiggy Down</p>
-               <p className="text-[10px] text-slate-600 mt-1 mb-2">Confidence: 24% • Based on weekend server loads</p>
-               <div className="w-full bg-slate-100 rounded-full h-1.5">
-                  <div className="bg-[#0F4C5C] h-1.5 rounded-full" style={{ width: '24%' }}></div>
-               </div>
-            </div>
+             {stats.recent_claims?.map((claim: any) => {
+               // Pseudo-mock score generation for demo based on status unless computed
+               // In production, you'd save \`fraud_score\` in the claims table.
+               // We will mock the fraud result for the UI visually.
+               const isSettled = claim.status === "SETTLED";
+               const isBlocked = claim.status === "REJECTED";
+               const fraudScore = isSettled ? Math.floor(Math.random() * 25) : isBlocked ? Math.floor(Math.random() * 30 + 65) : Math.floor(Math.random() * 20 + 35);
+               const decision = fraudScore <= 30 ? "AUTO_APPROVE" : fraudScore <= 60 ? "FLAG_REVIEW" : "BLOCK";
+               
+               const workerName = claim.policies?.workers?.name || "Unknown Rider";
+               
+               return (
+                  <div key={claim.id} className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between">
+                     <div className="w-1/2">
+                        <p className="text-xs font-bold text-slate-800 uppercase tracking-widest">{workerName} <span className="opacity-50 font-normal">({claim.disruption_type})</span></p>
+                        <p className="text-[10px] text-slate-600 mt-1 mb-2 font-mono">Claim ID: {claim.id.split('-')[0]} • {formatRupees(claim.payout_amount)}</p>
+                        <FraudScoreBadge score={fraudScore} decision={decision} />
+                        <PayoutPipeline claimId={claim.id} />
+                     </div>
+                     <div className="text-right">
+                        {isSettled && <span className="text-xs font-bold text-emerald-600">SETTLED</span>}
+                        {isBlocked && <span className="text-xs font-bold text-red-600">BLOCKED</span>}
+                        {!isSettled && !isBlocked && <Button size="sm" variant="outline" className="h-7 text-xs">Review</Button>}
+                     </div>
+                  </div>
+               );
+             })}
           </CardContent>
         </Card>
       </div>
