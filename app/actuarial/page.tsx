@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+"use client";
+
 import {
   BarChart,
   Bar,
@@ -12,17 +12,8 @@ import {
 } from 'recharts';
 import { ShieldCheck, CloudRain, Calculator, Info } from 'lucide-react';
 import React from 'react';
+import weatherData from '../../data/delhi_weather_2018_2024.json';
 
-// Read JSON synchronously for a server component
-const dataPath = path.join(process.cwd(), 'data', 'delhi_weather_2018_2024.json');
-let weatherData: any = null;
-try {
-  weatherData = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
-} catch (e) {
-  console.error("Failed to load weather data", e);
-}
-
-export const dynamic = 'force-dynamic';
 
 export default function ActuarialPage() {
   const chartData: any[] = [];
