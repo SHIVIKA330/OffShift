@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { calculateHybridPremium } from '@/lib/pricing-engine';
 
 export async function POST(req: NextRequest) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const body = await req.json();
   const { workerId, planType = 'weekly' } = body;
 

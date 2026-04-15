@@ -12,7 +12,7 @@ export async function detectCoordinatedRing(
   pincode: string,
   windowMinutes: number = 15
 ): Promise<RingDetectionResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString();
   const signals: string[] = [];
 
@@ -48,14 +48,14 @@ export async function detectCoordinatedRing(
     .gte('created_at', windowStart);
 
   const fingerprintGroups = new Map<string, string[]>();
-  (recentClaims || []).forEach(c => {
+  (recentClaims || []).forEach((c: any) => {
     if (c.device_fingerprint) {
       const group = fingerprintGroups.get(c.device_fingerprint) || [];
       group.push(c.worker_id);
       fingerprintGroups.set(c.device_fingerprint, group);
     }
   });
-  const largestCluster = Math.max(...[...fingerprintGroups.values()].map(g => g.length), 0);
+  const largestCluster = Math.max(...Array.from(fingerprintGroups.values() as any).map((g: any) => g.length) as any, 0);
   if (largestCluster >= 15) {
     signals.push(`device_cluster: ${largestCluster} workers share fingerprint`);
   }
@@ -64,9 +64,9 @@ export async function detectCoordinatedRing(
   const { data: cohortWorkers } = await supabase
     .from('workers')
     .select('id, created_at')
-    .in('id', (recentClaims || []).map(c => c.worker_id));
+    .in('id', (recentClaims || []).map((c: any) => c.worker_id));
 
-  const registrationTimes = (cohortWorkers || []).map(w => new Date(w.created_at).getTime());
+  const registrationTimes = (cohortWorkers || []).map((w: any) => new Date(w.created_at).getTime());
   if (registrationTimes.length > 10) {
     const minTime = Math.min(...registrationTimes);
     const maxTime = Math.max(...registrationTimes);
@@ -91,7 +91,7 @@ export async function detectCoordinatedRing(
     isRingDetected,
     riskLevel,
     signals,
-    affectedWorkerIds: (recentClaims || []).map(c => c.worker_id),
+    affectedWorkerIds: (recentClaims || []).map((c: any) => c.worker_id),
     recommendedAction,
   };
 }

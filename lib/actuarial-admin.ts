@@ -16,7 +16,7 @@ export interface ActuarialMetrics {
 }
 
 export async function calculateActuarialMetrics(): Promise<ActuarialMetrics> {
-  const supabase = createClient();
+  const supabase = await createClient();
   
   const [premiumsRes, claimsRes, policiesRes] = await Promise.all([
     supabase.from('policies').select('final_premium, plan_type, is_active'),
@@ -25,10 +25,10 @@ export async function calculateActuarialMetrics(): Promise<ActuarialMetrics> {
   ]);
 
   const totalPremiums = (premiumsRes.data || []).reduce(
-    (sum, p) => sum + (p.final_premium || 0), 0
+    (sum: number, p: any) => sum + (p.final_premium || 0), 0
   );
-  const paidClaims = (claimsRes.data || []).filter(c => c.fraud_decision === 'auto_approve' || c.payout_amount > 0);
-  const totalClaims = paidClaims.reduce((sum, c) => sum + (c.payout_amount || 0), 0);
+  const paidClaims = (claimsRes.data || []).filter((c: any) => c.fraud_decision === 'auto_approve' || c.payout_amount > 0);
+  const totalClaims = paidClaims.reduce((sum: number, c: any) => sum + (c.payout_amount || 0), 0);
   const activePolicies = policiesRes.count || 0;
   const operatingCosts = totalPremiums * 0.30; // 30% expense ratio assumption
 
@@ -37,19 +37,19 @@ export async function calculateActuarialMetrics(): Promise<ActuarialMetrics> {
   const combinedRatio = lossRatio + expenseRatio;
   const surplus = totalPremiums - totalClaims - operatingCosts;
 
-  const autoApproved = (claimsRes.data || []).filter(c => c.fraud_decision === 'auto_approve').length;
+  const autoApproved = (claimsRes.data || []).filter((c: any) => c.fraud_decision === 'auto_approve').length;
   const totalClaimsCount = (claimsRes.data || []).length;
   const autoApprovalRate = totalClaimsCount > 0 ? autoApproved / totalClaimsCount : 0;
 
   const avgSeverity = paidClaims.length > 0
-    ? paidClaims.reduce((sum, c) => sum + (c.payout_amount || 0), 0) / paidClaims.length
+    ? paidClaims.reduce((sum: number, c: any) => sum + (c.payout_amount || 0), 0) / paidClaims.length
     : 0;
 
   const payoutTimes = paidClaims
-    .filter(c => c.paid_at && c.created_at)
-    .map(c => (new Date(c.paid_at).getTime() - new Date(c.created_at).getTime()) / (1000 * 60));
+    .filter((c: any) => c.paid_at && c.created_at)
+    .map((c: any) => (new Date(c.paid_at).getTime() - new Date(c.created_at).getTime()) / (1000 * 60));
   const avgPayoutTime = payoutTimes.length > 0
-    ? payoutTimes.reduce((a, b) => a + b, 0) / payoutTimes.length
+    ? payoutTimes.reduce((a: number, b: number) => a + b, 0) / payoutTimes.length
     : 120;
 
   // Persist to actuarial_metrics table

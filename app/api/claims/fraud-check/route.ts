@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { runFraudCheck, writeAuditEvent } from '@/lib/fraud-engine';
 
 export async function POST(req: NextRequest) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const body = await req.json();
   const { claimId, workerId } = body;
 

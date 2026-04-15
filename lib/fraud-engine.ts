@@ -174,7 +174,7 @@ export async function writeAuditEvent(
   details: Record<string, unknown>,
   previousHash: string
 ): Promise<string> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const timestamp = new Date().toISOString();
   
   const hashInput = `${previousHash}:${eventType}:${timestamp}:${JSON.stringify(details)}`;

@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getPayoutAmount } from '@/lib/tiers';
 
 export async function GET(req: NextRequest) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { searchParams } = new URL(req.url);
   const workerId = searchParams.get('workerId');
 

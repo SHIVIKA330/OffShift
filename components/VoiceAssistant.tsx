@@ -18,7 +18,7 @@ export default function VoiceAssistant({
   const [transcript, setTranscript] = useState('');
   const [response, setResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any | null>(null);
 
   const startListening = () => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -31,7 +31,7 @@ export default function VoiceAssistant({
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
-    recognition.onresult = async (event: SpeechRecognitionEvent) => {
+    recognition.onresult = async (event: any) => {
       const spokenText = event.results[0][0].transcript;
       setTranscript(spokenText);
       setIsListening(false);
@@ -78,7 +78,7 @@ export default function VoiceAssistant({
       </div>
       
       <Button
-        variant={isListening ? 'destructive' : 'outline'}
+        variant={isListening ? 'outline' : 'outline'}
         size="sm"
         onClick={isListening ? () => recognitionRef.current?.stop() : startListening}
         className="w-full"
