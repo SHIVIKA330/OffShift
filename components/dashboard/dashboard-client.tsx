@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { formatRupees } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
 import EligibilityProgress from "@/components/EligibilityProgress";
+import WellnessDashboard from "@/components/WellnessDashboard";
+import VoiceAssistant from "@/components/VoiceAssistant";
 
 type PolicyRow = {
   id: string;
@@ -46,6 +48,7 @@ export function DashboardClient() {
   const [riderId, setRiderId] = useState<string>("");
   const [platform, setPlatform] = useState<string>("");
   const [zone, setZone] = useState<string>("");
+  const [workerData, setWorkerData] = useState<any>(null);
   const [weatherStatus, setWeatherStatus] = useState<{
     rain_mm: number;
     temp_c: number;
@@ -93,7 +96,7 @@ export function DashboardClient() {
     // Fetch Worker Profile info
     const { data: worker } = await supabase
       .from("workers")
-      .select("name, rider_id, platform, zone")
+      .select("name, rider_id, platform, zone, payout_tier, zone_risk_score, is_upi_verified, created_at")
       .eq("id", workerId)
       .single();
     
@@ -102,6 +105,7 @@ export function DashboardClient() {
       setRiderId(worker.rider_id);
       setPlatform(worker.platform);
       setZone(worker.zone);
+      setWorkerData(worker);
       localStorage.setItem("offshift_worker_name", worker.name);
     }
 
@@ -286,6 +290,23 @@ export function DashboardClient() {
 
         {/* ── Eligibility Progress ── */}
         {riderId && <EligibilityProgress riderId={riderId} />}
+
+        {/* ── Phase 3 Worker UX (Wellness & Voice) ── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <WellnessDashboard 
+            hasActivePolicy={!!active}
+            zoneRiskScore={workerData?.zone_risk_score || 0.4}
+            accountAgeDays={workerData ? Math.floor((Date.now() - new Date(workerData.created_at).getTime()) / (1000 * 60 * 60 * 24)) : 30}
+            isUPIVerified={workerData?.is_upi_verified || true}
+          />
+          <VoiceAssistant 
+            workerId={workerId}
+            workerName={workerName}
+            tier={workerData?.payout_tier || 'bronze'}
+            policyStatus={active ? 'Active' : 'No Policy'}
+            language="hi"
+          />
+        </div>
 
         {/* ── Active Policy Card ── */}
         {active ? (

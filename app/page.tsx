@@ -97,12 +97,12 @@ export default function HomePage() {
             <div className="bg-surface-container-lowest p-8 rounded-[32px] editorial-shadow border border-outline-variant/10">
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h3 className="font-headline text-2xl font-medium">Shift Pass</h3>
+                  <h3 className="font-headline text-2xl font-medium">Daily Shield</h3>
                   <p className="font-body text-sm text-on-surface-variant">Best for occasional riders</p>
                 </div>
                 <div className="text-right">
-                  <span className="font-headline text-2xl">₹49</span>
-                  <p className="text-[10px] uppercase tracking-tighter text-on-surface-variant">/shift</p>
+                  <span className="font-headline text-2xl">₹12</span>
+                  <p className="text-[10px] uppercase tracking-tighter text-on-surface-variant">/day</p>
                 </div>
               </div>
               <ul className="space-y-4 mb-8">
@@ -131,7 +131,7 @@ export default function HomePage() {
                   <p className="font-body text-sm text-on-primary/70">For the daily grinders</p>
                 </div>
                 <div className="text-right">
-                  <span className="font-headline text-2xl text-on-primary">₹249</span>
+                  <span className="font-headline text-2xl text-on-primary">₹49</span>
                   <p className="text-[10px] uppercase tracking-tighter text-on-primary/70">/week</p>
                 </div>
               </div>
@@ -158,7 +158,7 @@ export default function HomePage() {
                   <p className="font-body text-sm text-on-surface-variant">The ultimate safety net</p>
                 </div>
                 <div className="text-right">
-                  <span className="font-headline text-2xl">₹899</span>
+                  <span className="font-headline text-2xl">₹349</span>
                   <p className="text-[10px] uppercase tracking-tighter text-on-surface-variant">/month</p>
                 </div>
               </div>
