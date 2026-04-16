@@ -6,58 +6,89 @@ function hash(s: string) {
   return Math.abs(h);
 }
 
-/** @deprecated Use fetchCurrentAqi from trigger-monitor.ts instead */
-export function getMockAqiForZone(zone: ZoneSlug): {
-  zone: ZoneSlug;
-  aqi_current: number;
-  aqi_forecast_peak: number;
-  pm25: number;
-  category: string;
-} {
-  // Deterministic mock CPCB-style AQI (150–400 range)
-  const isPolluted = ["delhi_new", "okhla", "gurugram", "noida"].includes(zone);
-  const cur = isPolluted ? 320 + (hash(zone) % 80) : 120 + (hash(zone) % 150);
+/** 
+ * Mock Environmental Risk (AQI & Heat)
+ * Deterministic based on zone slug
+ */
+export function getMockEnvironmentalRisk(zone: ZoneSlug) {
+  const h = hash(zone);
   
+  // AQI Logic
+  const isNorth = ["delhi", "gurugram", "noida", "ghaziabad", "patna", "kanpur", "lucknow"].some(c => zone.includes(c));
+  const baseAqi = isNorth ? 280 : 80;
+  const aqi = baseAqi + (h % 120);
+
+  // Heatwave Logic
+  const isDesert = ["jaipur", "jodhpur", "ahmedabad", "raipur", "nagpur"].some(c => zone.includes(c));
+  const temp = isDesert ? 42 + (h % 6) : 32 + (h % 8);
+
   return {
-    zone,
-    aqi_current: cur,
-    aqi_forecast_peak: cur + 40,
-    pm25: Math.round(cur * 0.45),
-    category: cur > 300 ? "Very Poor" : cur > 200 ? "Poor" : "Moderate",
+    aqi,
+    aqi_category: aqi > 300 ? "Very Poor" : aqi > 200 ? "Poor" : aqi > 100 ? "Moderate" : "Good",
+    category: aqi > 300 ? "Very Poor" : aqi > 200 ? "Poor" : aqi > 100 ? "Moderate" : "Good",
+    pm25: Math.round(aqi * 0.45),
+    temperature_celsius: temp,
+    is_heatwave: temp >= 45
   };
 }
 
-export function getMockDowndetector(platform: "zomato" | "swiggy" | "zepto" | string): {
+/**
+ * Mock Weather Risk (Storms & Floods)
+ * Based on coastal/himalayan geography
+ */
+export function getMockWeatherRisk(zone: ZoneSlug) {
+  const h = hash(zone);
+  
+  const isCoastal = ["mumbai", "chennai", "visakhapatnam", "kochi", "bhubaneswar", "kolkata", "panaji"].some(c => zone.includes(c));
+  const isHimalayan = ["shimla", "manali", "dharamshala", "dehradun", "srinagar", "leh"].some(c => zone.includes(c));
+  
+  const storm_level = isCoastal ? 60 + (h % 35) : isHimalayan ? 40 + (h % 20) : (h % 15);
+  const flood_active = isCoastal && (h % 10 > 7); // 30% chance for coastal cities
+
+  return {
+    storm_level,
+    flood_active,
+    wind_speed_kmh: Math.round(storm_level * 1.2)
+  };
+}
+
+/**
+ * Mock Civic Risk (Curfews & Disruption)
+ */
+export function getMockCivicRisk(zone: ZoneSlug) {
+  const h = hash(zone);
+  
+  const hotspots = ["srinagar", "imphal", "mumbai", "delhi_new"].some(c => zone.includes(c));
+  const curfew_active = hotspots && (h % 10 > 8); // 10% chance in hotspots
+
+  return {
+    curfew_active,
+    has_curfew: curfew_active, // backward compatibility
+    reason: curfew_active ? "Admin Restriction / Section 144" : "Normal"
+  };
+}
+
+/** Platform Downdetector Mock */
+export function getMockDowndetector(platform: string): {
   platform: string;
   report_count: number;
   outage_hours_estimate: number;
   status: "operational" | "degraded" | "major_outage";
 } {
-  const z = platform === "zomato" ? 720 : 120;
+  const h = hash(platform);
+  const z = h % 1000;
   return {
     platform,
     report_count: z,
-    outage_hours_estimate: z > 500 ? 2 : 0,
-    status: z > 500 ? "major_outage" : "operational",
+    outage_hours_estimate: z > 800 ? 2 : 0,
+    status: z > 800 ? "major_outage" : z > 500 ? "degraded" : "operational",
   };
 }
 
-/** @deprecated Use fetchHourlyTemperatureC from trigger-monitor.ts instead */
-export function getMockHeat(zone: ZoneSlug) {
-  const isHot = ["jaipur", "jodhpur", "delhi_new", "okhla", "gurugram", "ahmedabad", "surat"].includes(zone);
-  const temp = isHot ? 45 + (hash(zone) % 4) : 32 + (hash(zone) % 8);
-  return {
-    zone,
-    temperature_celsius: temp,
-    is_heatwave: temp >= 45,
-  };
-}
-
-export function getMockCurfew(zone: ZoneSlug) {
-  const hasStrike = zone === "mumbai" || zone === "howrah";
-  return {
-    zone,
-    has_curfew: hasStrike,
-    reason: hasStrike ? "Local Union Strike & Section 144" : "Normal",
-  };
-}
+// Backward Compatibility Aliases
+export const getMockAqiForZone = (z: ZoneSlug) => {
+  const r = getMockEnvironmentalRisk(z);
+  return { ...r, aqi_current: r.aqi, aqi_forecast_peak: r.aqi + 20 };
+};
+export const getMockHeat = (z: ZoneSlug) => getMockEnvironmentalRisk(z);
+export const getMockCurfew = (z: ZoneSlug) => getMockCivicRisk(z);

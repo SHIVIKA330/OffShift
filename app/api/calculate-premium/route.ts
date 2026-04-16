@@ -14,6 +14,7 @@ import { getAQIForZone } from "@/lib/cpcb-feed";
 import { computeWorkerTier } from "@/lib/underwriting";
 import { getRedis } from "@/lib/redis";
 import { normalizeZone, ZONE_COORDS, type ZoneSlug } from "@/lib/zones";
+import { getMockWeatherRisk, getMockCivicRisk, getMockEnvironmentalRisk } from "@/lib/mock-data";
 
 export const dynamic = "force-dynamic";
 
@@ -61,8 +62,17 @@ export async function POST(req: Request) {
     }
   }
 
+  // ── Smart Triggers (Mocked for now) ──
+  const env = getMockEnvironmentalRisk(zone);
+  const weather = getMockWeatherRisk(zone);
+  const civic = getMockCivicRisk(zone);
+
   // ── Kavach Score (simplified scoring) ──
-  const score = calculateKavachScore(zone, body.shift_type, body.active_days);
+  const score = calculateKavachScore(zone, body.shift_type, body.active_days, {
+    curfew: civic.curfew_active,
+    flood: weather.flood_active,
+    aqi: env.aqi
+  });
   const premium = getPriceFromScore(score, body.coverage_type);
 
   // ── Full engine with real AQI feed ──
@@ -74,8 +84,12 @@ export async function POST(req: Request) {
     active_days: body.active_days,
     platform: body.platform,
     coverage_type: body.coverage_type,
-    aqi_forecast_peak: aqi.aqi_forecast_peak,
+    aqi_forecast_peak: env.aqi,
     openMeteo,
+    storm_level: weather.storm_level,
+    flood_active: weather.flood_active,
+    curfew_active: civic.curfew_active,
+    heat_level: env.temperature_celsius
   });
 
   const tier = computeWorkerTier(body.active_days);
@@ -113,6 +127,7 @@ export async function POST(req: Request) {
     activity_adjustment: engine.activity_adjustment,
     final_premium: engine.final_premium,
     max_payout: engine.max_payout,
+    risk_breakdown: engine.risk_breakdown,
     explanation_hindi,
     valid_for_seconds: 300,
   };

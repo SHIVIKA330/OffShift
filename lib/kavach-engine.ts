@@ -1,6 +1,6 @@
 /**
  * OffShift — Kavach Risk Score & Pricing Engine
- * Simplified, explainable scoring for parametric insurance pricing
+ * Expanded to support Storm, Flood, Curfew, Heat, and AQI triggers.
  */
 
 import { type ZoneSlug, ZONE_COORDS } from "@/lib/zones";
@@ -23,10 +23,19 @@ export interface KavachEngineResult {
   zone_multiplier: number;
   shift_multiplier: number;
   weather_surge: number;
+  civic_surge: number;
   activity_adjustment: number;
   final_premium: number;
   kavach_score: number;
   max_payout: number;
+  risk_breakdown: {
+    rain: number;
+    storm: number;
+    flood: number;
+    heat: number;
+    curfew: number;
+    aqi: number;
+  };
 }
 
 export interface OpenMeteoHourlySlice {
@@ -42,74 +51,72 @@ export interface KavachEngineInput {
   coverage_type: CoverageType;
   aqi_forecast_peak: number;
   openMeteo: OpenMeteoHourlySlice;
+  storm_level?: number;
+  flood_active?: boolean;
+  curfew_active?: boolean;
+  heat_level?: number;
 }
 
 // ─── Core Kavach Score Calculator ───────────────────────────────────────────
 
 /**
  * Calculate Kavach Score (1–100) from zone, shift, and activity.
- * Higher score = higher risk = higher premium.
+ * Incorporates multi-risk indicators.
  */
 export const calculateKavachScore = (
   zone: string,
   shift: string,
-  days: number
+  days: number,
+  additionalRisks?: { curfew: boolean; flood: boolean; aqi: number }
 ): number => {
   let score = 40; // Base score
 
-  // Zone Risk (based on real Delhi flood/AQI history)
+  // Zone Risk (Top Tier hotspots)
   const zoneWeights: Record<string, number> = {
     okhla: 25,
     gurugram: 20,
-    noida: 10,
-    lajpat_nagar: 8,
-    rohini: 5,
-    dwarka: 3,
-    // Also support display names
-    Okhla: 25,
-    Gurugram: 20,
-    Noida: 10,
-    "Lajpat Nagar": 8,
-    Rohini: 5,
-    Dwarka: 3,
+    noida: 15,
+    mumbai: 12,
+    kolkata: 10,
+    patna: 18,
+    jaipur: 15,
   };
   score += zoneWeights[zone] || 5;
 
   // Shift Risk
-  if (shift === "night" || shift === "Night 10pm-6am") score += 15;
-  if (shift === "evening" || shift === "Evening 2pm-10pm") score += 6;
-  if (shift === "morning" || shift === "Morning 6am-2pm") score -= 5;
-  // flexible = no adjustment
+  if (shift === "night") score += 15;
+  if (shift === "evening") score += 6;
+  if (shift === "morning") score -= 5;
+
+  // Real-time environmental/social risk boosts
+  if (additionalRisks?.curfew) score += 20;
+  if (additionalRisks?.flood) score += 25;
+  if (additionalRisks?.aqi && additionalRisks.aqi > 300) score += 12;
 
   // Activity Adjustment
-  if (days >= 7) score -= 10; // Loyal rider discount
-  if (days < 3) score += 10; // Irregular = harder to validate
+  if (days >= 7) score -= 10; // Loyalty discount
+  if (days < 3) score += 10; // Volatility penalty
 
   return Math.min(Math.max(score, 1), 100);
 };
 
 // ─── Price from Score ───────────────────────────────────────────────────────
 
-/**
- * Map Kavach Score to premium price (₹).
- * 1-40 = LOW, 41-70 = MEDIUM, 71-100 = HIGH
- */
 export const getPriceFromScore = (
   score: number,
   type: "24hr" | "7day"
 ): number => {
   if (type === "24hr") {
     if (score <= 40) return 19;
-    if (score <= 70) return 29;
-    return 49;
+    if (score <= 70) return 39;
+    return 69;
   }
-  // Weekly pricing
-  if (score <= 40) return 79;
-  if (score <= 70) return 99;
-  return 149;
+  if (score <= 40) return 89;
+  if (score <= 70) return 129;
+  return 199;
 };
 
-// ─── Risk Band (for UI badges) ──────────────────────────────────────────────
+// ─── Risk Band ─────────────────────────────────────────────────────────────
 
 export function riskBand(score: number): {
   label: "LOW" | "MEDIUM" | "HIGH";
@@ -118,26 +125,27 @@ export function riskBand(score: number): {
   color: "green" | "yellow" | "orange";
 } {
   if (score <= 40)
-    return { label: "LOW", dayRef: 19, weekRef: 79, color: "green" };
+    return { label: "LOW", dayRef: 19, weekRef: 89, color: "green" };
   if (score <= 70)
-    return { label: "MEDIUM", dayRef: 29, weekRef: 99, color: "yellow" };
-  return { label: "HIGH", dayRef: 49, weekRef: 149, color: "orange" };
+    return { label: "MEDIUM", dayRef: 39, weekRef: 129, color: "yellow" };
+  return { label: "HIGH", dayRef: 69, weekRef: 199, color: "orange" };
 }
 
-// ─── Backward-compatible aliases ────────────────────────────────────────────
+// ─── Backward-compatible Helper ───────────────────────────────────────────
 
-/** Alias for calculateKavachScore — used by register route */
 export function computeKavachScore(input: {
   zone: ZoneSlug;
   shift_type: ShiftType;
   active_days: number;
   aqi_forecast_peak?: number;
+  curfew?: boolean;
+  flood?: boolean;
 }): number {
-  let score = calculateKavachScore(input.zone, input.shift_type, input.active_days);
-  // AQI boost (if available)
-  if (input.aqi_forecast_peak && input.aqi_forecast_peak > 300) score += 15;
-  else if (input.aqi_forecast_peak && input.aqi_forecast_peak > 200) score += 8;
-  return Math.min(Math.max(score, 1), 100);
+  return calculateKavachScore(input.zone, input.shift_type, input.active_days, {
+    curfew: !!input.curfew,
+    flood: !!input.flood,
+    aqi: input.aqi_forecast_peak ?? 150
+  });
 }
 
 // ─── Open-Meteo Weather Fetch ───────────────────────────────────────────────
@@ -172,59 +180,93 @@ export async function fetchOpenMeteoRain(
   return { maxHourlyRainNext48h: max, sumRainNext48h: sum };
 }
 
-// ─── Full Engine (with weather + multipliers) ───────────────────────────────
+// ─── Weather Multipliers & Surge Engine ────────────────────────────────────
 
 const ZONE_MULT: Record<string, number> = {
   okhla: 1.3,
+  patna: 1.25,
+  jaipur: 1.2,
+  mumbai: 1.15,
+  kolkata: 1.1,
   gurugram: 1.2,
-  noida: 1.1,
-  lajpat_nagar: 1.0,
-  rohini: 1.0,
-  dwarka: 1.0,
 };
 
 const SHIFT_MULT: Record<string, number> = {
-  night: 1.2,
-  morning: 0.9,
+  night: 1.25,
+  morning: 0.85,
   evening: 1.0,
   flexible: 1.0,
 };
 
 export function runKavachEngine(input: KavachEngineInput): KavachEngineResult {
-  const base = input.coverage_type === "24hr" ? 29 : 99;
-  const zm = ZONE_MULT[input.zone] ?? 1;
-  const sm = SHIFT_MULT[input.shift_type] ?? 1;
+  const base = input.coverage_type === "24hr" ? 39 : 129;
+  const zm = ZONE_MULT[input.zone] ?? 1.0;
+  const sm = SHIFT_MULT[input.shift_type] ?? 1.0;
 
-  // Weather surge
-  let weatherSurge = 0;
-  if (input.openMeteo.maxHourlyRainNext48h > 30) weatherSurge += 10;
-  if (input.aqi_forecast_peak > 200) weatherSurge += 8;
+  // Weather triggers
+  let wSurge = 0;
+  const rb = {
+    rain: 0,
+    storm: 0,
+    flood: 0,
+    heat: 0,
+    curfew: 0,
+    aqi: 0
+  };
+
+  if (input.openMeteo.maxHourlyRainNext48h > 30) {
+    wSurge += 15;
+    rb.rain = 15;
+  }
+  if (input.storm_level && input.storm_level > 50) {
+    wSurge += 20;
+    rb.storm = 20;
+  }
+  if (input.flood_active) {
+    wSurge += 40;
+    rb.flood = 40;
+  }
+  if (input.heat_level && input.heat_level > 42) {
+    wSurge += 12;
+    rb.heat = 12;
+  }
+  if (input.aqi_forecast_peak > 350) {
+    wSurge += 10;
+    rb.aqi = 10;
+  }
+
+  // Civic/Social triggers
+  let cSurge = 0;
+  if (input.curfew_active) {
+    cSurge += 30;
+    rb.curfew = 30;
+  }
 
   // Activity adjustment
   let activityAdj = 0;
-  if (input.active_days >= 7) activityAdj -= 5;
-  if (input.active_days < 3) activityAdj += 10;
+  if (input.active_days >= 7) activityAdj -= 10;
+  if (input.active_days < 3) activityAdj += 15;
 
-  let raw = base * zm * sm + weatherSurge + activityAdj;
-  raw = Math.max(9, raw);
+  let raw = base * zm * sm + wSurge + cSurge + activityAdj;
+  raw = Math.max(29, raw); // Global minimum
   const finalPremium = Math.round(raw);
 
-  const kavach_score = calculateKavachScore(
-    input.zone,
-    input.shift_type,
-    input.active_days
-  );
-
-  const max_payout = input.coverage_type === "24hr" ? 500 : 1500;
+  const kavach_score = calculateKavachScore(input.zone, input.shift_type, input.active_days, {
+    curfew: !!input.curfew_active,
+    flood: !!input.flood_active,
+    aqi: input.aqi_forecast_peak
+  });
 
   return {
     base_premium: base,
     zone_multiplier: zm,
     shift_multiplier: sm,
-    weather_surge: weatherSurge,
+    weather_surge: wSurge,
+    civic_surge: cSurge,
     activity_adjustment: activityAdj,
     final_premium: finalPremium,
     kavach_score,
-    max_payout,
+    max_payout: input.coverage_type === "24hr" ? 800 : 2500,
+    risk_breakdown: rb
   };
 }
