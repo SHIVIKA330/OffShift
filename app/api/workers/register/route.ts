@@ -41,10 +41,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid zone" }, { status: 400 });
   }
 
-  const riderOk = /^(ZO|SG|ZP)-[A-Z0-9]{4,}$/i.test(body.rider_id);
+  // Relaxed regex to support all gig types (Construction, Uber, Ola, etc.)
+  const riderOk = /^[A-Z0-9-_]{3,}$/i.test(body.rider_id);
   if (!riderOk) {
     return NextResponse.json(
-      { error: "Invalid rider ID format (ZO-XXXXX, SG-XXXXX, or ZP-XXXXX)" },
+      { error: "Invalid Worker ID format (minimum 3 alphanumeric characters)" },
       { status: 400 }
     );
   }
