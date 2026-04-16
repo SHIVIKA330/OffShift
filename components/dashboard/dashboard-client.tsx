@@ -49,6 +49,11 @@ export function DashboardClient() {
   // DevTrails Enhanced Features State
   const [policyActiveToggle, setPolicyActiveToggle] = useState(true);
   const [simRain, setSimRain] = useState(10);
+  const [simWind, setSimWind] = useState(15);
+  const [simAccRain, setSimAccRain] = useState(20);
+  const [simAqi, setSimAqi] = useState(80);
+  const [simTemp, setSimTemp] = useState(32);
+  const [simCurfew, setSimCurfew] = useState(false);
   const [simCrime, setSimCrime] = useState(1); // 1-10
   const [mockEarnings] = useState({ zomato: 1250, swiggy: 900, zepto: 2100 });
   const [sosLocating, setSosLocating] = useState(false);
@@ -245,27 +250,71 @@ export function DashboardClient() {
           </div>
           <p className="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-6">Interactive Rule Engine Simulation</p>
 
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
              <div>
-               <div className="flex justify-between text-xs mb-2"><span className="font-bold text-on-surface">Local Rain Flow (mm/hr)</span><span className="font-mono text-secondary">{simRain} mm</span></div>
+               <div className="flex justify-between text-[10px] mb-2"><span className="font-bold text-on-surface uppercase tracking-tight">Rain (mm/hr)</span><span className="font-mono text-secondary">{simRain} mm</span></div>
                <input type="range" min="0" max="100" value={simRain} onChange={(e)=>setSimRain(Number(e.target.value))} className="w-full h-1 bg-outline-variant rounded-lg appearance-none cursor-pointer accent-primary" />
              </div>
              <div>
-               <div className="flex justify-between text-xs mb-2"><span className="font-bold text-on-surface">Zone Risk/Crime Delta</span><span className="font-mono text-secondary">Level {simCrime}</span></div>
+               <div className="flex justify-between text-[10px] mb-2"><span className="font-bold text-on-surface uppercase tracking-tight">Wind (Storm km/h)</span><span className="font-mono text-secondary">{simWind} km/h</span></div>
+               <input type="range" min="0" max="120" value={simWind} onChange={(e)=>setSimWind(Number(e.target.value))} className="w-full h-1 bg-outline-variant rounded-lg appearance-none cursor-pointer accent-primary" />
+             </div>
+             <div>
+               <div className="flex justify-between text-[10px] mb-2"><span className="font-bold text-on-surface uppercase tracking-tight">Flood (Acc. 72h)</span><span className="font-mono text-secondary">{simAccRain} mm</span></div>
+               <input type="range" min="0" max="300" value={simAccRain} onChange={(e)=>setSimAccRain(Number(e.target.value))} className="w-full h-1 bg-outline-variant rounded-lg appearance-none cursor-pointer accent-primary" />
+             </div>
+             <div>
+               <div className="flex justify-between text-[10px] mb-2"><span className="font-bold text-on-surface uppercase tracking-tight">AQI Level</span><span className="font-mono text-secondary">{simAqi} AQI</span></div>
+               <input type="range" min="0" max="500" value={simAqi} onChange={(e)=>setSimAqi(Number(e.target.value))} className="w-full h-1 bg-outline-variant rounded-lg appearance-none cursor-pointer accent-primary" />
+             </div>
+             <div>
+               <div className="flex justify-between text-[10px] mb-2"><span className="font-bold text-on-surface uppercase tracking-tight">Heat (°C)</span><span className="font-mono text-secondary">{simTemp}°C</span></div>
+               <input type="range" min="20" max="52" value={simTemp} onChange={(e)=>setSimTemp(Number(e.target.value))} className="w-full h-1 bg-outline-variant rounded-lg appearance-none cursor-pointer accent-primary" />
+             </div>
+             <div>
+               <div className="flex justify-between text-[10px] mb-2"><span className="font-bold text-on-surface uppercase tracking-tight">Zone Risk</span><span className="font-mono text-secondary">Lvl {simCrime}</span></div>
                <input type="range" min="1" max="10" value={simCrime} onChange={(e)=>setSimCrime(Number(e.target.value))} className="w-full h-1 bg-outline-variant rounded-lg appearance-none cursor-pointer accent-primary" />
              </div>
           </div>
 
+          <div className="mt-6 pt-6 border-t border-outline-variant/10 flex justify-between items-center px-2">
+            <div>
+              <span className="font-bold text-xs text-on-surface">Civic Curfew (Sec 144)</span>
+              <p className="text-[10px] text-on-surface-variant italic">Simulate social disruption risk</p>
+            </div>
+            <div onClick={() => setSimCurfew(!simCurfew)} className={`w-10 h-5 rounded-full cursor-pointer flex items-center px-1 transition-all duration-300 ${simCurfew ? 'bg-error' : 'bg-outline-variant'}`}>
+              <div className={`w-3 h-3 rounded-full bg-white transition-all duration-300 ${simCurfew ? 'translate-x-5' : 'translate-x-0'}`}></div>
+            </div>
+          </div>
+
+
           <div className="mt-8 bg-surface-container-lowest p-4 rounded-2xl flex justify-between items-center text-center">
             <div>
               <p className="text-[10px] uppercase font-bold text-on-surface-variant mb-1">Simulated Premium</p>
-              <p className="font-headline text-3xl font-bold text-on-surface">₹{Math.floor(19 + (simRain * 0.5) + (simCrime * 2.5))}</p>
+              <p className="font-headline text-3xl font-bold text-on-surface">₹{Math.floor(
+                19 + 
+                (simRain > 25 ? 15 : 0) + 
+                (simWind > 50 ? 20 : 0) + 
+                (simAccRain > 150 ? 40 : 0) + 
+                (simAqi > 300 ? 12 : 0) + 
+                (simTemp > 44 ? 10 : 0) + 
+                (simCurfew ? 30 : 0) + 
+                (simCrime * 2.5)
+              )}</p>
             </div>
             <div className="w-px h-10 bg-outline-variant/20 mx-2"></div>
             <div>
               <p className="text-[10px] uppercase font-bold text-on-surface-variant mb-1">Probability</p>
-              <p className="text-secondary font-bold text-lg">{Math.min(99, Math.floor(simRain * 0.8 + simCrime * 5))}% Risk</p>
+              <p className="text-secondary font-bold text-lg">{Math.min(99, Math.floor(
+                (simRain * 0.4) + 
+                (simWind * 0.3) + 
+                (simAccRain * 0.2) + 
+                (simAqi * 0.1) + 
+                (simCurfew ? 25 : 0) + 
+                (simCrime * 5)
+              ))}% Risk</p>
             </div>
+
           </div>
         </div>
 
