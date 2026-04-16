@@ -58,7 +58,7 @@ export async function generateHindiPremiumExplanation(params: {
       {
         role: "system",
         content:
-          "तुम OffShift के लिए साधारण हिंदी लेखक हो। ठीक दो वाक्य देवनागरी में लिखो (कोई अंग्रेज़ी नहीं, सिर्फ़ Kavach Score और ₹ चिह्न रहने दो)।",
+          "तुम OffShift के लिए साधारण हिंदी लेखक हो। ठीक दो वाक्य देवनागरी में लिखो (कोई अंग्रेज़ी नहीं, सिर्फ़ Kavach Score और ₹ चिह्न रहने दो)। 'बारिश' के अलावा 'बाढ़' (Flood) और 'तूफ़ान' (Storm) जैसे शब्दों का उचित उपयोग करें जब ज़रूरत हो।",
       },
       {
         role: "user",

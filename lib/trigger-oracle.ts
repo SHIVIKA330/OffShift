@@ -1,6 +1,6 @@
 // OffShift Trigger Oracle — 5 parametric triggers
 
-export type TriggerType = 'flood_rain' | 'platform_outage' | 'curfew' | 'air_quality' | 'festival';
+export type TriggerType = 'flood_rain' | 'platform_outage' | 'curfew' | 'air_quality' | 'festival' | 'storm' | 'flood';
 
 export interface TriggerEvent {
   type: TriggerType;

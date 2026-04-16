@@ -7,6 +7,8 @@ import {
   fetchHourlyPrecipitationMm,
   fetchHourlyTemperatureC,
   fetchCurrentAqi,
+  fetchHourlyWindSpeed,
+  fetchAccumulatedRainMm,
   rainPayoutFraction,
   shiftMatchesCurrentIST,
 } from "@/lib/trigger-monitor";
@@ -111,6 +113,8 @@ export async function GET(req: Request) {
     outage: [] as string[],
     heat: [] as string[],
     curfew: [] as string[],
+    storm: [] as string[],
+    flood: [] as string[],
     errors: [] as string[],
   };
 
@@ -491,6 +495,127 @@ export async function GET(req: Request) {
       summary.curfew.push(`${zone}:${triggered}`);
     } catch (e) {
       summary.errors.push(`curfew ${zone}: ${String(e)}`);
+    }
+  }
+
+  // ═══════════════════════════════════════
+  // TRIGGER 6 — Storm / High Wind
+  // ═══════════════════════════════════════
+  for (const zone of zones) {
+    try {
+      const windSpeed = await fetchHourlyWindSpeed(zone);
+      if (windSpeed < 50) continue;
+
+      const dedupeKey = `trig:storm:${zone}:${hourBucket}`;
+      if (redis) {
+        const set = await redis.set(dedupeKey, "1", { nx: true, ex: 3600 });
+        if (set === null) continue;
+      }
+
+      await supabase.from("trigger_events").insert({
+        zone,
+        trigger_type: "STORM",
+        severity: `${Math.round(windSpeed)} km/h`,
+        severity_value: windSpeed,
+        metadata: { wind_speed: windSpeed },
+      });
+
+      const { data: policies } = await supabase
+        .from("policies")
+        .select("id, worker_id, max_payout, trigger_weather, workers!inner(zone, shift_type)")
+        .eq("status", "ACTIVE");
+
+      const list = (policies ?? []).filter((p: { workers: unknown; trigger_weather: boolean }) => {
+        const m = workerMeta(p.workers);
+        return m.zone === zone && p.trigger_weather && shiftMatchesCurrentIST(m.shift_type as any);
+      });
+
+      let triggered = 0;
+      for (const p of list) {
+        const pol = p as { id: string; worker_id: string; max_payout: number };
+        if (await hasClaimToday(supabase, pol.id, "STORM")) continue;
+        const payout = Math.round(Number(pol.max_payout) * 0.6); // 60% payout for storms
+        const { data: claim, error } = await supabase
+          .from("claims")
+          .insert({
+            policy_id: pol.id,
+            worker_id: pol.worker_id,
+            trigger_type: "STORM",
+            trigger_severity: `${Math.round(windSpeed)} km/h`,
+            zone,
+            payout_amount: payout,
+            status: "TRIGGERED",
+          })
+          .select("id")
+          .single();
+        if (!error && claim) {
+          triggered++;
+          await processClaimPipeline(claim.id);
+        }
+      }
+      summary.storm.push(`${zone}:${triggered}`);
+    } catch (e) {
+      summary.errors.push(`storm ${zone}: ${String(e)}`);
+    }
+  }
+
+  // ═══════════════════════════════════════
+  // TRIGGER 7 — Flood (Accumulated Rain)
+  // ═══════════════════════════════════════
+  for (const zone of zones) {
+    try {
+      const accRain = await fetchAccumulatedRainMm(zone, 72);
+      if (accRain < 150) continue;
+
+      const dedupeKey = `trig:flood:${zone}:${hourBucket}`;
+      if (redis) {
+        const set = await redis.set(dedupeKey, "1", { nx: true, ex: 86400 }); // daily
+        if (set === null) continue;
+      }
+
+      await supabase.from("trigger_events").insert({
+        zone,
+        trigger_type: "FLOOD",
+        severity: `${accRain}mm (72h)`,
+        severity_value: accRain,
+        metadata: { accumulated_rain_72h: accRain },
+      });
+
+      const { data: policies } = await supabase
+        .from("policies")
+        .select("id, worker_id, max_payout, trigger_weather, workers!inner(zone)")
+        .eq("status", "ACTIVE");
+
+      const list = (policies ?? []).filter((p: { workers: unknown; trigger_weather: boolean }) => {
+        return workerMeta(p.workers).zone === zone && p.trigger_weather;
+      });
+
+      let triggered = 0;
+      for (const p of list) {
+        const pol = p as { id: string; worker_id: string; max_payout: number };
+        if (await hasClaimToday(supabase, pol.id, "FLOOD")) continue;
+        const payout = Math.round(Number(pol.max_payout)); // Full payout for flood
+        const { data: claim, error } = await supabase
+          .from("claims")
+          .insert({
+            policy_id: pol.id,
+            worker_id: pol.worker_id,
+            trigger_type: "FLOOD",
+            trigger_severity: `${accRain}mm (72h)`,
+            zone,
+            payout_amount: payout,
+            status: "TRIGGERED",
+          })
+          .select("id")
+          .single();
+        if (!error && claim) {
+          triggered++;
+          await processClaimPipeline(claim.id);
+        }
+      }
+      summary.flood.push(`${zone}:${triggered}`);
+    } catch (e) {
+      summary.errors.push(`flood ${zone}: ${String(e)}`);
     }
   }
 

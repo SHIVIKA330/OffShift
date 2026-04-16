@@ -13,7 +13,9 @@ export interface ConsolidatedTrigger {
  */
 const TRIGGER_PRIORITY: Record<TriggerType, number> = {
   curfew: 100,
+  flood: 95,
   flood_rain: 90,
+  storm: 85,
   platform_outage: 80,
   air_quality: 70,
   festival: 50

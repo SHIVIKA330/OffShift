@@ -113,3 +113,52 @@ export async function fetchCurrentAqi(zone: ZoneSlug): Promise<{
     return { aqi_current: 50, aqi_forecast_peak: 50 };
   }
 }
+
+export async function fetchHourlyWindSpeed(zone: ZoneSlug): Promise<number> {
+  const { lat, lng } = ZONE_COORDS[zone];
+  const url = new URL("https://api.open-meteo.com/v1/forecast");
+  url.searchParams.set("latitude", String(lat));
+  url.searchParams.set("longitude", String(lng));
+  url.searchParams.set("current", "wind_speed_10m");
+  url.searchParams.set("timezone", "Asia/Kolkata");
+
+  try {
+    const res = await fetch(url.toString(), { cache: "no-store" });
+    if (!res.ok) return 0;
+    const data = (await res.json()) as {
+      current?: { wind_speed_10m?: number };
+    };
+    return data.current?.wind_speed_10m ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+export async function fetchAccumulatedRainMm(
+  zone: ZoneSlug,
+  hours = 72
+): Promise<number> {
+  const { lat, lng } = ZONE_COORDS[zone];
+  const url = new URL("https://api.open-meteo.com/v1/forecast");
+  url.searchParams.set("latitude", String(lat));
+  url.searchParams.set("longitude", String(lng));
+  url.searchParams.set("hourly", "precipitation");
+  url.searchParams.set("past_days", "3");
+  url.searchParams.set("forecast_days", "1");
+  url.searchParams.set("timezone", "Asia/Kolkata");
+
+  try {
+    const res = await fetch(url.toString(), { cache: "no-store" });
+    if (!res.ok) return 0;
+    const data = (await res.json()) as {
+      hourly?: { precipitation?: number[] };
+    };
+    const arr = data.hourly?.precipitation ?? [];
+    // Last X hours of data
+    const sliceSize = Math.min(hours, arr.length);
+    const sum = arr.slice(-sliceSize).reduce((acc, v) => acc + (v ?? 0), 0);
+    return Math.round(sum);
+  } catch {
+    return 0;
+  }
+}
