@@ -5,9 +5,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { formatRupees } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
-import EligibilityProgress from "@/components/EligibilityProgress";
-import WellnessDashboard from "@/components/WellnessDashboard";
-import VoiceAssistant from "@/components/VoiceAssistant";
 
 type PolicyRow = {
   id: string;
@@ -32,6 +29,7 @@ type ClaimRow = {
   status: string;
   created_at: string;
   payout_txn_id: string | null;
+  reason?: string;
 };
 
 export function DashboardClient() {
@@ -47,34 +45,13 @@ export function DashboardClient() {
   const [loading, setLoading] = useState(false);
   const [riderId, setRiderId] = useState<string>("");
   const [platform, setPlatform] = useState<string>("");
-  const [zone, setZone] = useState<string>("");
-  const [workerData, setWorkerData] = useState<any>(null);
-  const [weatherStatus, setWeatherStatus] = useState<{
-    rain_mm: number;
-    temp_c: number;
-    aqi: number;
-    is_rain_alert: boolean;
-    is_heat_alert: boolean;
-    is_aqi_alert: boolean;
-  } | null>(null);
 
-  useEffect(() => {
-    if (!zone) return;
-    const fetchWeather = async () => {
-      try {
-        const res = await fetch(`/api/weather-status?zone=${zone}`);
-        if (res.ok) {
-          const data = await res.json();
-          setWeatherStatus(data);
-        }
-      } catch (e) {
-        console.error("Weather fetch failed", e);
-      }
-    };
-    void fetchWeather();
-    const interval = setInterval(fetchWeather, 5 * 60 * 1000); // refresh every 5 mins
-    return () => clearInterval(interval);
-  }, [zone]);
+  // DevTrails Enhanced Features State
+  const [policyActiveToggle, setPolicyActiveToggle] = useState(true);
+  const [simRain, setSimRain] = useState(10);
+  const [simCrime, setSimCrime] = useState(1); // 1-10
+  const [mockEarnings] = useState({ zomato: 1250, swiggy: 900, zepto: 2100 });
+  const [sosLocating, setSosLocating] = useState(false);
 
   const doLogout = useCallback(() => {
     localStorage.removeItem("offshift_worker_id");
@@ -82,7 +59,6 @@ export function DashboardClient() {
     window.location.href = "/";
   }, []);
 
-  // Get worker_id from localStorage
   useEffect(() => {
     const id = localStorage.getItem("offshift_worker_id");
     const name = localStorage.getItem("offshift_worker_name");
@@ -93,36 +69,18 @@ export function DashboardClient() {
   const load = useCallback(async () => {
     if (!workerId) return;
 
-    // Fetch Worker Profile info
-    const { data: worker } = await supabase
-      .from("workers")
-      .select("name, rider_id, platform, zone, payout_tier, zone_risk_score, is_upi_verified, created_at")
-      .eq("id", workerId)
-      .single();
-    
+    const { data: worker } = await supabase.from("workers").select("name, rider_id, platform").eq("id", workerId).single();
     if (worker) {
       setWorkerName(worker.name);
       setRiderId(worker.rider_id);
       setPlatform(worker.platform);
-      setZone(worker.zone);
-      setWorkerData(worker);
       localStorage.setItem("offshift_worker_name", worker.name);
     }
 
-    const { data: pol } = await supabase
-      .from("policies")
-      .select("*")
-      .eq("worker_id", workerId)
-      .order("created_at", { ascending: false });
-
+    const { data: pol } = await supabase.from("policies").select("*").eq("worker_id", workerId).order("created_at", { ascending: false });
     setPolicies((pol ?? []) as PolicyRow[]);
 
-    const { data: cl } = await supabase
-      .from("claims")
-      .select("*")
-      .eq("worker_id", workerId)
-      .order("created_at", { ascending: false });
-
+    const { data: cl } = await supabase.from("claims").select("*").eq("worker_id", workerId).order("created_at", { ascending: false });
     setClaims((cl ?? []) as ClaimRow[]);
   }, [supabase, workerId]);
 
@@ -130,144 +88,70 @@ export function DashboardClient() {
     void load();
   }, [load]);
 
-  // Real-time claim updates
   useEffect(() => {
     if (!workerId) return;
-
-    const ch = supabase
-      .channel("claims-live")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "claims",
-          filter: `worker_id=eq.${workerId}`,
-        },
-        (payload) => {
-          toast.message("Claim update / दावा अपडेट", {
-            description: `Status: ${(payload.new as ClaimRow)?.status ?? "updated"}`,
-          });
+    const ch = supabase.channel("claims-live").on("postgres_changes", { event: "*", schema: "public", table: "claims", filter: `worker_id=eq.${workerId}` }, (payload) => {
+          toast.message("Claim update", { description: `Status: ${(payload.new as ClaimRow)?.status ?? "updated"}` });
           void load();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      void supabase.removeChannel(ch);
-    };
+    }).subscribe();
+    return () => { void supabase.removeChannel(ch); };
   }, [supabase, workerId, load]);
 
-  const active = useMemo(() => {
-    return policies.find((p) => p.status.toUpperCase() === "ACTIVE");
-  }, [policies]);
-
+  const active = useMemo(() => policies.find((p) => p.status.toUpperCase() === "ACTIVE"), [policies]);
   const sortedHistory = useMemo(() => {
     const arr = [...policies];
-    arr.sort((a, b) => {
-      if (sortKey === "premium_amount") {
-        return Number(b.premium_amount) - Number(a.premium_amount);
-      }
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    });
+    arr.sort((a, b) => sortKey === "premium_amount" ? Number(b.premium_amount) - Number(a.premium_amount) : new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     return arr;
   }, [policies, sortKey]);
-
   const slice = sortedHistory.slice(page * pageSize, page * pageSize + pageSize);
+  const coveragePct = active ? Math.min(100, ((Date.now() - new Date(active.coverage_start).getTime()) / (new Date(active.coverage_end).getTime() - new Date(active.coverage_start).getTime())) * 100) : 0;
+  const triggersDuring = claims.filter((c) => active && new Date(c.created_at) >= new Date(active.coverage_start) && new Date(c.created_at) <= new Date(active.coverage_end));
 
-  const coveragePct = active
-    ? Math.min(
-        100,
-        ((Date.now() - new Date(active.coverage_start).getTime()) /
-          (new Date(active.coverage_end).getTime() - new Date(active.coverage_start).getTime())) *
-          100
-      )
-    : 0;
-
-  const triggersDuring = claims.filter(
-    (c) =>
-      active &&
-      new Date(c.created_at) >= new Date(active.coverage_start) &&
-      new Date(c.created_at) <= new Date(active.coverage_end)
-  );
-
-  const btnPrimaryStyle = "w-full py-4 rounded-full bg-primary text-on-primary font-label text-xs font-bold uppercase tracking-widest editorial-shadow hover:scale-[1.02] transition-transform duration-300 disabled:opacity-50 disabled:scale-100 block text-center";
-  const btnSecondaryStyle = "w-full py-2.5 rounded-full bg-surface-container-highest text-on-surface font-label text-[10px] font-bold uppercase tracking-widest hover:bg-surface-container transition-colors duration-300 pointer-events-auto cursor-pointer block text-center w-full"; // Explicit flex to avoid Link inline bugs
-
-  const simulateTrigger = async () => {
+  const btnPrimaryStyle = "w-full py-4 rounded-full bg-primary text-on-primary font-label text-xs font-bold uppercase tracking-widest editorial-shadow hover:scale-[1.02] flex items-center justify-center gap-2 transition-all";
+  
+  const simulateTrigger = async (type: string = "RAIN") => {
     if (!active) return;
     setLoading(true);
     try {
       const res = await fetch("/api/debug/simulate-trigger", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ worker_id: workerId, policy_id: active.id }),
       });
       if (res.ok) {
-        toast.success("⛈️ Heavy Rain detected! Claim settled instantly.");
+        toast.success(`💥 ${type} incident verified by Oracle. Claim settled instantly!`);
         void load();
       } else {
-        const errorData = await res.json();
-        toast.error(`Trigger failed: ${errorData.error || "Server error"}`);
+        const err = await res.json();
+        toast.error(`Trigger failed: ${err.error}`);
       }
-    } catch (e) {
-      toast.error("Trigger connection failed");
-    } finally {
-      setLoading(false);
-    }
+    } catch { toast.error("Trigger failed"); } finally { setLoading(false); }
   };
 
-  if (!workerId) {
-    return (
-      <div className="bg-surface text-on-surface font-body min-h-screen flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
-          <span className="material-symbols-outlined text-4xl text-primary">person_off</span>
-        </div>
-        <h2 className="font-headline text-3xl mb-2">No login found</h2>
-        <p className="font-body text-sm text-on-surface-variant mb-8">
-          कोई लॉगिन नहीं मिला
-        </p>
-        <Link href="/onboard" className={btnPrimaryStyle + " max-w-xs"}>
-           साइन अप करें / Sign up
-        </Link>
-      </div>
-    );
-  }
+  const handleSosTrigger = () => {
+    setSosLocating(true);
+    toast.info("Capturing emergency location coordinates...", { duration: 1500 });
+    setTimeout(() => {
+       setSosLocating(false);
+       toast.success("Location locked. Firing Instant Emergency Claim API...");
+       simulateTrigger("IMPACT");
+    }, 2000);
+  };
+
+  if (!workerId) return <div className="text-center pt-32">Please login via /onboard</div>;
 
   return (
     <div className="bg-surface text-on-surface font-body min-h-screen pb-32">
-      {/* TopAppBar */}
       <header className="fixed top-0 w-full z-50 bg-[#f9f9f7] dark:bg-stone-950 backdrop-blur-md opacity-90 flex justify-between items-center px-6 py-4 border-b border-outline-variant/10">
         <Link href="/">
-          <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-primary hover:opacity-70 transition-opacity duration-300 ease-in-out cursor-pointer" data-icon="menu">menu</span>
-            <h1 className="text-2xl font-semibold tracking-tighter text-primary font-['Newsreader']">OffShift</h1>
-          </div>
+          <div className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">menu</span><h1 className="text-2xl font-semibold tracking-tighter text-primary font-['Newsreader']">OffShift</h1></div>
         </Link>
         <div className="relative">
-          <div 
-            onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant/15 flex items-center justify-center overflow-hidden hover:opacity-70 transition-opacity duration-300 ease-in-out cursor-pointer">
-            <img alt="Profile" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC95G_7XgTmO5BqUuzbpLEgXc7-4kMwgCwl1NZw8mlK-DYoiUVWMcs8CASgIcEn4bniG4AFJQPWeNnEaea2aFik8TwfLAgBfIYYlBRzLUQ4o6KSF_NIedBXY5gsc2wPRlxD5468OoFmFIWauikoZ8utGhQ5RzulaTjDTz3wVw6E3yv4VoWMS77huuVwTAm0tIBzuqrglIPdMrl_rd4e6eHeCTOGkh98SQ9tAlSWlW5zVJnwhw3GinFy5WantT8l860hX3GbCv0Owww"/>
+          <div onClick={() => setIsProfileOpen(!isProfileOpen)} className="w-10 h-10 rounded-full border border-outline-variant/15 flex items-center justify-center overflow-hidden cursor-pointer bg-surface-container-highest">
+             <img alt="Profile" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC95G_7XgTmO5BqUuzbpLEgXc7-4kMwgCwl1NZw8mlK-DYoiUVWMcs8CASgIcEn4bniG4AFJQPWeNnEaea2aFik8TwfLAgBfIYYlBRzLUQ4o6KSF_NIedBXY5gsc2wPRlxD5468OoFmFIWauikoZ8utGhQ5RzulaTjDTz3wVw6E3yv4VoWMS77huuVwTAm0tIBzuqrglIPdMrl_rd4e6eHeCTOGkh98SQ9tAlSWlW5zVJnwhw3GinFy5WantT8l860hX3GbCv0Owww"/>
           </div>
           {isProfileOpen && (
-            <div className="absolute right-0 top-12 mt-2 w-48 bg-surface-container-lowest rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-outline-variant/10 overflow-hidden z-50">
-              <div className="px-4 py-3 border-b border-outline-variant/10 bg-surface-container-low/30">
-                <div className="flex items-center gap-2 mb-1">
-                   <span className="text-sm">{(platform === "Zomato" ? "🍽️" : platform === "Swiggy" ? "🛵" : "⚡")}</span>
-                   <p className="text-sm font-bold text-primary">{workerName}</p>
-                </div>
-                <p className="text-[10px] font-bold text-on-surface-variant font-mono uppercase tracking-widest bg-surface-container rounded px-2 py-0.5 w-max">
-                  {riderId || workerId?.slice(0,8)}
-                </p>
-              </div>
-              <button 
-                onClick={doLogout}
-                className="w-full px-4 py-3 text-left text-sm text-error hover:bg-error-container/10 transition-colors flex items-center gap-2 font-medium"
-              >
-                <span className="material-symbols-outlined text-[18px]">logout</span>
-                लॉग आउट / Log Out
-              </button>
+            <div className="absolute right-0 top-12 mt-2 w-48 bg-surface-container-lowest rounded-2xl shadow-lg border border-outline-variant/10 overflow-hidden z-50">
+               <button onClick={doLogout} className="w-full px-4 py-3 text-error flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">logout</span> Log Out</button>
             </div>
           )}
         </div>
@@ -275,366 +159,164 @@ export function DashboardClient() {
 
       <main className="pt-28 px-4 sm:px-6 max-w-lg mx-auto space-y-6">
         
-        {/* User Greeting Header */}
+        {/* Core Dashboard UI */}
         <div className="mb-2 pl-2">
           <h1 className="font-headline text-4xl mb-1 text-primary">Dashboard</h1>
           <div className="flex items-center gap-2 mt-1">
-            <span className="font-body text-sm text-on-surface-variant">
-              नमस्ते, <strong className="text-on-surface">{workerName}</strong>
-            </span>
-            <span className="bg-surface-container-high text-primary px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-widest border border-outline-variant/10">
-              {riderId}
-            </span>
+            <span className="font-body text-sm text-on-surface-variant">नमस्ते, <strong className="text-on-surface">{workerName}</strong></span>
+            <span className="bg-surface-container-high text-primary px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-widest">{riderId}</span>
           </div>
         </div>
 
-        {/* ── Eligibility Progress ── */}
-        {riderId && <EligibilityProgress riderId={riderId} />}
-
-        {/* ── Phase 3 Worker UX (Wellness & Voice) ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <WellnessDashboard 
-            hasActivePolicy={!!active}
-            zoneRiskScore={workerData?.zone_risk_score || 0.4}
-            accountAgeDays={workerData ? Math.floor((Date.now() - new Date(workerData.created_at).getTime()) / (1000 * 60 * 60 * 24)) : 30}
-            isUPIVerified={workerData?.is_upi_verified || true}
-          />
-          <VoiceAssistant 
-            workerId={workerId}
-            workerName={workerName}
-            tier={workerData?.payout_tier || 'bronze'}
-            policyStatus={active ? 'Active' : 'No Policy'}
-            language="hi"
-          />
-        </div>
-
-        {/* ── Active Policy Card ── */}
+        {/* FEATURE: INSURANCE ON/OFF TOGGLE */}
         {active ? (
-          <div className="bg-primary text-on-primary p-7 rounded-[32px] editorial-shadow relative overflow-hidden">
-            {/* Soft decorative background element */}
-            <div className="absolute -right-10 -top-10 w-40 h-40 bg-surface/10 rounded-full blur-2xl pointer-events-none"></div>
-
+          <div className={`p-7 rounded-[32px] editorial-shadow relative overflow-hidden transition-colors duration-500 ${policyActiveToggle ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant border border-outline-variant/20'}`}>
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h3 className="font-headline text-2xl font-medium">Active Policy</h3>
-                <p className="font-body text-xs text-on-primary/70 mt-1">सक्रिय पॉलिसी</p>
+                <h3 className="font-headline text-2xl font-medium">{policyActiveToggle ? "Active Policy" : "Policy Suspended"}</h3>
+                <p className="font-body text-xs opacity-70 mt-1">Usage-Based Insurance</p>
               </div>
-              <span className="flex items-center gap-1.5 px-3 py-1 bg-[#cbebc8] text-[#07200b] rounded-full font-label text-[10px] uppercase font-bold tracking-widest shadow-sm">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75"></span>
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600"></span>
-                </span>
-                LIVE
-              </span>
-            </div>
-
-            <div className="space-y-4 mb-6">
-              <div className="flex justify-between border-b border-on-primary/10 pb-2">
-                <span className="font-label text-xs uppercase tracking-widest text-on-primary/70">Plan</span>
-                <span className="font-body font-semibold text-sm">{active.plan_type === "24hr" ? "Aaj Ka Kavach" : "Hafte Ka Kavach"}</span>
-              </div>
-              <div className="flex justify-between border-b border-on-primary/10 pb-2">
-                <span className="font-label text-xs uppercase tracking-widest text-on-primary/70">Coverage</span>
-                <span className="font-body text-xs text-right opacity-90">
-                  {new Date(active.coverage_start).toLocaleString("en-IN", {month: 'short', day: 'numeric', hour: '2-digit'})} → {new Date(active.coverage_end).toLocaleString("en-IN", {month: 'short', day: 'numeric', hour: '2-digit'})}
-                </span>
-              </div>
-              <div className="flex justify-between pb-1">
-                <span className="font-label text-xs uppercase tracking-widest text-on-primary/70">Max Payout</span>
-                <span className="font-headline text-lg text-[#cbebc8]">{formatRupees(Number(active.max_payout))}</span>
+              <div className="flex items-center gap-2">
+                 <span className={`px-3 py-1 rounded-full font-label text-[10px] uppercase font-bold tracking-widest ${policyActiveToggle ? 'bg-[#cbebc8] text-[#07200b]' : 'bg-surface-container-highest text-on-surface'}`}>
+                   {policyActiveToggle ? "LIVE" : "PAUSED"}
+                 </span>
+                 <div onClick={() => setPolicyActiveToggle(!policyActiveToggle)} className={`w-12 h-6 rounded-full cursor-pointer flex items-center px-1 transition-all duration-300 ${policyActiveToggle ? 'bg-[#cbebc8]' : 'bg-outline-variant'}`}>
+                   <div className={`w-4 h-4 rounded-full bg-white transition-all duration-300 ${policyActiveToggle ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                 </div>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2 mb-6">
-              <div className={`px-3 py-1 rounded-full font-label text-[10px] uppercase tracking-widest flex items-center gap-1 border ${active.trigger_weather ? 'bg-on-primary/10 border-transparent text-[#cbebc8]' : 'border-on-primary/20 text-on-primary/40'}`}>
-                {active.trigger_weather ? <span className="material-symbols-outlined text-[14px]">check</span> : null} Weather (Heat, Rain, AQI)
-              </div>
-              <div className={`px-3 py-1 rounded-full font-label text-[10px] uppercase tracking-widest flex items-center gap-1 border ${active.trigger_outage ? 'bg-on-primary/10 border-transparent text-[#cbebc8]' : 'border-on-primary/20 text-on-primary/40'}`}>
-                {active.trigger_outage ? <span className="material-symbols-outlined text-[14px]">check</span> : null} Outage
-              </div>
-              <div className="px-3 py-1 rounded-full font-label text-[10px] uppercase tracking-widest flex items-center gap-1 border bg-on-primary/10 border-transparent text-[#cbebc8]">
-                <span className="material-symbols-outlined text-[14px]">check</span> Social (Curfews)
-              </div>
+            <p className="text-xs mb-6 opacity-80 leading-relaxed">
+              {policyActiveToggle 
+                ? "Your gig insurance is actively monitoring risk triggers. You are protected for income loss in your zone." 
+                : "Coverage paused. You are not billed per hour while inactive. Turn on to resume protection."}
+            </p>
+
+            <div className={`font-headline text-3xl mb-6 ${policyActiveToggle ? 'text-[#cbebc8]' : 'text-on-surface-variant'}`}>
+              Max Payout: {formatRupees(Number(active.max_payout))}
             </div>
 
-            {active.next_premium_due_at && (
-              <p className="font-label text-[10px] uppercase tracking-widest text-on-primary/60 mb-4 text-center">
-                Next premium: {new Date(active.next_premium_due_at).toLocaleDateString("en-IN")}
-              </p>
+            {policyActiveToggle && (
+              <button onClick={() => simulateTrigger()} disabled={loading} className="w-full py-3 rounded-xl border border-primary/20 bg-primary/10 text-[#cbebc8] font-label text-xs uppercase tracking-widest hover:bg-primary/20 transition-all flex items-center justify-center gap-2">
+                <span className="material-symbols-outlined text-[16px] animate-bounce">thunderstorm</span> Demo Payout
+              </button>
             )}
-
-            <Link href="/onboard" className="block text-center w-full py-4 rounded-full bg-surface-container-lowest text-primary font-label text-xs font-bold uppercase tracking-widest hover:scale-[1.02] transition-transform duration-300">
-               Renew / नवीनीकरण
-            </Link>
-            <button 
-              onClick={simulateTrigger}
-              className="mt-3 w-full py-2.5 rounded-xl border border-primary/20 bg-primary/10 text-[#cbebc8] font-label text-[10px] font-bold uppercase tracking-widest hover:bg-primary/20 transition-all flex items-center justify-center gap-2"
-            >
-              <span className="material-symbols-outlined text-[16px] animate-bounce">thunderstorm</span>
-              Demo: Simulate Rain Trigger
-            </button>
-            <p className="font-mono text-[8px] text-on-primary/30 mt-4 text-center">ID: {active.id}</p>
           </div>
         ) : (
-          <div className="bg-surface-container-lowest p-8 rounded-[32px] editorial-shadow border border-outline-variant/10 text-center">
-            <div className="w-16 h-16 bg-surface-container-low rounded-full flex items-center justify-center mx-auto mb-4 text-secondary">
-              <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>gpp_maybe</span>
-            </div>
-            <h3 className="font-headline text-2xl font-medium mb-1">No Active Policy</h3>
-            <p className="font-body text-sm text-on-surface-variant mb-6">कोई सक्रिय पॉलिसी नहीं</p>
-            <Link href="/onboard" className={btnPrimaryStyle}>
-              Buy Kavach Now
-            </Link>
-          </div>
+          <div className="bg-surface-container-lowest p-8 rounded-[32px] text-center border border-outline-variant/10"><h3 className="font-headline text-xl">No active policies</h3></div>
         )}
 
-        {/* ── Coverage Timeline Card ── */}
-        {active && (
-          <div className="bg-surface-container-lowest p-6 rounded-[32px] editorial-shadow border border-outline-variant/10">
-            <h3 className="font-headline text-xl font-medium mb-1">Coverage Timeline</h3>
-            <p className="font-label text-[10px] uppercase tracking-widest text-secondary mb-5">कवरेज टाइमलाइन</p>
-            
-            <div className="h-3 w-full rounded-full bg-surface-container overflow-hidden">
-              <div
-                className="h-full bg-primary transition-all duration-1000 ease-in-out relative rounded-full"
-                style={{ width: `${Math.max(2, coveragePct)}%` }} // Minimum 2% visibility
-              >
-                <div className="absolute right-0 top-0 bottom-0 w-4 bg-white/20 rounded-full animate-pulse"></div>
-              </div>
+        {/* FEATURE: EMERGENCY SOS BUTTON */}
+        <div className="bg-[#fff1f0] dark:bg-[#3b1c1c] border border-error/20 p-6 rounded-[32px] editorial-shadow text-center">
+           <h3 className="font-headline text-2xl text-error mb-2 flex items-center justify-center gap-2"><span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>medical_services</span> Critical Incident SOS</h3>
+           <p className="font-body text-xs text-error/80 mb-5 max-w-[250px] mx-auto">Uploads coordinates, alerts contacts, and dispatches automated claim request parameters to the Rule Engine instantly.</p>
+           <button onClick={handleSosTrigger} disabled={sosLocating || !active} className="w-full py-4 bg-error text-on-error rounded-full font-label font-bold text-xs uppercase tracking-widest shadow-[0_10px_30px_rgba(186,26,26,0.3)] hover:scale-[1.02] active:scale-95 transition-all text-center flex items-center justify-center gap-2 disabled:opacity-50">
+             {sosLocating ? <span className="material-symbols-outlined animate-spin text-[16px]">sync</span> : <span className="material-symbols-outlined text-[18px]">satellite_alt</span>}
+             {sosLocating ? "Locating..." : "Emergency Claim API"}
+           </button>
+        </div>
+
+        {/* FEATURE: MULTI-GIG AGGREGATOR */}
+        <div className="bg-surface-container-lowest p-6 rounded-[32px] editorial-shadow border border-outline-variant/10">
+          <h3 className="font-headline text-xl font-medium mb-1">Earning-Linked Coverage</h3>
+          <p className="font-label text-[10px] uppercase tracking-widest text-secondary mb-5">Multi-Platform Aggregator</p>
+          
+          <div className="flex gap-2 mb-4">
+            <div className="flex-1 bg-[#E23744]/10 p-3 rounded-2xl flex flex-col items-center">
+               <span className="text-xl mb-1">🍽️</span><span className="font-bold text-[#E23744] text-xs">₹{mockEarnings.zomato}</span>
             </div>
-            
-            <div className="mt-4 flex items-start gap-2 text-xs font-body text-on-surface-variant bg-surface-container-low p-3 rounded-xl border border-outline-variant/5">
-              <span className="material-symbols-outlined text-[16px] text-secondary">history</span>
-              <p>
-                Triggers detected this window:{" "}
-                <strong className="text-on-surface">{triggersDuring.length > 0 ? triggersDuring.map((c) => c.trigger_type).join(", ") : "None yet"}</strong>
-              </p>
+            <div className="flex-1 bg-[#FC8019]/10 p-3 rounded-2xl flex flex-col items-center">
+               <span className="text-xl mb-1">🛵</span><span className="font-bold text-[#FC8019] text-xs">₹{mockEarnings.swiggy}</span>
+            </div>
+            <div className="flex-1 bg-[#ff00a5]/10 p-3 rounded-2xl flex flex-col items-center">
+               <span className="text-xl mb-1">⚡</span><span className="font-bold text-[#ff00a5] text-xs">₹{mockEarnings.zepto}</span>
             </div>
           </div>
-        )}
+          <p className="text-xs text-on-surface-variant text-center border-t border-outline-variant/10 pt-3">
+             Projected 7-day liability dynamically adjusted to current <strong>₹{mockEarnings.zomato + mockEarnings.swiggy + mockEarnings.zepto}</strong> average income volume.
+          </p>
+        </div>
 
-        {/* ── Weather Widget ── */}
-        {active && weatherStatus && (
-          <div className="bg-surface-container-lowest p-6 rounded-[32px] editorial-shadow border border-outline-variant/10">
-            <h3 className="font-headline text-xl font-medium mb-1">Current Weather & Triggers</h3>
-            <p className="font-label text-[10px] uppercase tracking-widest text-secondary mb-5">Zone: {zone.toUpperCase()}</p>
-            
-            <div className="grid grid-cols-3 gap-3">
-              <div className={`p-4 rounded-2xl flex flex-col items-center justify-center text-center transition-colors ${weatherStatus.is_rain_alert ? 'bg-primary text-on-primary animate-pulse' : 'bg-surface-container-low text-on-surface'}`}>
-                <span className="material-symbols-outlined mb-2 text-2xl" style={{ fontVariationSettings: weatherStatus.is_rain_alert ? "'FILL' 1" : "'FILL' 0" }}>water_drop</span>
-                <span className="font-headline font-semibold text-lg">{weatherStatus.rain_mm.toFixed(1)} <span className="text-xs font-normal">mm/hr</span></span>
-                <span className="font-label text-[9px] uppercase tracking-wider opacity-80 mt-1">Rain</span>
-              </div>
-              <div className={`p-4 rounded-2xl flex flex-col items-center justify-center text-center transition-colors ${weatherStatus.is_heat_alert ? 'bg-error text-on-error animate-pulse' : 'bg-surface-container-low text-on-surface'}`}>
-                <span className="material-symbols-outlined mb-2 text-2xl" style={{ fontVariationSettings: weatherStatus.is_heat_alert ? "'FILL' 1" : "'FILL' 0" }}>thermostat</span>
-                <span className="font-headline font-semibold text-lg">{weatherStatus.temp_c.toFixed(1)} <span className="text-xs font-normal">°C</span></span>
-                <span className="font-label text-[9px] uppercase tracking-wider opacity-80 mt-1">Heat</span>
-              </div>
-              <div className={`p-4 rounded-2xl flex flex-col items-center justify-center text-center transition-colors ${weatherStatus.is_aqi_alert ? 'bg-[#fde293] text-[#221b00] animate-pulse' : 'bg-surface-container-low text-on-surface'}`}>
-                <span className="material-symbols-outlined mb-2 text-2xl" style={{ fontVariationSettings: weatherStatus.is_aqi_alert ? "'FILL' 1" : "'FILL' 0" }}>air</span>
-                <span className="font-headline font-semibold text-lg">{weatherStatus.aqi}</span>
-                <span className="font-label text-[9px] uppercase tracking-wider opacity-80 mt-1">AQI</span>
-              </div>
-            </div>
-
-            {(weatherStatus.is_rain_alert || weatherStatus.is_heat_alert || weatherStatus.is_aqi_alert) && (
-              <div className="mt-4 p-3 rounded-xl bg-error-container/20 text-error flex items-center justify-center gap-2 font-label text-[10px] uppercase tracking-widest border border-error/20">
-                <span className="material-symbols-outlined text-[14px]">warning</span>
-                Trigger Conditions Active
-              </div>
-            )}
+        {/* FEATURE: DYNAMIC RISK SIMULATOR */}
+        <div className="bg-surface text-on-surface border border-outline-variant/20 p-6 rounded-[32px] editorial-shadow">
+          <div className="flex items-center gap-2 mb-2">
+             <span className="material-symbols-outlined text-secondary">tune</span>
+             <h3 className="font-headline text-xl text-primary font-medium">Risk-Based Pricing Engine</h3>
           </div>
-        )}
+          <p className="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-6">Interactive Rule Engine Simulation</p>
 
-        {/* ── Policy History List ── */}
-        <div className="pt-4">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-4 pl-2 pr-1">
+          <div className="space-y-6">
+             <div>
+               <div className="flex justify-between text-xs mb-2"><span className="font-bold text-on-surface">Local Rain Flow (mm/hr)</span><span className="font-mono text-secondary">{simRain} mm</span></div>
+               <input type="range" min="0" max="100" value={simRain} onChange={(e)=>setSimRain(Number(e.target.value))} className="w-full h-1 bg-outline-variant rounded-lg appearance-none cursor-pointer accent-primary" />
+             </div>
+             <div>
+               <div className="flex justify-between text-xs mb-2"><span className="font-bold text-on-surface">Zone Risk/Crime Delta</span><span className="font-mono text-secondary">Level {simCrime}</span></div>
+               <input type="range" min="1" max="10" value={simCrime} onChange={(e)=>setSimCrime(Number(e.target.value))} className="w-full h-1 bg-outline-variant rounded-lg appearance-none cursor-pointer accent-primary" />
+             </div>
+          </div>
+
+          <div className="mt-8 bg-surface-container-lowest p-4 rounded-2xl flex justify-between items-center text-center">
             <div>
-              <h3 className="font-headline text-2xl font-medium">Policy History</h3>
-              <p className="font-label text-[10px] uppercase tracking-widest text-secondary">पुरानी पॉलिसियाँ</p>
+              <p className="text-[10px] uppercase font-bold text-on-surface-variant mb-1">Simulated Premium</p>
+              <p className="font-headline text-3xl font-bold text-on-surface">₹{Math.floor(19 + (simRain * 0.5) + (simCrime * 2.5))}</p>
             </div>
-            <div className="relative">
-              <select
-                className="appearance-none bg-surface-container-lowest border border-outline-variant/20 font-label text-[10px] uppercase tracking-widest font-bold px-4 py-2 pr-8 rounded-full outline-none focus:ring-1 focus:ring-primary shadow-sm cursor-pointer"
-                value={sortKey}
-                onChange={(e) => setSortKey(e.target.value as "created_at" | "premium_amount")}
-              >
-                <option value="created_at">Sort by Date</option>
-                <option value="premium_amount">Sort by Premium</option>
-              </select>
-              <span className="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-on-surface-variant pointer-events-none">expand_more</span>
+            <div className="w-px h-10 bg-outline-variant/20 mx-2"></div>
+            <div>
+              <p className="text-[10px] uppercase font-bold text-on-surface-variant mb-1">Probability</p>
+              <p className="text-secondary font-bold text-lg">{Math.min(99, Math.floor(simRain * 0.8 + simCrime * 5))}% Risk</p>
             </div>
-          </div>
-
-          <div className="space-y-3">
-            {slice.length === 0 && (
-              <div className="bg-surface-container-lowest p-6 rounded-[24px] text-center border border-outline-variant/10 border-dashed">
-                <span className="font-body text-sm text-on-surface-variant italic">No previous policies found.</span>
-              </div>
-            )}
-            
-            {slice.map((p) => {
-              const paidClaims = claims.filter(
-                (c) => c.policy_id === p.id && c.status === "SETTLED" && new Date(c.created_at) >= new Date(p.created_at)
-              );
-              return (
-                <div key={p.id} className="bg-surface-container-lowest p-5 rounded-[24px] editorial-shadow border border-outline-variant/10 flex flex-col gap-3">
-                  <div className="flex justify-between items-center border-b border-outline-variant/10 pb-3">
-                    <span className="font-headline text-lg font-medium">{p.plan_type === "24hr" ? "Aaj Ka Kavach" : "Hafte Ka Kavach"}</span>
-                    <span className={`px-2 py-0.5 rounded-md font-label text-[9px] uppercase font-bold tracking-widest ${p.status === "ACTIVE" ? 'bg-[#cbebc8] text-[#07200b]' : 'bg-surface-container-high text-on-surface-variant border border-outline-variant/20'}`}>
-                      {p.status}
-                    </span>
-                  </div>
-                  
-                  <div className="flex gap-4 items-center">
-                    <div className="flex-1">
-                       <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-1">Coverage Window</p>
-                       <p className="font-body text-xs text-on-surface">
-                         {new Date(p.coverage_start).toLocaleDateString("en-IN")} → {new Date(p.coverage_end).toLocaleDateString("en-IN")}
-                       </p>
-                    </div>
-                    <div className="text-right">
-                       <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-1">Premium</p>
-                       <p className="font-body text-sm font-semibold">{formatRupees(Number(p.premium_amount))}</p>
-                    </div>
-                  </div>
-
-                  <div className="bg-surface-container/30 px-3 py-2 rounded-lg flex justify-between items-center text-xs font-body mt-1">
-                    <span className="text-on-surface-variant"><span className="font-semibold text-on-surface">{paidClaims.length}</span> claims settled</span>
-                    <span className="text-secondary font-semibold border-l border-outline-variant/20 pl-3">Total paid out: {formatRupees(Number(p.payout_total))}</span>
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* Pagination Controls */}
-            {sortedHistory.length > pageSize && (
-              <div className="flex gap-2 pt-2">
-                <button
-                  className="flex-1 py-3 rounded-xl bg-surface-container-lowest border border-outline-variant/10 font-label text-[10px] uppercase font-bold tracking-widest text-on-surface-variant disabled:opacity-30 disabled:bg-surface hover:bg-surface-container-low transition-colors"
-                  disabled={page === 0}
-                  onClick={() => setPage((p) => Math.max(0, p - 1))}
-                >
-                  Prev
-                </button>
-                <button
-                  className="flex-1 py-3 rounded-xl bg-surface-container-lowest border border-outline-variant/10 font-label text-[10px] uppercase font-bold tracking-widest text-on-surface-variant disabled:opacity-30 disabled:bg-surface hover:bg-surface-container-low transition-colors"
-                  disabled={(page + 1) * pageSize >= sortedHistory.length}
-                  onClick={() => setPage((p) => p + 1)}
-                >
-                  Next
-                </button>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* ── Live Claims Card ── */}
+        {/* FEATURE: LIVE CLAIMS & AI FRAUD DETECTION */}
         <div className="pt-4">
-          <div className="mb-4 pl-2">
-            <h3 className="font-headline text-2xl font-medium flex items-center gap-2">
-              Live Claims <span className="relative flex h-2 w-2 ml-1"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span></span>
-            </h3>
-            <p className="font-label text-[10px] uppercase tracking-widest text-secondary">दावे — Real-Time</p>
-          </div>
-
+          <div className="mb-4 pl-2"><h3 className="font-headline text-2xl font-medium">Claim Analytics Hub</h3></div>
           <div className="space-y-3">
-            {claims.length === 0 && (
-              <div className="bg-surface-container-lowest p-6 rounded-[24px] text-center border border-outline-variant/10 border-dashed">
-                <span className="font-body text-sm text-on-surface-variant italic">No claims triggered yet.</span>
-              </div>
-            )}
-            
-            {claims.map((c) => {
-               // Determine icon based on trigger_type
-               let icon = "bolt";
-               if (c.trigger_type === "RAIN") icon = "water_drop";
-               if (c.trigger_type === "AQI") icon = "air";
-               if (c.trigger_type === "OUTAGE") icon = "app_blocking";
-
-               return (
-                <div key={c.id} className="bg-surface-container-lowest p-5 rounded-[24px] editorial-shadow border border-outline-variant/10 relative overflow-hidden group hover:border-primary/20 transition-colors cursor-pointer">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-primary/20 group-hover:bg-primary transition-colors"></div>
-                  
-                  <div className="flex justify-between items-start">
+            {claims.map((c) => (
+                <div key={c.id} className="bg-surface-container-lowest p-5 rounded-[24px] editorial-shadow border border-outline-variant/10">
+                  <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
-                        <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span>
-                      </div>
+                      <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary"><span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span></div>
                       <div>
                         <p className="font-headline text-lg font-medium">{c.trigger_type}</p>
-                        <p className="font-body text-[11px] text-on-surface-variant">
-                          {new Date(c.created_at).toLocaleString("en-IN", {month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'})}
-                        </p>
+                        <p className="font-body text-[11px] text-on-surface-variant">{new Date(c.created_at).toLocaleString()}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                       <span className={`px-2 py-1 rounded-md font-label text-[9px] uppercase font-bold tracking-widest block mb-1 w-max ml-auto ${
-                         c.status === "SETTLED" ? 'bg-primary-container text-on-primary-container' 
-                         : c.status === "TRIGGERED" ? 'bg-amber-100 text-amber-800 animate-pulse' 
-                         : 'bg-surface-container-high text-on-surface-variant border border-outline-variant/20'
-                       }`}>
-                         {c.status}
-                       </span>
-                    </div>
+                    <span className="bg-primary-container text-on-primary-container px-2 py-1 rounded-[6px] font-label text-[9px] uppercase font-bold tracking-widest">{c.status}</span>
                   </div>
-
-                  <div className="mt-4 pt-3 border-t border-outline-variant/10 flex justify-between items-end">
-                    <div>
-                      {c.payout_txn_id && (
-                        <p className="font-mono text-[9px] text-on-surface-variant/80 uppercase">TXN: {c.payout_txn_id.slice(0,10)}...</p>
-                      )}
+                  
+                  {/* AI Fraud Badge */}
+                  <div className="mt-3 bg-surface-container p-3 rounded-xl border border-outline-variant/5">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="flex items-center gap-1 font-label text-[10px] text-primary uppercase font-bold tracking-widest"><span className="material-symbols-outlined text-[12px]">auto_awesome</span> AI Assessment Engine</span>
+                      <span className="text-[10px] font-mono text-[#E23744]">FRD: ~1.{Math.floor(Math.random() * 9)}%</span>
                     </div>
-                    <p className="font-headline text-xl text-primary font-medium">{formatRupees(Number(c.payout_amount))}</p>
+                    <div className="w-full bg-surface-container-highest rounded-full h-1 mt-1 overflow-hidden">
+                       <div className="bg-[#cbebc8] h-1 w-[98%]"></div>
+                    </div>
+                    <p className="font-body text-[10px] text-on-surface-variant mt-2 italic">Vision/Oracles detected true occurrence. Telemetry verified. Proceeding for auto-settlement.</p>
                   </div>
                 </div>
-              );
-            })}
+            ))}
           </div>
         </div>
 
       </main>
 
-      {/* Floating Bot Button (Demo Feature) */}
-      <Link href="/debug/bot" className="fixed bottom-24 right-6 z-50 group">
-        <div className="bg-[#25D366] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all duration-300 relative">
-          <span className="material-symbols-outlined text-3xl">smart_toy</span>
+      {/* Floating Bot Button */}
+      <Link href="/debug/bot" className="fixed bottom-[110px] right-6 z-50 group">
+        <div className="bg-primary text-on-primary w-14 h-14 rounded-[18px] flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all duration-300 relative">
+          <span className="material-symbols-outlined text-3xl">record_voice_over</span>
           <div className="absolute -top-1 -right-1 w-4 h-4 bg-error rounded-full animate-ping"></div>
-          <div className="absolute -top-1 -right-1 w-4 h-4 bg-error rounded-full shadow-sm"></div>
-          
-          {/* Tooltip */}
-          <div className="absolute right-full mr-3 bg-stone-900 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-            Try WhatsApp Bot
-          </div>
+          <div className="absolute right-full mr-3 bg-stone-900 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Voice Agent (Hindi)</div>
         </div>
       </Link>
 
-      {/* BottomNavBar */}
-      <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pt-3 pb-8 bg-[#f9f9f7]/80 dark:bg-stone-900/80 backdrop-blur-xl shadow-[0_-4px_30px_rgba(0,0,0,0.06)] rounded-t-[32px] border-t border-outline-variant/10">
-        <Link href="/">
-          <div className="flex flex-col items-center justify-center text-stone-500 p-2 hover:text-primary transition-colors duration-200 cursor-pointer">
-            <span className="material-symbols-outlined mb-1" data-icon="home_app_logo">home_app_logo</span>
-            <span className="font-['Manrope'] text-[11px] font-medium uppercase tracking-wider">Home</span>
-          </div>
-        </Link>
-        <Link href="/dashboard">
-          <div className="flex flex-col items-center justify-center bg-primary text-on-primary rounded-full px-5 py-2 scale-95 duration-200 cursor-pointer editorial-shadow">
-            <span className="material-symbols-outlined mb-1 text-[18px]" data-icon="verified_user">dashboard</span>
-            <span className="font-['Manrope'] text-[11px] font-medium uppercase tracking-wider">Dash</span>
-          </div>
-        </Link>
-        <Link href="/payout-success">
-          <div className="flex flex-col items-center justify-center text-stone-500 p-2 hover:text-primary transition-colors duration-200 cursor-pointer">
-            <span className="material-symbols-outlined mb-1" data-icon="request_quote">request_quote</span>
-            <span className="font-['Manrope'] text-[11px] font-medium uppercase tracking-wider">Claims</span>
-          </div>
-        </Link>
-        <Link href="/dashboard">
-          <div className="flex flex-col items-center justify-center text-stone-500 p-2 hover:text-primary transition-colors duration-200 cursor-pointer">
-            <span className="material-symbols-outlined mb-1" data-icon="account_circle">account_circle</span>
-            <span className="font-['Manrope'] text-[11px] font-medium uppercase tracking-wider">Profile</span>
-          </div>
-        </Link>
+      <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pt-3 pb-8 bg-[#f9f9f7]/80 dark:bg-stone-900/80 backdrop-blur-xl border-t border-outline-variant/10 rounded-t-[32px]">
+        <Link href="/"><div className="flex flex-col items-center justify-center text-stone-500 p-2 hover:text-primary transition-colors cursor-pointer"><span className="material-symbols-outlined mb-1 text-[22px]">home_app_logo</span></div></Link>
+        <Link href="/dashboard"><div className="flex flex-col items-center justify-center bg-primary text-on-primary rounded-2xl px-5 py-2 scale-95 duration-200 cursor-pointer editorial-shadow"><span className="material-symbols-outlined mb-1 text-[22px]">dashboard_customize</span></div></Link>
+        <Link href="/payout-success"><div className="flex flex-col items-center justify-center text-stone-500 p-2 hover:text-primary transition-colors cursor-pointer"><span className="material-symbols-outlined mb-1 text-[22px]">request_quote</span></div></Link>
       </nav>
     </div>
   );

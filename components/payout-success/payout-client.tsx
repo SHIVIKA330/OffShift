@@ -17,7 +17,7 @@ type ClaimRow = {
   payout_txn_id: string | null;
   trigger_severity?: string;
   zone?: string;
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, unknown> | null;
 };
 
 export function PayoutSuccessClient() {
