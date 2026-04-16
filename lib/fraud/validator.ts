@@ -1,7 +1,5 @@
-import Anthropic from '@anthropic-ai/sdk';
-import { createClient } from '@supabase/supabase-js';
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+import { createServiceRoleClient } from "../supabase-service";
+import { runFraudDetection } from "../claude";
 
 interface GpsPing {
   lat: number; lon: number; pinged_at: string;
@@ -22,107 +20,105 @@ export interface FraudResult {
   ai_reason: string;
 }
 
-export async function runFraudValidation(
-  riderId: string,
+/**
+ * Advanced Fraud Validation Engine (Offline/Async)
+ * Analyzes behavioral signals and calculates a weighted risk score.
+ */
+export async function runEnhancedFraudValidation(
+  workerId: string,
   claimZone: string,
   recentPings: GpsPing[],
-  claimHistory: ClaimEvent[]
+  claimHistory: ClaimEvent[],
+  policyAgeDays: number = 30
 ): Promise<FraudResult> {
   let fraud_score = 0;
   const failed_layers: string[] = [];
+  const supabase = createServiceRoleClient();
 
-  // ─── LAYER 1: GPS Crowdsource Threshold ───────────────────────
-  // Check if 50+ riders in same zone cluster are simultaneously inactive
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-  const windowStart = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-  const { count } = await supabase
-    .from('rider_gps_pings')
-    .select('*', { count: 'exact', head: true })
-    .eq('zone_cluster', claimZone)
-    .eq('is_active', false)
-    .gte('pinged_at', windowStart);
-
-  if ((count ?? 0) < 50) {
-    fraud_score += 40;
-    failed_layers.push('Layer 1: GPS crowdsource threshold not met (<50 inactive riders in zone)');
+  // ─── TRUST FACTOR: Account Maturity ───────────────────────
+  // A brand new account (<3 days) claiming is higher risk.
+  // An established account (>30 days) gets a "Trust Buffer".
+  if (policyAgeDays < 3) {
+    fraud_score += 20;
+    failed_layers.push("Trust: Policy is extremely new (<3 days old)");
+  } else if (policyAgeDays > 60) {
+    fraud_score -= 15; // Reward for long-term consistency
   }
 
-  // ─── LAYER 2: GPS Velocity / Spoof Detection ──────────────────
+  // ─── LAYER 1: Dynamic Quorum ────────────────────────────────
+  // Check if peers in the same zone cluster are seeing disruptions.
+  const windowStart = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+  const { count } = await supabase
+    .from("rider_gps_pings")
+    .select("*", { count: "exact", head: true })
+    .eq("zone_cluster", claimZone)
+    .eq("is_active", false)
+    .gte("pinged_at", windowStart);
+
+  if ((count ?? 0) < 30) {
+    fraud_score += 35;
+    failed_layers.push(`Quorum: Only ${count} inactive peers found (Threshold: 30)`);
+  }
+
+  // ─── LAYER 2: Session Continuity & Velocity ─────────────────
   if (recentPings.length >= 2) {
+    // Velocity check (already in mobility but reinforcing here)
     for (let i = 1; i < recentPings.length; i++) {
       const prev = recentPings[i - 1];
       const curr = recentPings[i];
-      const dt = (new Date(curr.pinged_at).getTime() - new Date(prev.pinged_at).getTime()) / 1000 / 60; // minutes
-      const dlat = curr.lat - prev.lat;
-      const dlon = curr.lon - prev.lon;
-      const distKm = Math.sqrt(dlat * dlat + dlon * dlon) * 111;
-      if (dt > 0 && distKm / dt > 0.83) { // > 50 km/h = impossible on delivery bike in Delhi
-        fraud_score += 25;
-        failed_layers.push(`Layer 2: Impossible GPS velocity detected (${(distKm / dt * 60).toFixed(0)} km/h)`);
+      const dt_min = (new Date(curr.pinged_at).getTime() - new Date(prev.pinged_at).getTime()) / 1000 / 60;
+      const dist = calculateKm(prev.lat, prev.lon, curr.lat, curr.lon);
+      
+      if (dt_min > 0 && (dist / dt_min) > 0.83) { // > 50km/h
+        fraud_score += 40;
+        failed_layers.push(`Continuity: Impossible movement detected (${(dist/dt_min*60).toFixed(0)} km/h)`);
         break;
       }
     }
-    // Check for perfectly stationary pings (spoofed static location)
-    const uniqueCoords = new Set(recentPings.map(p => `${p.lat.toFixed(4)},${p.lon.toFixed(4)}`));
-    // Usually need at least a few pings to say it's too static
-    if (uniqueCoords.size === 1 && recentPings.length >= 6) {
-      fraud_score += 20;
-      failed_layers.push('Layer 2: GPS location perfectly static — possible spoofing');
+  }
+
+  // ─── LAYER 4: AI Contextual Anomaly (via NVIDIA NIM) ──────────
+  const aiPayload = {
+    worker_id: workerId,
+    claim_zone: claimZone,
+    policy_age: policyAgeDays,
+    pings: recentPings,
+    history: claimHistory,
+    failed_behavioral: failed_layers
+  };
+
+  try {
+    const assessment = await runFraudDetection(aiPayload);
+    // Combine AI score (0-100) with behavioral score
+    // We treat the AI's score as the "opinion weight"
+    fraud_score = (fraud_score * 0.6) + (assessment.fraud_score * 0.4);
+    if (assessment.recommendation === "REJECT") {
+      fraud_score = Math.max(fraud_score, 85);
+      failed_layers.push(`AI: ${assessment.reasoning}`);
     }
-  }
-
-  // ─── LAYER 3: Platform Cross-Reference ───────────────────────
-  // If rider's platform shows 0 deliveries on claim day, flag it
-  // (In production: call Zomato/Swiggy partner API. For demo: check rider_engagement.active_days)
-  const { data: engagement } = await supabase
-    .from('rider_engagement')
-    .select('active_days_current_fy, last_updated')
-    .eq('rider_id', riderId)
-    .single();
-
-  const daysSinceUpdate = engagement?.last_updated
-    ? (Date.now() - new Date(engagement.last_updated).getTime()) / (1000 * 60 * 60 * 24)
-    : 999;
-
-  if (daysSinceUpdate > 3) {
-    fraud_score += 15;
-    failed_layers.push('Layer 3: Platform activity data stale (>3 days) — cannot cross-verify');
-  }
-
-  // ─── LAYER 4: AI Temporal Pattern Anomaly ────────────────────
-  if (claimHistory.length >= 3) {
-    const patternPrompt = `Analyze this gig worker's insurance claim history for fraud patterns:
-${JSON.stringify(claimHistory, null, 2)}
-Return ONLY valid JSON (no markdown): { "fraud_risk": "low" | "medium" | "high", "reason": "one sentence", "score_addition": 0-20 }`;
-
-    try {
-      const aiResponse = await anthropic.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 150,
-        messages: [{ role: 'user', content: patternPrompt }]
-      });
-
-      const text = aiResponse.content[0].type === 'text' ? aiResponse.content[0].text : '{}';
-      const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
-      if (parsed.fraud_risk === 'medium' || parsed.fraud_risk === 'high') {
-        fraud_score += parsed.score_addition ?? 10;
-        failed_layers.push(`Layer 4: AI anomaly — ${parsed.reason}`);
-      }
-    } catch { /* non-critical */ }
+  } catch {
+    fraud_score += 10; // Penalty for logic unavailability
   }
 
   // ─── Final Decision ──────────────────────────────────────────
-  let decision: FraudResult['decision'];
-  if (fraud_score <= 30) decision = 'AUTO_APPROVE';
-  else if (fraud_score <= 60) decision = 'FLAG_REVIEW';
-  else decision = 'BLOCK';
+  fraud_score = Math.min(100, Math.max(0, fraud_score));
+  let decision: FraudResult['decision'] = 'AUTO_APPROVE';
+  if (fraud_score > 70) decision = 'BLOCK';
+  else if (fraud_score > 35) decision = 'FLAG_REVIEW';
 
-  const ai_reason = failed_layers.length === 0
-    ? 'All fraud checks passed. Payout authorised.'
-    : failed_layers.join(' | ');
+  return {
+    fraud_score,
+    decision,
+    failed_layers,
+    ai_reason: failed_layers.join(" | ")
+  };
+}
 
-  return { fraud_score, decision, failed_layers, ai_reason };
+/** Backward compatibility for legacy routes */
+export const runFraudValidation = runEnhancedFraudValidation;
+
+function calculateKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const dlat = lat2 - lat1;
+  const dlon = lon2 - lon1;
+  return Math.sqrt(dlat * dlat + dlon * dlon) * 111;
 }

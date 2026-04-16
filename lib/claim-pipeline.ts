@@ -1,116 +1,121 @@
 import { createServiceRoleClient } from "@/lib/supabase-service";
 import { executeSettlement } from "@/lib/settlement-engine";
-import { runFraudDetection } from "@/lib/claude";
-import { RiskPool } from "@/lib/underwriting";
+import { runEnhancedFraudValidation } from "@/lib/fraud/validator";
+import { validateWorkerPresence } from "@/lib/mobility-engine";
+import { resolveConcurrentTriggers, enforceDailyCap } from "@/lib/trigger-consolidator";
+import { type ZoneSlug } from "@/lib/zones";
 
 export async function processClaimPipeline(claimId: string): Promise<void> {
   const supabase = createServiceRoleClient();
 
+  // 1. Fetch Claim and associated Policy/Worker data
   const { data: claim, error: cErr } = await supabase
     .from("claims")
-    .select(
-      `
-      id,
-      policy_id,
-      worker_id,
-      payout_amount,
-      trigger_type,
-      trigger_severity,
-      trigger_timestamp,
+    .select(`
+      id, policy_id, worker_id, payout_amount, trigger_type, trigger_severity, trigger_timestamp,
       workers ( zone, shift_type, kavach_score ),
-      policies ( created_at )
-    `
-    )
+      policies ( created_at, payout_total )
+    `)
     .eq("id", claimId)
     .single();
 
   if (cErr || !claim) return;
 
-  const workerAny = (claim as any).workers;
-  const worker = Array.isArray(workerAny) ? workerAny[0] : workerAny;
+  const worker: any = Array.isArray(claim.workers) ? claim.workers[0] : claim.workers;
+  const policy: any = Array.isArray(claim.policies) ? claim.policies[0] : claim.policies;
+  const zone = worker?.zone as ZoneSlug;
 
-  const policyAny = (claim as any).policies;
-  const policy = Array.isArray(policyAny) ? policyAny[0] : policyAny;
+  // 2. FETCH REAL TELEMETRY (Last 10 GPS pings)
+  const { data: pings } = await supabase
+    .from("rider_gps_pings")
+    .select("lat, lon, pinged_at")
+    .eq("rider_id", claim.worker_id)
+    .order("pinged_at", { ascending: false })
+    .limit(10);
 
-  await supabase.from("claims").update({ status: "FRAUD_CHECK" }).eq("id", claimId);
-
-  const policyAgeDays = Math.max(
-    0,
-    Math.floor(
-      (Date.now() -
-        new Date(policy?.created_at ? String(policy.created_at) : Date.now()).getTime()) /
-        (86400 * 1000)
-    )
+  // 3. MOBILITY VALIDATION
+  const mobility = await validateWorkerPresence(
+    String(claim.worker_id),
+    zone,
+    new Date(claim.trigger_timestamp)
   );
 
-  const fraudPayload = {
-    worker: {
-      zone: String(worker?.zone ?? "okhla"),
-      shift: String(worker?.shift_type ?? "evening"),
-      kavach_score:
-        typeof worker?.kavach_score === "number" ? worker.kavach_score : 50,
-      policy_age_days: policyAgeDays,
-    },
-    trigger: {
-      type: claim.trigger_type,
-      severity: claim.trigger_severity,
-      timestamp: claim.trigger_timestamp,
-    },
-    behavioral: {
-      last_gps_ping_minutes_ago: 12 + Math.floor(Math.random() * 20),
-      avg_daily_earnings_last_30_days: 800 + Math.floor(Math.random() * 400),
-      num_claims_last_30_days: 0,
-      zone_peers_affected_count: 14,
-      policy_age_days: policyAgeDays,
-    },
-  };
+  // 4. CONCURRENT DISRUPTION CONSOLIDATION
+  // Mocking concurrent check: In production, query a 'global_events' table for other triggers in same zone/time
+  const activeTriggers = [
+    { type: claim.trigger_type as any, multiplier: 1.0 }
+  ];
+  // If mobility confidence is low, we reduce the payout multiplier
+  if (!mobility.is_present) activeTriggers[0].multiplier *= 0.5;
 
-  let assessment;
-  try {
-    assessment = await runFraudDetection(fraudPayload);
-  } catch {
-    assessment = {
-      fraud_score: 40,
-      risk_level: "MEDIUM" as const,
-      red_flags: ["Fraud engine unavailable — manual review"],
-      recommendation: "MANUAL_REVIEW" as const,
-      reasoning: "Fallback.",
-    };
-  }
+  const consolidated = resolveConcurrentTriggers(activeTriggers);
 
+  // 5. ENHANCED FRAUD VALIDATION
+  const policyAgeDays = Math.floor(
+    (Date.now() - new Date(policy?.created_at).getTime()) / (86400 * 1000)
+  );
+
+  const { data: history } = await supabase
+    .from("claims")
+    .select("id, trigger_timestamp, trigger_type, payout_amount")
+    .eq("worker_id", claim.worker_id)
+    .eq("status", "SETTLED")
+    .limit(5);
+
+  const fraud = await runEnhancedFraudValidation(
+    String(claim.worker_id),
+    zone,
+    (pings || []).map(p => ({ lat: p.lat, lon: p.lon, pinged_at: p.pinged_at })),
+    (history || []).map(h => ({ 
+      claim_id: h.id, 
+      date: h.trigger_timestamp, 
+      disruption_type: h.trigger_type, 
+      zone, 
+      amount: Number(h.payout_amount) 
+    })),
+    policyAgeDays
+  );
+
+  // Update claim with tracking info
   await supabase
     .from("claims")
     .update({
-      fraud_score: assessment.fraud_score,
-      fraud_flags: assessment.red_flags,
-      fraud_recommendation: assessment.recommendation,
-      fraud_reasoning: assessment.reasoning,
+      fraud_score: fraud.fraud_score,
+      fraud_flags: fraud.failed_layers,
+      fraud_recommendation: fraud.decision,
+      fraud_reasoning: `${fraud.ai_reason} | Mobility Confidence: ${(mobility.confidence * 100).toFixed(0)}%`,
     })
     .eq("id", claimId);
 
-  if (assessment.fraud_score > 60) {
-    await supabase
-      .from("claims")
-      .update({ status: "REJECTED" })
-      .eq("id", claimId);
+  // 6. DECISION ENGINE
+  if (fraud.decision === "BLOCK" || !mobility.is_present && mobility.confidence < 0.2) {
+    await supabase.from("claims").update({ status: "REJECTED" }).eq("id", claimId);
     return;
   }
 
-  if (assessment.fraud_score >= 30 && assessment.fraud_score <= 60) {
-    await supabase
-      .from("claims")
-      .update({ status: "MANUAL_REVIEW" })
-      .eq("id", claimId);
+  if (fraud.decision === "FLAG_REVIEW" || mobility.teleportation_detected) {
+    await supabase.from("claims").update({ status: "MANUAL_REVIEW" }).eq("id", claimId);
     return;
   }
 
-  await supabase.from("claims").update({ status: "APPROVED" }).eq("id", claimId);
-
-  // ── Multi-Channel Settlement (DEVTrails Spec) ──
-  const payoutResult = await executeSettlement(
-    claimId,
-    Number(claim.payout_amount)
+  // 7. PAYOUT CALCULATION & DAILY CAP
+  const maxWeeklyTier = 2500; // Assuming Premium Tier for demo
+  const dailyCap = maxWeeklyTier / 3; // Rule of thumb
+  const rawPayout = Number(claim.payout_amount) * consolidated.payout_multiplier;
+  
+  const finalPayout = enforceDailyCap(
+    Number(policy.payout_total || 0),
+    rawPayout,
+    dailyCap
   );
+
+  await supabase.from("claims").update({ 
+    status: "APPROVED",
+    payout_amount: finalPayout
+  }).eq("id", claimId);
+
+  // 8. SETTLEMENT
+  const payoutResult = await executeSettlement(claimId, finalPayout);
 
   if (payoutResult.status === "COMPLETED") {
     await supabase
@@ -122,16 +127,10 @@ export async function processClaimPipeline(claimId: string): Promise<void> {
       })
       .eq("id", claimId);
 
-    const { data: pol } = await supabase
-      .from("policies")
-      .select("payout_total")
-      .eq("id", claim.policy_id)
-      .single();
-
-    const prev = Number(pol?.payout_total ?? 0);
+    const prevTotal = Number(policy.payout_total ?? 0);
     await supabase
       .from("policies")
-      .update({ payout_total: prev + Number(claim.payout_amount) })
+      .update({ payout_total: prevTotal + finalPayout })
       .eq("id", claim.policy_id);
   }
 }
