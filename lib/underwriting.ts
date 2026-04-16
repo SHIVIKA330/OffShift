@@ -122,15 +122,17 @@ export function checkEligibility(input: {
   const tier = computeWorkerTier(input.activeDaysPerWeek);
   const riskPools = getZoneRiskPools(input.zone);
 
-  // Platform check
-  const validPlatforms = ["zomato", "swiggy", "zepto"];
-  if (!validPlatforms.includes(input.platform.toLowerCase())) {
+  // Platform check — Relaxed for all gig types per user request
+  const platformLower = input.platform.toLowerCase();
+  
+  // Ensure platform is not empty
+  if (!platformLower || platformLower.trim().length === 0) {
     return {
       eligible: false,
       tier,
       riskPools,
       warnings,
-      rejectionReason: "Platform not supported — only Zomato, Swiggy, Zepto",
+      rejectionReason: "Platform identification required",
     };
   }
 

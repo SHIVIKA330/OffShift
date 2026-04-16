@@ -203,8 +203,8 @@ export function OnboardingWizard() {
     if (!email.includes("@")) return toast.error("Valid email is required");
     if (password.length < 4) return toast.error("Password at least 4 chars");
     
-    // Proceed to Email OTP verification
-    setScreen(0.5);
+    // Skip Email OTP and proceed directly to Permissions
+    setScreen(1);
   };
 
   const verifyEmailOtp = () => {
