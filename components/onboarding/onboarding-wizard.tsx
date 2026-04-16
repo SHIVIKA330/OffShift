@@ -138,7 +138,9 @@ export function OnboardingWizard() {
 
   // Permissions
   const [locationGranted, setLocationGranted] = useState(false);
+  const [locationCoords, setLocationCoords] = useState<{lat: number; lng: number} | null>(null);
   const [cameraGranted, setCameraGranted] = useState(false);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
 
   // Profile fields
   const [gigCategory, setGigCategory] = useState<string | null>(null);
@@ -211,8 +213,55 @@ export function OnboardingWizard() {
     setScreen(1); // Proceed to Permissions
   };
 
+  const requestLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("GPS not supported on this device");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocationGranted(true);
+        setLocationCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        toast.success("📍 Location granted!");
+      },
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) {
+          toast.error("Location denied. Please allow it in browser settings.");
+        } else {
+          // Allow bypass for desktop/demo
+          setLocationGranted(true);
+          toast.success("📍 Location set to default zone.");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  };
+
+  const requestCamera = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      toast.error("Camera not supported on this device");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      setCameraStream(stream);
+      setCameraGranted(true);
+      toast.success("📷 Camera granted!");
+      // Stop the stream after verifying permission (we only needed the grant)
+      stream.getTracks().forEach(track => track.stop());
+    } catch (err: any) {
+      if (err?.name === "NotAllowedError") {
+        toast.error("Camera denied. Please allow it in browser settings.");
+      } else {
+        // Allow bypass for desktop/demo environments
+        setCameraGranted(true);
+        toast.success("📷 Camera granted (demo mode).");
+      }
+    }
+  };
+
   const handlePermissions = () => {
-    if (!locationGranted || !cameraGranted) return toast.error("Please grant required permissions");
+    if (!locationGranted || !cameraGranted) return toast.error("Please grant all required permissions to continue");
     setScreen(2);
   };
 
@@ -469,10 +518,15 @@ export function OnboardingWizard() {
                    <h4 className="font-headline text-lg mb-1">Location (GPS)</h4>
                    <p className="text-xs text-on-surface-variant leading-relaxed mb-3">Used to set your delivery zone and map real-time disruption data.</p>
                    {locationGranted ? (
-                     <span className="text-[10px] font-bold text-[#cbebc8] bg-[#cbebc8]/10 px-2 py-1 rounded uppercase tracking-widest">Granted</span>
-                   ) : (
-                     <button onClick={() => setLocationGranted(true)} className="px-4 py-2 bg-surface-container-highest rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-surface-container transition-colors">Request Location</button>
-                   )}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-500/10 px-2 py-1 rounded uppercase tracking-widest">✓ Granted</span>
+                        {locationCoords && <span className="text-[10px] text-on-surface-variant">{locationCoords.lat.toFixed(2)}°N, {locationCoords.lng.toFixed(2)}°E</span>}
+                      </div>
+                    ) : (
+                      <button onClick={requestLocation} className="px-4 py-2 bg-primary text-on-primary rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-colors flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[14px]">my_location</span> Request Location
+                      </button>
+                    )}
                  </div>
               </div>
 
@@ -482,10 +536,12 @@ export function OnboardingWizard() {
                    <h4 className="font-headline text-lg mb-1">Camera</h4>
                    <p className="text-xs text-on-surface-variant leading-relaxed mb-3">Used for mandatory face verification and document upload.</p>
                    {cameraGranted ? (
-                     <span className="text-[10px] font-bold text-[#cbebc8] bg-[#cbebc8]/10 px-2 py-1 rounded uppercase tracking-widest">Granted</span>
-                   ) : (
-                     <button onClick={() => setCameraGranted(true)} className="px-4 py-2 bg-surface-container-highest rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-surface-container transition-colors">Request Camera</button>
-                   )}
+                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-500/10 px-2 py-1 rounded uppercase tracking-widest">✓ Granted</span>
+                    ) : (
+                      <button onClick={requestCamera} className="px-4 py-2 bg-primary text-on-primary rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-colors flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[14px]">photo_camera</span> Request Camera
+                      </button>
+                    )}
                  </div>
               </div>
             </div>

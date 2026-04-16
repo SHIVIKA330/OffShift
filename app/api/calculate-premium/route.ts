@@ -41,8 +41,8 @@ export async function POST(req: Request) {
     !["morning", "evening", "night", "flexible"].includes(body.shift_type) ||
     body.active_days < 1 ||
     body.active_days > 7 ||
-    !["zomato", "swiggy", "zepto"].includes(body.platform.toLowerCase()) ||
-    !["24hr", "7day"].includes(body.coverage_type)
+    !["24hr", "7day"].includes(body.coverage_type) ||
+    !body.platform
   ) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
