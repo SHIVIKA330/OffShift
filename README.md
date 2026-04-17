@@ -1,33 +1,28 @@
 <a name="readme-top"></a>
 
   <h1>OffShift — Smart Income Shield</h1>
-  <h3><em>"When the storm hits — the money hits first."</em></h3>
+  <h3><em>"Protection for your path. Automatic income insurance for India's gig fleet."</em></h3>
 
   <p>
-    <img src="https://img.shields.io/badge/DEVTrails_2026-Guidewire-blueviolet?style=for-the-badge" alt="DEVTrails 2026"/>
-    <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React"/>
-    <img src="https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js"/>
-    <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase"/>
-    <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
-    <img src="https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="WhatsApp"/>
-    <img src="https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white" alt="scikit-learn"/>
+    <img src="https://img.shields.io/badge/LIVE-grey?style=for-the-badge" alt="LIVE"/>
+    <img src="https://img.shields.io/badge/DEMO-brightgreen?style=for-the-badge" alt="DEMO"/>
+    <img src="https://img.shields.io/badge/DEVTRAILS_2026-333333?style=for-the-badge" alt="DEVTRAILS 2026"/>
+    <img src="https://img.shields.io/badge/GUIDEWIRE-blueviolet?style=for-the-badge" alt="GUIDEWIRE"/>
   </p>
 
   <p>
-    An AI-powered parametric insurance platform for India's 12 million gig delivery workers.<br/>
+    An AI-powered parametric income shield for India's 12 million gig delivery workers.<br/>
     <strong>Zero claim forms. Zero paperwork. Automatic UPI payout in 120 seconds.</strong>
     <br/><br/>
-    <a href="https://offshift-9iok.onrender.com"><strong> LIVE DEMO</strong></a>
+    <a href="https://offshift-9iok.onrender.com"><strong> 🌐 LIVE WEBSITE</strong></a>
     ·
-    <a href="https://offshift-9iok.onrender.com/debug/bot"><strong> Bot Simulator</strong></a>
+    <a href="https://offshift-9iok.onrender.com/onboard"><strong> 🚀 START ONBOARDING</strong></a>
     ·
-    <a href="https://youtu.be/-H7DZOUcolM?si=UAGWT9GT7QqNVLQC"> View Demo phase 1 Video</a>
+    <a href="https://offshift-9iok.onrender.com/debug/bot"><strong> 🤖 WhatsApp Bot Simulator</strong></a>
     ·
-    <a href="https://www.youtube.com/watch?v=zkxA6ojrw6w"> View Demo phase 2 Video</a>
-    .
-    <a href="https://github.com/SHIVIKA330/OffShift/releases/download/v1.0.0/app-debug.apk"> App Demo (Try it on phone)</a>
-    .
-    <a href="./OffShift — Smart Income Shield _ Guidewire DEVTrails 2026.pdf"> View Presentation</a>
+    <a href="https://offshift-9iok.onrender.com/admin/compliance"><strong> 🛡️ Compliance Dashboard</strong></a>
+    ·
+    <a href="https://offshift-9iok.onrender.com/actuarial"><strong> 📊 Actuarial Insights</strong></a>
   </p>
 </div>
 
@@ -110,7 +105,7 @@ When the Delhi monsoon hits — and it always hits — Ravi parks under a flyove
 | Insurance Experience | Never successfully claimed |
 | Monthly Income Loss (Monsoon) | 20–30% (~₹4,800–₹7,200) |
 
-**OffShift for Ravi:** He texts "HI" to our WhatsApp number once. 60 seconds later, he has ₹99/week coverage. The next time it rains — really rains — he gets a WhatsApp notification and ₹1,500 appears in his PhonePe. He didn't fill a single form.
+**OffShift for Ravi:** He completes the 2-minute web onboarding. A few clicks later, he has **Weekly Pass** coverage. The next time it rains — really rains — he receives an automated payout notification, and ₹1,500 appears in his settlement account via Razorpay. He didn't fill a single form.
 
 
 
@@ -125,11 +120,11 @@ When the Delhi monsoon hits — and it always hits — Ravi parks under a flyove
 
 OffShift is a **parametric insurance engine** — payouts are triggered by objective, external data conditions, never by self-reported claims. Five pillars underpin the entire system:
 
-1.  **WhatsApp-First Onboarding** — 60-second signup. Phone number + UPI ID only. No app download. No documents.
-2. **Weekly Micro-Premium Model** — Sachet-sized pricing (₹49/₹99/₹349) built around gig workers' weekly cash flows.
-3.  **Kavach AI Engine** — Our proprietary XGBoost model prices risk to the pincode level, dynamically per rider.
-4.  **Parametric Auto-Triggers** — IMD API, AQICN API, Downdetector, GPS cluster inactivity — objective data only. No subjective judgment.
-5.  **120-Second UPI Auto-Payout** — Razorpay API sends money directly to the rider's UPI handle. Zero claim forms. Ever.
+1.  **6-Step Onboarding Wizard** — High-fidelity web-native flow. Identity details, settlement channel, and shift pattern collection in under 2 minutes.
+2. **Flexible Protection Plans** — Sachet-sized pricing (**Daily Shield**, **Weekly Pass**, **Monthly Pro**) built around gig workers' real-time cash flows.
+3.  **Kavach AI Engine** — Our proprietary actuarial model prices risk to the pincode level, dynamically per rider based on historical IMD weather patterns.
+4.  **Regulatory Trust Engine** — Built-in compliance for **DPDP Act 2023**, **Social Security Code 2020**, and **IRDAI** parametric guidelines.
+5.  **120-Second UPI Auto-Payout** — Seamless Razorpay integration sends money directly to the rider's UPI/IMPS/Bank account. Zero claim forms. Ever.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -139,40 +134,40 @@ OffShift is a **parametric insurance engine** — payouts are triggered by objec
 ##  How It Works — End-to-End Workflow <a name="how-it-works"></a>
 
 ```
-STEP 1: ONBOARDING (60 seconds)
+STEP 1: WEB-NATIVE ONBOARDING (Under 2 Minutes)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Rider texts "HI" to OffShift WhatsApp
-  → Dialogflow CX bot collects: name, pincode, UPI ID
-  → Kavach AI scores zone risk for that pincode
-  → Personalized weekly premium generated (₹39–₹79 range)
-  → Rider pays via PhonePe UPI deep link
-  → Coverage ACTIVE  — all within 60 seconds
+Rider visits OffShift Web Wizard:
+  → Collects: Name, Pincode, Platform (Zomato/Swiggy/Zepto)
+  → Collects: Settlement Details (UPI/IMPS/Razorpay)
+  → Collects: Shift Pattern (Morning/Evening/Full-day)
+  → Kavach AI scores zone risk and generates plan options
+  → Rider selects protection plan (Daily/Weekly/Monthly)
+  → Coverage ACTIVE — simple, fast, and documented.
 
-STEP 2: MONITORING (Every 15 Minutes)
+STEP 2: REAL-TIME MONITORING (Every 15 Minutes)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Node.js cron job runs every 15 minutes:
-  → Polls IMD Weather API for Red Alerts by pincode
-  → Polls AQICN API for pollution levels by zone
-  → Monitors Downdetector for Zomato/Swiggy outage spikes
-  → Cross-references rider GPS cluster inactivity from Supabase
+  → Polls IMD Weather API for Red Alerts by zone
+  → Monitors Multi-Platform earnings (Zomato/Swiggy/Zepto)
+  → Cross-references rider GPS cluster activity
+  → Verifies active shift status via platform logs
 
-STEP 3: PARAMETRIC TRIGGER
+STEP 3: PARAMETRIC TRIGGER & SOS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Condition met if:
-  → Rainfall > 65mm/hr (IMD Red Alert)  OR
-  → Temperature > 45°C               OR
-  → AQI > 300                         OR
-  → Downdetector spike + 50 riders GPS-inactive in same 5km zone
+  → Rainfall > 50mm/hr (IMD Red Alert)  OR
+  → Platform Outage detected (System-wide) OR
+  → Rider triggers **Critical Incident SOS**
 
   → Trigger event logged to Supabase
   → Kavach Trust Score calculated per rider
-  → Payout queue initiated
+  → Payout queue initiated via **Regulatory Trust Engine**
 
-STEP 4: PAYOUT (Trust-Scored, Tiered)
+STEP 4: AUTOMATED PAYOUT (Razorpay Integration)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Trust Score > 0.75  →  Razorpay UPI payout in 120 seconds 
-Trust Score 0.40-0.75  →  1 WhatsApp message → payout in 3 mins
-Trust Score < 0.40  →  15-min admin hold → auto-release if confirmed
+Trust Score > 0.75  →  Razorpay UPI/IMPS payout in 120 seconds 
+Trust Score 0.40-0.75  →  Soft-verify via WhatsApp → payout in 5 mins
+Trust Score < 0.40  →  Admin verification hold (Max 15 mins)
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -186,9 +181,9 @@ Traditional insurance charges ₹2,000–₹5,000/year for plans that exclude gi
 
 | Plan | Price | Duration | Max Payout | Coverage |
 |---|---|---|---|---|
-|  **Shift Pass** | ₹49 | 24 hours | ₹500 | Heavy Rain, Heatwave |
+|  **Daily Shield** | ₹49 | 24 hours | ₹500 | Heavy Rain, Heatwave |
 |  **Weekly Pass** | ₹99 | 7 days | ₹1,500 | Weather + App Outages |
-|  **Monthly Pro** | ₹349 | 30 days | ₹4,000 | All disruptions + Curfews |
+|  **Monthly Pro** | ₹349 | 30 days | ₹4,500 | All disruptions + Aggregator errors |
 
 ### Dynamic Pricing via Kavach AI
 The weekly base premium is adjusted ±₹10 based on 4 real-time signals:
@@ -812,11 +807,10 @@ Each oracle returns standardized data for the trigger monitor to evaluate:
 
 | Disruption | How It Causes Income Loss | How We Detect It | Avg. Daily Loss |
 |---|---|---|---|
-| **Monsoon Flooding** | Roads impassable, no deliveries for 6–12 hours | IMD Red Alert >65mm/hr | ₹400–₹800 |
-| **Extreme Heatwave** | Govt advisory to stay indoors, platforms reduce orders | Temp >45°C for 3+ hrs | ₹300–₹600 |
-| **Toxic Air Quality** | Health risk, reduced outdoor activity, fewer orders | AQI >300 sustained | ₹200–₹500 |
-| **App Platform Crash** | Cannot receive/complete orders despite good weather | Downdetector spike + GPS cluster | ₹500–₹1,000 |
-| **Curfew/Bandh/Strike** | Movement restrictions, complete shutdown | News API + admin flag | ₹800 (full day) |
+| **Monsoon Flooding** | Roads impassable, extreme rider risk | IMD Red Alert >50mm/hr | ₹400–₹800 |
+| **App Platform Crash** | Cannot receive/complete orders despite good weather | Multiple Platform Outage Scraper | ₹500–₹1,000 |
+| **Multi-Platform Match** | Inactive across Zomato/Swiggy/Zepto | **Cross-Platform Aggregator** | ₹600–₹900 |
+| **Critical Incident** | Emergency stoppage on route | **One-Tap SOS Trigger** | Full Shift Income |
 
 ### Seamless Zero-Touch Claim UX — The Best Experience for Riders
 
@@ -980,9 +974,9 @@ A mobile-first, haptic dashboard built for the road.
 ### 🏢 For Insurers: The "Nebula" Admin Console
 A dark-mode, high-performance dashboard for risk managers.
 
-*   **Loss Ratios**: Real-time tracking of premiums collected vs. claims paid (The "Solvency" metric).
-*   **Syndicate Alerts**: Instant flags when the Isolation Forest detects coordinated fraud clusters.
-*   **Predictive Analytics**: **"The Week Ahead"** — predicting next week's likely weather/disruption claims based on LSTM models.
+*   **Loss Ratios**: Real-time tracking of premiums collected vs. claims paid.
+*   **Regulatory Trust Engine**: Live compliance checklist for DPDP, SS Code, and IRDAI standards.
+*   **Actuarial Stress Testing**: Visualizing the **14-Day Monsoon Stress Test** and BCR sustainability.
 *   **Zone Heatmaps**: Visualizing rainfall patterns across Delhi/NCR in real-time, mapped against rider density.
 
 #### Next-Week Disruptive Claim Prediction (ML)
@@ -1143,10 +1137,18 @@ curl "https://archive-api.open-meteo.com/v1/archive?latitude=28.6139&longitude=7
 
 ### ⚖️ Judge Quick Links
 - **Live site:** [https://offshift-9iok.onrender.com](https://offshift-9iok.onrender.com)
-- **Demo admin panel:** [/admin/demo](/admin/demo) *(DEMO_MODE=true)*
-- **Compliance checklist:** [/admin/compliance](/admin/compliance)
-- **Actuarial proof:** [/actuarial](/actuarial)
-- **Consent flow:** [/onboard/consent](/onboard/consent)
+- **Compliance Dashboard:** [/admin/compliance](https://offshift-9iok.onrender.com/admin/compliance)
+- **Actuarial Insights:** [/actuarial](https://offshift-9iok.onrender.com/actuarial)
+- **Onboarding Wizard:** [/onboard](https://offshift-9iok.onrender.com/onboard)
+- **WhatsApp Simulator:** [/debug/bot](https://offshift-9iok.onrender.com/debug/bot)
+- **Evaluator Toolkit:** [/admin/demo](https://offshift-9iok.onrender.com/admin/demo) *(Requires Demo Auth)*
+
+---
+
+### Regulatory & Actuarial Proof
+**IRDAI Parametric Guidelines:** We prove financial sustainability by maintaining a **Target BCR of 0.65**. Our **Liquidity Reserve (₹45.2 Cr)** and **Solvency Margin (185%)** are documented in the [Actuarial Insights](https://offshift-9iok.onrender.com/actuarial).
+**SS Code 2020 Compliance:** OffShift respects gig worker welfare mandates by implementing an automated **90/120-Day Eligibility Gate** for platforms (Zomato/Swiggy/Zepto). 
+**DPDP Act 2023 Compliance:** Every data collection point (GPS, UPI, Platform logs) is gated behind **Explicit Consent Screens** and clear data retention policies.
 
 ---
 
