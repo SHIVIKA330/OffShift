@@ -4,7 +4,7 @@
   <h3><em>"Protection for your path. Automatic income insurance for India's gig fleet."</em></h3>
 
   <p>
-    <img src="https://img.shields.io/badge/LIVE-grey?style=for-the-badge" alt="LIVE"/>
+    <img src="https://offshift-9iok.onrender.com/" alt="LIVE"/>
     <img src="https://img.shields.io/badge/DEMO-brightgreen?style=for-the-badge" alt="DEMO"/>
     <img src="https://img.shields.io/badge/DEVTRAILS_2026-333333?style=for-the-badge" alt="DEVTRAILS 2026"/>
     <img src="https://img.shields.io/badge/GUIDEWIRE-blueviolet?style=for-the-badge" alt="GUIDEWIRE"/>
