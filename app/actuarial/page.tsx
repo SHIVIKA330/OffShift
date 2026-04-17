@@ -119,11 +119,8 @@ export default function ActuarialPage() {
             <p className="font-headline text-3xl text-primary">{(triggerProbPerPolicy*100).toFixed(2)}%</p>
           </div>
           
-          <div className="bg-primary text-on-primary p-6 rounded-[24px] editorial-shadow border border-outline-variant/10 flex flex-col justify-between md:col-span-2 relative overflow-hidden">
-            <div className="relative z-10">
-              <span className="material-symbols-outlined text-on-primary text-2xl mb-2 opacity-50">analytics</span>
-              <p className="font-label text-[10px] uppercase tracking-widest opacity-60 font-bold mb-1">Financial Sustainability</p>
-              <h3 className="font-headline text-2xl">Parametric Pool Health</h3>
+          <div className="bg-surface-container-lowest p-6 rounded-[24px] editorial-shadow border border-outline-variant/10 flex flex-col justify-between md:col-span-2 relative overflow-hidden bg-primary text-on-primary">
+              </div>
             </div>
             
             <div className="flex gap-4 bg-on-primary/10 p-3 rounded-xl z-10 mt-auto border border-on-primary/10">
