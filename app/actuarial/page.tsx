@@ -120,8 +120,6 @@ export default function ActuarialPage() {
           </div>
           
           <div className="bg-surface-container-lowest p-6 rounded-[24px] editorial-shadow border border-outline-variant/10 flex flex-col justify-between md:col-span-2 relative overflow-hidden bg-primary text-on-primary">
-              </div>
-            </div>
             
             <div className="flex gap-4 bg-on-primary/10 p-3 rounded-xl z-10 mt-auto border border-on-primary/10">
                <div className="flex-1">
