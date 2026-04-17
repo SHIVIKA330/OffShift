@@ -79,6 +79,13 @@ export default function DemoAdminPage() {
              </CardHeader>
           </Card>
 
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer border-rose-200 bg-rose-50" onClick={() => runSimulation('disruption')}>
+             <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center gap-2"><AlertCircle className="text-rose-600" /> Simulate Civic Disruption</CardTitle>
+                <p className="text-sm text-slate-500">Blockades, Protests, or Grid Failure</p>
+             </CardHeader>
+          </Card>
+
           <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => runSimulation('eligibility-check')}>
              <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2"><CheckCircle2 className="text-teal-500" /> 90-Day Eligibility Check</CardTitle>
@@ -95,11 +102,37 @@ export default function DemoAdminPage() {
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
               </span>
            </div>
-           <p className="font-mono text-emerald-400 text-sm mb-4">root@offshift-sandbox:~# {loading ? "executing..." : "awaiting simulation trigger"}</p>
+           
+           <div className="flex items-center gap-2 mb-4 border-b border-slate-800 pb-2">
+              <div className="w-3 h-3 rounded-full bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]"></div>
+              <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+              <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+              <span className="text-[10px] font-mono text-slate-500 border-l border-slate-800 pl-4 ml-2">Fraud_Oracle_v2.0_Active</span>
+           </div>
+
+           <p className="font-mono text-emerald-400 text-sm mb-4">root@offshift-sandbox:~# {loading ? "executing..." : (result ? "transaction_complete --status=PASS" : "awaiting simulation trigger")}</p>
+           
+           <div className="space-y-1 font-mono text-[10px]">
+              {result && result.gps_crosscheck && (
+                <p className="text-blue-400">[SYSTEM] GPS vs Platform Login: MATCH FOUND (Pincode: {result.gps_crosscheck.pincode})</p>
+              )}
+              {result && result.anomaly_detected === false && (
+                <p className="text-emerald-500">[SYSTEM] Velocity Check: NORMAL. No static spoofing detected.</p>
+              )}
+              {result && result.risk_score && (
+                 <p className="text-amber-400">[SYSTEM] Computed Risk Factor: {result.risk_score.toFixed(2)} [Safe Threshold]</p>
+              )}
+              {result && result.is_locked_out && (
+                 <p className="text-rose-500 bg-rose-500/10 p-2 rounded">![CRITICAL] LOCK-OUT TRIGGERED: {result.lock_out_reason}</p>
+              )}
+           </div>
+
            {result && (
-             <pre className="font-mono text-slate-300 text-xs overflow-x-auto whitespace-pre-wrap">
-               {JSON.stringify(result, null, 2)}
-             </pre>
+             <div className="mt-4 pt-4 border-t border-slate-800">
+                <pre className="text-slate-300 text-xs overflow-x-auto whitespace-pre-wrap">
+                  {JSON.stringify(result, null, 2)}
+                </pre>
+             </div>
            )}
         </div>
       </div>

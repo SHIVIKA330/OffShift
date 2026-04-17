@@ -36,6 +36,8 @@ export interface KavachEngineResult {
     curfew: number;
     aqi: number;
   };
+  is_locked_out: boolean;
+  lock_out_reason?: string;
 }
 
 export interface OpenMeteoHourlySlice {
@@ -267,6 +269,10 @@ export function runKavachEngine(input: KavachEngineInput): KavachEngineResult {
     final_premium: finalPremium,
     kavach_score,
     max_payout: input.coverage_type === "24hr" ? 800 : 2500,
-    risk_breakdown: rb
+    risk_breakdown: rb,
+    is_locked_out: input.openMeteo.maxHourlyRainNext48h > 50 || (input.storm_level ?? 0) > 80 || !!input.flood_active,
+    lock_out_reason: input.openMeteo.maxHourlyRainNext48h > 50 ? "IMD Red Alert: Extreme rain predicted. Enrollment is temporarily locked to prevent adverse selection." : 
+                    (input.storm_level ?? 0) > 80 ? "Severe Storm Warning: High risk event imminent." :
+                    input.flood_active ? "Active Flood Zone: Immediate danger detected." : undefined
   };
 }

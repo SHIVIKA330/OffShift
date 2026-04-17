@@ -106,10 +106,12 @@ export function OnboardingWizard() {
   // Screens: 
   // 0  = Auth Login/Signup
   // 0.5 = Verify Email
-  // 1  = Permissions
+  // 1  = Permissions (System level)
+  // 1.5 = DPDP GPS Consent (Explicit legal)
   // 2  = Profile Setup
   // 3  = Identity Verification
   // 4  = Shift & Settlement (Work Zone)
+  // 4.5 = DPDP Data Agreement (Bank/Platform)
   // 5  = Kavach Score
   // 6  = Payment
   const [screen, setScreen] = useState(0); 
@@ -262,6 +264,12 @@ export function OnboardingWizard() {
 
   const handlePermissions = () => {
     if (!locationGranted || !cameraGranted) return toast.error("Please grant all required permissions to continue");
+    setScreen(1.5);
+  };
+
+  const [dpdpGpsConsent, setDpdpGpsConsent] = useState(false);
+  const handleDpdpGpsConsent = () => {
+    if (!dpdpGpsConsent) return toast.error("Consent is required under DPDP Act 2023");
     setScreen(2);
   };
 
@@ -276,9 +284,15 @@ export function OnboardingWizard() {
     setScreen(4);
   };
 
+  const [dpdpBankConsent, setDpdpBankConsent] = useState(false);
   const handleSettlementSubmit = () => {
     if (settlementChannel === "UPI" && !upiVpa) return toast.error("Enter UPI ID");
     if (settlementChannel === "IMPS" && (!bankAccount || !bankIfsc)) return toast.error("Enter Bank Details");
+    setScreen(4.5);
+  };
+
+  const handleDpdpBankConsent = () => {
+    if (!dpdpBankConsent) return toast.error("Consent is required to proceed with payouts");
     setScreen(5);
   };
 
@@ -554,6 +568,37 @@ export function OnboardingWizard() {
           </div>
         )}
 
+        {/* SCREEN 1.5: DPDP GPS Consent */}
+        {screen === 1.5 && (
+          <div className="animate-fade-in bg-slate-900 text-white p-8 rounded-[40px] editorial-shadow border border-slate-800">
+             <div className="w-16 h-16 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="material-symbols-outlined text-3xl">verified_user</span>
+             </div>
+             <h2 className="font-headline text-2xl font-medium mb-4 text-center text-white">Digital Personal Data Protection (DPDP)</h2>
+             <p className="font-body text-xs text-slate-400 mb-6 leading-relaxed">
+               Under the <strong>DPDP Act 2023</strong>, we require your explicit consent to collect and process your location data (GPS) for the purpose of trigger verification and fraud prevention.
+             </p>
+             
+             <div className="space-y-4 mb-8">
+                <div className="p-4 bg-slate-800 rounded-2xl flex items-start gap-3">
+                   <div className="w-5 h-5 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center shrink-0 mt-0.5"><span className="material-symbols-outlined text-[12px]">check</span></div>
+                   <p className="text-[11px] text-slate-300 italic">Data only used during active policy hours.</p>
+                </div>
+                <div className="p-4 bg-slate-800 rounded-2xl flex items-start gap-3">
+                   <div className="w-5 h-5 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center shrink-0 mt-0.5"><span className="material-symbols-outlined text-[12px]">check</span></div>
+                   <p className="text-[11px] text-slate-300 italic">Encrypted storage with 90-day retention.</p>
+                </div>
+             </div>
+
+             <label className="flex items-center gap-3 p-4 bg-white/5 rounded-2xl cursor-pointer hover:bg-white/10 transition-colors mb-6 border border-white/10">
+               <input type="checkbox" checked={dpdpGpsConsent} onChange={(e) => setDpdpGpsConsent(e.target.checked)} className="w-5 h-5 rounded border-slate-700 bg-slate-800 text-blue-500" />
+               <span className="text-[10px] font-bold uppercase tracking-wider">I consent to GPS tracking for insurance</span>
+             </label>
+
+             <button className={btnPrimaryStyle} onClick={handleDpdpGpsConsent}>Confirm legal consent</button>
+          </div>
+        )}
+
         {/* SCREEN 2: Profile */}
         {screen === 2 && (
           <div className="animate-fade-in relative">
@@ -762,6 +807,37 @@ export function OnboardingWizard() {
 
               <button className={btnPrimaryStyle} onClick={handleSettlementSubmit}>Calculate Risk Score</button>
             </div>
+          </div>
+        )}
+
+        {/* SCREEN 4.5: DPDP Data Agreement */}
+        {screen === 4.5 && (
+          <div className="animate-fade-in bg-stone-900 text-white p-8 rounded-[40px] editorial-shadow border border-stone-800">
+             <div className="w-16 h-16 bg-purple-500/20 text-purple-400 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="material-symbols-outlined text-3xl">handshake</span>
+             </div>
+             <h2 className="font-headline text-2xl font-medium mb-4 text-center">Data Sharing Agreement</h2>
+             
+             <div className="space-y-4 mb-8">
+                <p className="font-body text-[11px] text-stone-400 leading-relaxed">
+                  To automate your payouts, OffShift needs to verify your work activity via <strong>API integration with {platform}</strong>.
+                </p>
+                <div className="p-4 bg-stone-800 rounded-2xl">
+                   <h4 className="text-[10px] font-bold uppercase text-stone-300 mb-2">Consent Items:</h4>
+                   <ul className="space-y-2">
+                     <li className="flex gap-2 text-[10px] text-stone-400"><span className="text-emerald-400">•</span> Bank / UPI account for disbursement.</li>
+                     <li className="flex gap-2 text-[10px] text-stone-400"><span className="text-emerald-400">•</span> Daily login logs from {platform}.</li>
+                     <li className="flex gap-2 text-[10px] text-stone-400"><span className="text-emerald-400">•</span> KYC status from Aadhaar/PAN.</li>
+                   </ul>
+                </div>
+             </div>
+
+             <label className="flex items-center gap-3 p-4 bg-white/5 rounded-2xl cursor-pointer hover:bg-white/10 transition-colors mb-6 border border-white/10">
+               <input type="checkbox" checked={dpdpBankConsent} onChange={(e) => setDpdpBankConsent(e.target.checked)} className="w-5 h-5 rounded border-stone-700 bg-stone-800 text-purple-500" />
+               <span className="text-[10px] font-bold uppercase tracking-wider">Agree to Data Sharing terms</span>
+             </label>
+
+             <button className={btnPrimaryStyle} onClick={handleDpdpBankConsent}>Proceed to Risk Assessment</button>
           </div>
         )}
 

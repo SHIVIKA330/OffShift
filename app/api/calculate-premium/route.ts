@@ -128,6 +128,8 @@ export async function POST(req: Request) {
     final_premium: engine.final_premium,
     max_payout: engine.max_payout,
     risk_breakdown: engine.risk_breakdown,
+    is_locked_out: engine.is_locked_out,
+    lock_out_reason: engine.lock_out_reason,
     explanation_hindi,
     valid_for_seconds: 300,
   };
