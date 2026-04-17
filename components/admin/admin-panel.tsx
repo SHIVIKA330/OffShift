@@ -73,7 +73,7 @@ export function AdminPanel() {
       <Card className="mx-auto max-w-sm">
         <CardHeader>
           <CardTitle>Admin login</CardTitle>
-          <p className="text-xs text-slate-500">Basic auth — ADMIN_PASSWORD</p>
+          <p className="text-xs text-slate-500">Basic auth — default: <span className="font-mono font-bold text-slate-700">offshift</span></p>
         </CardHeader>
         <CardContent className="space-y-3">
           <div>
