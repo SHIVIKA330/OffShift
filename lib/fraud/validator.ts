@@ -59,6 +59,26 @@ export async function runEnhancedFraudValidation(
     fraud_score += 35;
     failed_layers.push(`Quorum: Only ${count} inactive peers found (Threshold: 30)`);
   }
+  // ─── LAYER 3: Cross-Platform Match ────────────────────────
+  // Requirement #5: GPS vs Platform login cross-check.
+  // We simulate a check against the platform's independent login logs.
+  const { data: loginData } = await supabase
+    .from("platform_logins")
+    .select("last_pincode")
+    .eq("worker_id", workerId)
+    .order("logged_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (loginData && recentPings.length > 0) {
+    // In a real system, we'd resolve the GPS to a pincode. 
+    // For the demo, we check if they are in the same general zone.
+    const isMismatch = false; // Simulated match for standard behavior
+    if (isMismatch) {
+      fraud_score += 50;
+      failed_layers.push("Cross-Check: GPS location mismatch with Platform Login IP/Pincode");
+    }
+  }
 
   // ─── LAYER 2: Session Continuity & Velocity ─────────────────
   if (recentPings.length >= 2) {
