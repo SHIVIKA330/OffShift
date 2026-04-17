@@ -14,15 +14,15 @@
     An AI-powered parametric income shield for India's 12 million gig delivery workers.<br/>
     <strong>Zero claim forms. Zero paperwork. Automatic UPI payout in 120 seconds.</strong>
     <br/><br/>
-    <a href="https://offshift-9iok.onrender.com"><strong> 🌐 LIVE WEBSITE</strong></a>
+    <a href="https://offshift-9iok.onrender.com"><strong> LIVE WEBSITE</strong></a>
     ·
-    <a href="https://offshift-9iok.onrender.com/onboard"><strong> 🚀 START ONBOARDING</strong></a>
+    <a href="https://offshift-9iok.onrender.com/onboard"><strong> START ONBOARDING</strong></a>
     ·
-    <a href="https://offshift-9iok.onrender.com/debug/bot"><strong> 🤖 WhatsApp Bot Simulator</strong></a>
+    <a href="https://offshift-9iok.onrender.com/debug/bot"><strong> WhatsApp Bot Simulator</strong></a>
     ·
-    <a href="https://offshift-9iok.onrender.com/admin/compliance"><strong> 🛡️ Compliance Dashboard</strong></a>
+    <a href="https://offshift-9iok.onrender.com/admin/compliance"><strong> Compliance Dashboard</strong></a>
     ·
-    <a href="https://offshift-9iok.onrender.com/actuarial"><strong> 📊 Actuarial Insights</strong></a>
+    <a href="https://offshift-9iok.onrender.com/actuarial"><strong> Actuarial Insights</strong></a>
   </p>
 </div>
 
@@ -497,7 +497,7 @@ CREATE TABLE claims (
 ---
 
 <!-- PHASE 2: REGISTRATION -->
-## 📋 Phase 2 — Registration Process <a name="phase2-registration"></a>
+## Phase 2 — Registration Process <a name="phase2-registration"></a>
 
 Onboarding is **WhatsApp-native, zero-download, 60 seconds flat**. No app stores. No email. No KYC documents.
 
@@ -579,7 +579,7 @@ CREATION → ACTIVE → MONITORING → TRIGGERED → CLAIMED → EXPIRED/RENEWED
 ---
 
 <!-- PHASE 2: DYNAMIC PREMIUM -->
-## 💰 Phase 2 — Dynamic Premium Calculation <a name="phase2-premium"></a>
+## Phase 2 — Dynamic Premium Calculation <a name="phase2-premium"></a>
 
 Every rider gets a **personalized premium** — not a flat fee. Kavach AI adjusts ±₹10–₹30 from the base price using hyper-local risk factors.
 
@@ -706,7 +706,7 @@ Response: {
 ---
 
 <!-- PHASE 2: CLAIMS MANAGEMENT -->
-## ⚡ Phase 2 — Claims Management & Automated Triggers <a name="phase2-claims"></a>
+## Phase 2 — Claims Management & Automated Triggers <a name="phase2-claims"></a>
 
 **Zero-touch. Zero-form. 120 seconds from trigger to UPI deposit.**
 
@@ -718,11 +718,11 @@ We monitor **5 independent data sources** via cron jobs running every 15 minutes
 
 | # | Trigger | Threshold | Public API | Endpoint | Verification Method |
 |---|---|---|---|---|---|
-| 1 | 🌧️ **Heavy Rainfall** | >65mm/hr (IMD Red Alert) | **IMD Weather API** + OpenWeatherMap | `api.openweathermap.org/data/2.5/weather?q={pincode}` | Cross-verified: IMD confirms OWM reading |
-| 2 | 🔥 **Extreme Heat** | >45°C sustained 3+ hrs | **OpenWeatherMap API** | `api.openweathermap.org/data/2.5/forecast?q={pincode}` | 3-hour rolling average check |
-| 3 | 💨 **Hazardous AQI** | AQI >300 (Hazardous) | **AQICN API** (aqicn.org) | `api.waqi.info/feed/{city}/?token={key}` | 3-hour sustained reading required |
-| 4 | 📱 **App Outage** | Spike + 50 riders GPS-inactive | **Downdetector Scraper** + GPS cluster | Custom scraper on `downdetector.in/status/zomato` | Isolation Forest anomaly detection |
-| 5 | 🚫 **Curfew/Strike** | Govt notification + news | **NewsAPI** | `newsapi.org/v2/everything?q=curfew+{city}` | Admin dashboard manual confirmation |
+| 1 |  **Heavy Rainfall** | >65mm/hr (IMD Red Alert) | **IMD Weather API** + OpenWeatherMap | `api.openweathermap.org/data/2.5/weather?q={pincode}` | Cross-verified: IMD confirms OWM reading |
+| 2 |  **Extreme Heat** | >45°C sustained 3+ hrs | **OpenWeatherMap API** | `api.openweathermap.org/data/2.5/forecast?q={pincode}` | 3-hour rolling average check |
+| 3 |  **Hazardous AQI** | AQI >300 (Hazardous) | **AQICN API** (aqicn.org) | `api.waqi.info/feed/{city}/?token={key}` | 3-hour sustained reading required |
+| 4 |  **App Outage** | Spike + 50 riders GPS-inactive | **Downdetector Scraper** + GPS cluster | Custom scraper on `downdetector.in/status/zomato` | Isolation Forest anomaly detection |
+| 5 |  **Curfew/Strike** | Govt notification + news | **NewsAPI** | `newsapi.org/v2/everything?q=curfew+{city}` | Admin dashboard manual confirmation |
 
 ### Trigger API Integration Architecture
 
@@ -830,13 +830,13 @@ Each oracle returns standardized data for the trigger monitor to evaluate:
 #### The Rider Journey During a Claim (Ravi's Story)
 
 ```
-🕐 3:45 PM — Ravi is delivering orders in Okhla, Delhi
-🌧️ 4:00 PM — Heavy rain starts, roads flooding rapidly
-📡 4:00 PM — OffShift cron detects IMD Red Alert for pincode 110020
+ 3:45 PM — Ravi is delivering orders in Okhla, Delhi
+ 4:00 PM — Heavy rain starts, roads flooding rapidly
+ 4:00 PM — OffShift cron detects IMD Red Alert for pincode 110020
             (rainfall: 74.2mm/hr > 65mm threshold)
-🔍 4:00 PM — System queries: "Which riders have active coverage in 110020?"
+ 4:00 PM — System queries: "Which riders have active coverage in 110020?"
             → Ravi has Weekly Pass (active until March 25)
-🧠 4:00 PM — Kavach Trust Score calculated for Ravi:
+ 4:00 PM — Kavach Trust Score calculated for Ravi:
             GPS-Cell Tower Match:  0.95 (genuine location)
             Accelerometer:        0.88 (outdoor vibration detected)
             Shift History:        0.92 (regular Okhla rider)
@@ -845,21 +845,21 @@ Each oracle returns standardized data for the trigger monitor to evaluate:
             App Activity:         0.85 (last Zomato delivery 12 min ago)
             ─────────────────────────────────
             TRUST SCORE:          0.91 → TIER 1 (Auto-Approve)
-💰 4:01 PM — Razorpay UPI payout initiated: ₹1,500 → rajesh@ybl
-📱 4:02 PM — WhatsApp message delivered:
-            "Hi Ravi 👋
-             🛡️ Your OffShift Weekly Shield just activated.
+ 4:01 PM — Razorpay UPI payout initiated: ₹1,500 → rajesh@ybl
+ 4:02 PM — WhatsApp message delivered:
+            "Hi Ravi 
+              Your OffShift Weekly Shield just activated.
 
              ₹1,500 deposited to rajesh@ybl
              Reason: IMD Red Alert — Heavy Rain in Okhla (74.2mm/hr)
              Ref: TXN_RZP_20260715_001
 
-             Stay safe. Your income is protected. 💪"
+             Stay safe. Your income is protected. "
 
-⏱️ TOTAL TIME: 120 seconds
-📝 FORMS FILLED: 0
-📞 CALLS MADE: 0
-📧 EMAILS SENT: 0
+ TOTAL TIME: 120 seconds
+ FORMS FILLED: 0
+ CALLS MADE: 0
+ EMAILS SENT: 0
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -867,7 +867,7 @@ Each oracle returns standardized data for the trigger monitor to evaluate:
 ---
 
 <!-- PHASE 3: ADVANCED FRAUD DETECTION -->
-## 🔍 Phase 3 — Advanced Fraud Detection <a name="phase3-fraud"></a>
+##  Phase 3 — Advanced Fraud Detection <a name="phase3-fraud"></a>
 
 Beyond the 6-layer defense documented above, Phase 3 deploys **delivery-specific fraud catching** mechanisms. We don't just track where they are; we track *how they work*.
 
@@ -922,7 +922,7 @@ We use **Isolation Forest (Anomaly Detection)** to identify coordinated fraud ri
 ---
 
 <!-- PHASE 3: INSTANT PAYOUT SYSTEM -->
-## 💸 Phase 3 — Instant Payout System (Simulated) <a name="phase3-payout"></a>
+## Phase 3 — Instant Payout System (Simulated) <a name="phase3-payout"></a>
 
 We demonstrate the "Moment of Truth" — when the payout hits the worker's account in real-time. For the demo, we integrate with **Mock Payment Gateways** to simulate the entire fund-flow.
 
@@ -959,11 +959,11 @@ const payout = await razorpay.payouts.create({
 ---
 
 <!-- PHASE 3: INTELLIGENT DASHBOARDS -->
-## 📊 Phase 3 — Intelligent Dashboards <a name="phase3-dashboard"></a>
+##  Phase 3 — Intelligent Dashboards <a name="phase3-dashboard"></a>
 
 We provide two distinct views: one for the frontline worker (Shield Status) and one for the insurer (Risk & Liquidity).
 
-### 🧑‍🚀 For Workers: The "Shield" View
+### For Workers: The "Shield" View
 A mobile-first, haptic dashboard built for the road.
 
 *   **Earnings Protected**: Total lifetime payouts received (The "Peace of Mind" metric).
@@ -971,7 +971,7 @@ A mobile-first, haptic dashboard built for the road.
 *   **Claim History**: One-tap access to every past disruption event and its payout status.
 *   **Trust Score**: A gamified "Kavach Score" — workers with high scores get faster payouts and lower premiums.
 
-### 🏢 For Insurers: The "Nebula" Admin Console
+### For Insurers: The "Nebula" Admin Console
 A dark-mode, high-performance dashboard for risk managers.
 
 *   **Loss Ratios**: Real-time tracking of premiums collected vs. claims paid.
@@ -1073,7 +1073,7 @@ npm install npm@latest -g
 - [x] Tech stack selected — all free/open-source
 - [x] Kavach AI architecture designed (XGBoost + Isolation Forest)
 
-### 🔧 Phase 2 — Automation & Protection (March 21 – April 4)
+### Phase 2 — Automation & Protection (March 21 – April 4)
 **Theme: "Protect Your Worker"**
 - [x] **Registration Process:** WhatsApp sandbox bot live — Dialogflow CX + Twilio integration
 - [x] **Registration Process:** Multi-channel onboarding (WhatsApp + Web PWA + Voice Hindi)
@@ -1090,7 +1090,7 @@ npm install npm@latest -g
 - [x] **Claims Management:** Zero-touch WhatsApp claim notification + receipt
 - [x] **2-Minute Demo Video:** Screen recording of registration → coverage → trigger → payout flow
 
-### 🚀 Phase 3 — Scale & Optimize (April 5–17)
+### Phase 3 — Scale & Optimize (April 5–17)
 **Theme: "Perfect for Your Worker"**
 - [x] **Advanced Fraud Detection:** GPS spoofing detection (cell tower + accelerometer + jitter analysis)
 - [x] **Advanced Fraud Detection:** Fake weather claims caught via historical cross-validation
@@ -1112,7 +1112,7 @@ npm install npm@latest -g
 ---
 
 <!-- PHASE 3 / HACKATHON EVALUATION  -->
-## 🏆 Phase 3 Architecture & Hackathon Evaluation <a name="hackathon-evaluation"></a>
+## Phase 3 Architecture & Hackathon Evaluation <a name="hackathon-evaluation"></a>
 
 ### Phase 3 Architecture
 - `POST /api/demo/trigger-weather` - IMD Simulation Event
@@ -1135,7 +1135,7 @@ curl "https://archive-api.open-meteo.com/v1/archive?latitude=28.6139&longitude=7
 **SS Code 2020 (Social Security):** OffShift respects unorganized sector mandates by forcing a 90-day platform engagement history gate. Short-term shift passes bypass this, but comprehensive Monthly coverage mandates proof-of-work (verified in [Eligibility Check](/api/eligibility/check)).
 **DPDP Act 2023 (Digital Data Protection):** Compliant, isolated consent gathering. Location streams cannot be monitored invisibly. IP hashes log cryptographic affirmations in multi-step wizard logic (verified on [Consent Flow](/onboard/consent)).
 
-### ⚖️ Judge Quick Links
+### Judge Quick Links
 - **Live site:** [https://offshift-9iok.onrender.com](https://offshift-9iok.onrender.com)
 - **Compliance Dashboard:** [/admin/compliance](https://offshift-9iok.onrender.com/admin/compliance)
 - **Actuarial Insights:** [/actuarial](https://offshift-9iok.onrender.com/actuarial)
