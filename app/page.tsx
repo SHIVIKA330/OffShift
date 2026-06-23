@@ -115,7 +115,7 @@ export default function HomePage() {
                   Platform outage cover
                 </li>
               </ul>
-              <Link href="/dashboard" className="block w-full">
+              <Link href="/onboard" className="block w-full">
                 <button className="w-full py-4 rounded-full border border-primary text-primary font-label text-xs font-bold uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-all duration-300">Select Plan</button>
               </Link>
             </div>
