@@ -8,7 +8,7 @@ export default function HomePage() {
       <header className="fixed top-0 w-full z-50 bg-[#f9f9f7] dark:bg-stone-950 backdrop-blur-md opacity-90 flex justify-between items-center px-6 py-4">
         <Link href="/">
           <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-[#3A4D39] dark:text-[#A7B4A6] hover:opacity-70 transition-opacity duration-300 ease-in-out cursor-pointer" data-icon="menu">menu</span>
+            
             <h1 className="text-2xl font-semibold tracking-tighter text-[#3A4D39] dark:text-[#f9f9f7] font-['Newsreader']">OffShift</h1>
           </div>
         </Link>
