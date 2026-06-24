@@ -18,7 +18,7 @@ export async function POST(req: Request) {
       zone: string;
       shift_type: ShiftType;
       active_days: number;
-      platform: "zomato" | "swiggy" | "zepto";
+      platform: string;
       razorpay_payment_id?: string;
     };
     try {

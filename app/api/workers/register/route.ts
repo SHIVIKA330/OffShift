@@ -50,67 +50,73 @@ export async function POST(req: Request) {
     );
   }
 
-  const ks =
-    body.kavach_score ??
-    computeKavachScore({
+  // ── Outer try-catch: catches missing env vars & DB connection errors ──
+  try {
+    const ks =
+      body.kavach_score ??
+      computeKavachScore({
+        zone,
+        shift_type: body.shift_type,
+        active_days: body.active_days_per_week,
+        aqi_forecast_peak: getMockAqiForZone(zone as ZoneSlug).aqi_forecast_peak,
+      });
+
+    const supabase = createServiceRoleClient();
+
+    // Check if rider_id or phone already exists
+    const { data: existingByRider } = await supabase
+      .from("workers")
+      .select("id, phone, name")
+      .eq("rider_id", body.rider_id.toUpperCase())
+      .maybeSingle();
+
+    const { data: existingByPhone } = await supabase
+      .from("workers")
+      .select("id, rider_id, name")
+      .eq("phone", body.phone)
+      .maybeSingle();
+
+    if (existingByRider) {
+      if (existingByRider.phone !== body.phone) {
+         return NextResponse.json({ error: `Rider ID ${body.rider_id} is already registered to another number.` }, { status: 400 });
+      }
+      return NextResponse.json({ ok: true, worker_id: existingByRider.id });
+    }
+
+    if (existingByPhone) {
+      return NextResponse.json({ ok: true, worker_id: existingByPhone.id });
+    }
+
+    // Hash password if provided
+    const pw_hash = body.password ? hashPassword(body.password) : null;
+
+    // Normalize platform — capitalize first letter for DB
+    const platformNormalized = body.platform
+      ? body.platform.charAt(0).toUpperCase() + body.platform.slice(1)
+      : body.platform;
+
+    // Create new worker — try with settlement fields, fallback to core fields
+    const coreFields = {
+      phone: body.phone,
+      name: body.name,
+      platform: platformNormalized,
+      rider_id: body.rider_id.toUpperCase(),
       zone,
       shift_type: body.shift_type,
-      active_days: body.active_days_per_week,
-      aqi_forecast_peak: getMockAqiForZone(zone as ZoneSlug).aqi_forecast_peak,
-    });
+      active_days_per_week: body.active_days_per_week,
+      kavach_score: ks,
+      password_hash: pw_hash,
+      is_verified: true,
+    };
 
-  const supabase = createServiceRoleClient();
+    const settlementFields = {
+      settlement_channel: body.settlement_channel ?? "UPI",
+      upi_vpa: body.upi_vpa ?? null,
+      bank_account_number: body.bank_account_number ?? null,
+      bank_ifsc: body.bank_ifsc ?? null,
+      bank_account_name: body.bank_account_name ?? null,
+    };
 
-  // Check if rider_id or phone already exists
-  const { data: existingByRider } = await supabase
-    .from("workers")
-    .select("id, phone, name")
-    .eq("rider_id", body.rider_id.toUpperCase())
-    .maybeSingle();
-
-  const { data: existingByPhone } = await supabase
-    .from("workers")
-    .select("id, rider_id, name")
-    .eq("phone", body.phone)
-    .maybeSingle();
-
-  if (existingByRider) {
-    if (existingByRider.phone !== body.phone) {
-       return NextResponse.json({ error: `Rider ID ${body.rider_id} is already registered to another number.` }, { status: 400 });
-    }
-    return NextResponse.json({ ok: true, worker_id: existingByRider.id });
-  }
-
-  if (existingByPhone) {
-    return NextResponse.json({ ok: true, worker_id: existingByPhone.id });
-  }
-
-  // Hash password if provided
-  const pw_hash = body.password ? hashPassword(body.password) : null;
-
-  // Create new worker — try with settlement fields, fallback to core fields
-  const coreFields = {
-    phone: body.phone,
-    name: body.name,
-    platform: body.platform.charAt(0).toUpperCase() + body.platform.slice(1),
-    rider_id: body.rider_id.toUpperCase(),
-    zone,
-    shift_type: body.shift_type,
-    active_days_per_week: body.active_days_per_week,
-    kavach_score: ks,
-    password_hash: pw_hash,
-    is_verified: true,
-  };
-
-  const settlementFields = {
-    settlement_channel: body.settlement_channel ?? "UPI",
-    upi_vpa: body.upi_vpa ?? null,
-    bank_account_number: body.bank_account_number ?? null,
-    bank_ifsc: body.bank_ifsc ?? null,
-    bank_account_name: body.bank_account_name ?? null,
-  };
-
-  try {
     // First try with settlement fields
     let result = await supabase
       .from("workers")
