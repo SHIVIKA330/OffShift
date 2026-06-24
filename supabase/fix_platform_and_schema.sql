@@ -67,18 +67,34 @@ END $$;
 
 -- ═══════════════════════════════════════════════════════
 -- FIX 5: Enable RLS (Row Level Security) but allow
--- service role to bypass (required for server-side ops)
+-- service role to bypass and public to read (select)
 -- ═══════════════════════════════════════════════════════
 ALTER TABLE workers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE policies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE claims ENABLE ROW LEVEL SECURITY;
 
 -- Allow service role (used by the app backend) full access
-CREATE POLICY IF NOT EXISTS "Service role bypass workers"
+DROP POLICY IF EXISTS "Service role bypass workers" ON workers;
+CREATE POLICY "Service role bypass workers"
   ON workers FOR ALL TO service_role USING (true) WITH CHECK (true);
 
-CREATE POLICY IF NOT EXISTS "Service role bypass policies"
+DROP POLICY IF EXISTS "Service role bypass policies" ON policies;
+CREATE POLICY "Service role bypass policies"
   ON policies FOR ALL TO service_role USING (true) WITH CHECK (true);
 
-CREATE POLICY IF NOT EXISTS "Service role bypass claims"
+DROP POLICY IF EXISTS "Service role bypass claims" ON claims;
+CREATE POLICY "Service role bypass claims"
   ON claims FOR ALL TO service_role USING (true) WITH CHECK (true);
+
+-- Allow public read access (required for client-side queries)
+DROP POLICY IF EXISTS "Allow public read workers" ON workers;
+CREATE POLICY "Allow public read workers"
+  ON workers FOR SELECT TO public USING (true);
+
+DROP POLICY IF EXISTS "Allow public read policies" ON policies;
+CREATE POLICY "Allow public read policies"
+  ON policies FOR SELECT TO public USING (true);
+
+DROP POLICY IF EXISTS "Allow public read claims" ON claims;
+CREATE POLICY "Allow public read claims"
+  ON claims FOR SELECT TO public USING (true);
