@@ -1,7 +1,7 @@
-import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard";
+import { DashboardClient } from "@/components/dashboard/dashboard-client";
 
 export const dynamic = "force-dynamic";
 
-export default function OnboardPage() {
-  return <OnboardingWizard />;
+export default function DashboardPage() {
+  return <DashboardClient />;
 }

@@ -45,6 +45,7 @@ export function DashboardClient() {
   const [loading, setLoading] = useState(false);
   const [riderId, setRiderId] = useState<string>("");
   const [platform, setPlatform] = useState<string>("");
+  const [workerDetails, setWorkerDetails] = useState<any>(null);
 
   // DevTrails Enhanced Features State
   const [policyActiveToggle, setPolicyActiveToggle] = useState(true);
@@ -75,11 +76,16 @@ export function DashboardClient() {
   const load = useCallback(async () => {
     if (!workerId) return;
 
-    const { data: worker } = await supabase.from("workers").select("name, rider_id, platform").eq("id", workerId).single();
+    const { data: worker } = await supabase
+      .from("workers")
+      .select("name, phone, platform, rider_id, zone, shift_type, kavach_score, settlement_channel, upi_vpa, bank_account_number, bank_ifsc, bank_account_name")
+      .eq("id", workerId)
+      .single();
     if (worker) {
       setWorkerName(worker.name);
       setRiderId(worker.rider_id);
       setPlatform(worker.platform);
+      setWorkerDetails(worker);
       localStorage.setItem("offshift_worker_name", worker.name);
     }
 
@@ -402,16 +408,105 @@ export function DashboardClient() {
               <h3 className="font-headline text-3xl text-primary">{workerName}</h3>
               <p className="text-secondary font-label text-xs uppercase tracking-widest mb-8 mt-2">Verified Professional • {platform}</p>
               
-              <div className="grid grid-cols-2 gap-4 text-left">
-                 <div className="bg-surface p-4 rounded-2xl">
-                    <p className="text-[10px] font-bold text-on-surface-variant uppercase">Rider Identity</p>
-                    <p className="font-headline text-lg text-primary">{riderId}</p>
-                 </div>
-                 <div className="bg-surface p-4 rounded-2xl">
-                    <p className="text-[10px] font-bold text-on-surface-variant uppercase">Settlement</p>
-                    <p className="font-headline text-lg text-primary">UPI/Razorpay</p>
-                 </div>
-              </div>
+               <div className="space-y-4 text-left">
+                  {/* Account Details Group */}
+                  <div className="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/5 space-y-3">
+                     <h4 className="font-label text-[10px] uppercase font-bold tracking-widest text-primary mb-2">Account Details</h4>
+                     
+                     <div className="flex justify-between items-center text-xs">
+                        <span className="text-on-surface-variant font-medium">User ID</span>
+                        <span className="font-mono text-on-surface font-semibold select-all bg-surface px-2 py-0.5 rounded">{workerId}</span>
+                     </div>
+                     <div className="flex justify-between items-center text-xs">
+                        <span className="text-on-surface-variant font-medium">Mobile Number</span>
+                        <span className="text-on-surface font-semibold">{workerDetails?.phone || "N/A"}</span>
+                     </div>
+                     <div className="flex justify-between items-center text-xs">
+                        <span className="text-on-surface-variant font-medium">Rider ID</span>
+                        <span className="font-mono text-on-surface font-semibold">{riderId}</span>
+                     </div>
+                     <div className="flex justify-between items-center text-xs">
+                        <span className="text-on-surface-variant font-medium">Work Zone</span>
+                        <span className="text-on-surface font-semibold capitalize">{workerDetails?.zone || "N/A"}</span>
+                     </div>
+                     <div className="flex justify-between items-center text-xs">
+                        <span className="text-on-surface-variant font-medium">Shift Type</span>
+                        <span className="text-on-surface font-semibold capitalize">{workerDetails?.shift_type || "N/A"}</span>
+                     </div>
+                     <div className="flex justify-between items-center text-xs">
+                        <span className="text-on-surface-variant font-medium">Kavach Risk Score</span>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${workerDetails?.kavach_score > 70 ? 'bg-[#cbebc8] text-[#07200b]' : 'bg-surface-container-highest text-on-surface'}`}>
+                           {workerDetails?.kavach_score || "N/A"}
+                        </span>
+                     </div>
+                  </div>
+
+                  {/* Settlement & Payout Details Group */}
+                  <div className="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/5 space-y-3">
+                     <h4 className="font-label text-[10px] uppercase font-bold tracking-widest text-primary mb-2">Settlement Settings</h4>
+                     
+                     <div className="flex justify-between items-center text-xs">
+                        <span className="text-on-surface-variant font-medium">Payout Method</span>
+                        <span className="text-on-surface font-semibold">{workerDetails?.settlement_channel || "N/A"}</span>
+                     </div>
+                     {workerDetails?.settlement_channel === "UPI" && (
+                        <div className="flex justify-between items-center text-xs">
+                           <span className="text-on-surface-variant font-medium">UPI VPA ID</span>
+                           <span className="text-on-surface font-semibold">{workerDetails?.upi_vpa || "N/A"}</span>
+                        </div>
+                     )}
+                     {workerDetails?.settlement_channel === "IMPS" && (
+                        <>
+                           <div className="flex justify-between items-center text-xs">
+                              <span className="text-on-surface-variant font-medium">Account Name</span>
+                              <span className="text-on-surface font-semibold">{workerDetails?.bank_account_name || "N/A"}</span>
+                           </div>
+                           <div className="flex justify-between items-center text-xs">
+                              <span className="text-on-surface-variant font-medium">Account Number</span>
+                              <span className="text-on-surface font-semibold">{workerDetails?.bank_account_number || "N/A"}</span>
+                           </div>
+                           <div className="flex justify-between items-center text-xs">
+                              <span className="text-on-surface-variant font-medium">Bank IFSC</span>
+                              <span className="text-on-surface font-semibold uppercase">{workerDetails?.bank_ifsc || "N/A"}</span>
+                           </div>
+                        </>
+                     )}
+                     {workerDetails?.settlement_channel === "RAZORPAY" && (
+                        <div className="flex justify-between items-center text-xs">
+                           <span className="text-on-surface-variant font-medium">Sandbox Mode</span>
+                           <span className="text-on-surface font-semibold">Active</span>
+                        </div>
+                     )}
+                  </div>
+
+                  {/* Policies Summary Group */}
+                  <div className="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/5 space-y-3">
+                     <h4 className="font-label text-[10px] uppercase font-bold tracking-widest text-primary mb-2">Coverage Statistics</h4>
+                     
+                     <div className="flex justify-between items-center text-xs">
+                        <span className="text-on-surface-variant font-medium">Active Policy</span>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${active ? 'bg-[#cbebc8] text-[#07200b]' : 'bg-surface-container-highest text-on-surface'}`}>
+                           {active ? "Protected" : "No Active Shield"}
+                        </span>
+                     </div>
+                     <div className="flex justify-between items-center text-xs">
+                        <span className="text-on-surface-variant font-medium">Total Passes Purchased</span>
+                        <span className="text-on-surface font-semibold">{policies.length}</span>
+                     </div>
+                     <div className="flex justify-between items-center text-xs">
+                        <span className="text-on-surface-variant font-medium">Total Premium Paid</span>
+                        <span className="text-on-surface font-semibold">
+                           {formatRupees(policies.reduce((sum, p) => sum + Number(p.premium_amount), 0))}
+                        </span>
+                     </div>
+                     <div className="flex justify-between items-center text-xs">
+                        <span className="text-on-surface-variant font-medium">Total Payouts Received</span>
+                        <span className="text-secondary font-bold">
+                           {formatRupees(policies.reduce((sum, p) => sum + Number(p.payout_total || 0), 0))}
+                        </span>
+                     </div>
+                  </div>
+               </div>
               <button onClick={doLogout} className="mt-8 w-full py-4 rounded-full border border-error/20 text-error font-label text-xs uppercase font-bold tracking-widest hover:bg-error/5 transition-colors">
                 Terminate Shield Session
               </button>
