@@ -168,16 +168,21 @@ export function DashboardClient() {
     }, 2000);
   };
 
-  if (!workerId) return <div className="text-center pt-32">Please login via /onboard</div>;
+  if (!workerId) {
+    return <div className="text-center pt-32">Please login via /onboard</div>;
+  }
 
   return (
     <div className="bg-surface text-on-surface font-body min-h-screen pb-32">
-      <header className="fixed top-0 w-full z-50 bg-[#f9f9f7] dark:bg-stone-950 backdrop-blur-md opacity-90 flex justify-between items-center px-6 py-4 border-b border-outline-variant/10">
+      <header className="fixed top-0 w-full z-50 bg-[#f9f9f7] dark:bg-stone-950 backdrop-blur-md opacity-90 flex justify-between items-center px-6 py-4">
         <Link href="/">
-          <div className="flex items-center gap-3"><h1 className="text-2xl font-semibold tracking-tighter text-primary font-['Newsreader']">OffShift</h1></div>
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-[#3A4D39] dark:text-[#A7B4A6] hover:opacity-70 transition-opacity duration-300 ease-in-out cursor-pointer" data-icon="menu">menu</span>
+            <h1 className="text-2xl font-semibold tracking-tighter text-[#3A4D39] dark:text-[#f9f9f7] font-['Newsreader']">OffShift</h1>
+          </div>
         </Link>
         <div className="relative">
-          <div onClick={() => setIsProfileOpen(!isProfileOpen)} className="w-10 h-10 rounded-full border border-outline-variant/15 flex items-center justify-center overflow-hidden cursor-pointer bg-surface-container-highest">
+          <div onClick={() => setIsProfileOpen(!isProfileOpen)} className="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant/15 flex items-center justify-center overflow-hidden hover:opacity-70 transition-opacity duration-300 ease-in-out cursor-pointer">
              <img alt="Profile" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC95G_7XgTmO5BqUuzbpLEgXc7-4kMwgCwl1NZw8mlK-DYoiUVWMcs8CASgIcEn4bniG4AFJQPWeNnEaea2aFik8TwfLAgBfIYYlBRzLUQ4o6KSF_NIedBXY5gsc2wPRlxD5468OoFmFIWauikoZ8utGhQ5RzulaTjDTz3wVw6E3yv4VoWMS77huuVwTAm0tIBzuqrglIPdMrl_rd4e6eHeCTOGkh98SQ9tAlSWlW5zVJnwhw3GinFy5WantT8l860hX3GbCv0Owww"/>
           </div>
           {isProfileOpen && (
@@ -186,7 +191,9 @@ export function DashboardClient() {
             </div>
           )}
         </div>
-      </header>      <main className="pt-28 px-4 sm:px-6 max-w-lg mx-auto space-y-6">
+      </header>
+      <main className="pt-24 pb-32 px-6 min-h-screen bg-surface">
+        <div className="max-w-lg mx-auto space-y-6">
         
         {/* SECTION: HOME */}
         {activeSection === "home" && (
@@ -502,6 +509,7 @@ export function DashboardClient() {
              </div>
           </section>
         )}
+        </div>
       </main>
 
       {/* Floating Bot Button */}
@@ -513,29 +521,49 @@ export function DashboardClient() {
         </div>
       </Link>
 
-      <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-end px-4 pt-3 pb-8 bg-surface/90 dark:bg-stone-950/90 backdrop-blur-2xl border-t border-outline-variant/10 rounded-t-[32px] sm:max-w-lg sm:left-1/2 sm:-translate-x-1/2">
+      {/* BottomNavBar */}
+      <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pt-3 pb-8 bg-[#f9f9f7]/80 dark:bg-stone-900/80 backdrop-blur-xl shadow-[0_-4px_30px_rgba(0,0,0,0.06)] rounded-t-[32px]">
         {[
-          { id: "home", label: "HOME", icon: "home_app_logo" },
-          { id: "policies", label: "POLICIES", icon: "shield_with_heart" },
-          { id: "claims", label: "CLAIMS", icon: "request_quote" },
-          { id: "profile", label: "PROFILE", icon: "person" }
-        ].map((item) => (
-          <div 
-            key={item.id} 
-            onClick={() => scrollTo(item.id)}
-            className={`flex flex-col items-center justify-center p-2 cursor-pointer transition-all duration-300 relative ${activeSection === item.id ? 'text-on-primary' : 'text-on-surface-variant'}`}
-          >
-            {activeSection === item.id && (
-              <div className="absolute inset-0 bg-primary rounded-[18px] -z-10 animate-in fade-in zoom-in duration-300 editorial-shadow"></div>
-            )}
-            <span className={`material-symbols-outlined mb-1 text-[22px] transition-transform duration-300 ${activeSection === item.id ? 'scale-110' : 'scale-100 opacity-60'}`}>
-              {item.icon}
-            </span>
-            <span className={`text-[8px] font-bold tracking-widest transition-opacity duration-300 ${activeSection === item.id ? 'opacity-100' : 'opacity-40'}`}>
-              {item.label}
-            </span>
-          </div>
-        ))}
+          { id: "home", label: "Home", icon: "home_app_logo" },
+          { id: "policies", label: "Policies", icon: "verified_user" },
+          { id: "claims", label: "Claims", icon: "request_quote" },
+          { id: "profile", label: "Profile", icon: "account_circle" }
+        ].map((item) => {
+          const isActive = activeSection === item.id;
+          
+          if (item.id === "claims") {
+            return (
+              <Link href="/payout-success" key={item.id}>
+                <div className={`flex flex-col items-center justify-center p-2 duration-200 cursor-pointer ${
+                  isActive 
+                    ? "bg-[#3A4D39] text-white dark:bg-[#3A4D39] dark:text-[#f9f9f7] rounded-full px-5 py-2 scale-95" 
+                    : "text-stone-500 dark:text-stone-400 hover:text-[#3A4D39] dark:hover:text-white"
+                }`}>
+                  <span className="material-symbols-outlined mb-1" data-icon="request_quote">request_quote</span>
+                  <span className="font-['Manrope'] text-[11px] font-medium uppercase tracking-wider">Claims</span>
+                </div>
+              </Link>
+            );
+          }
+          
+          return (
+            <div 
+              key={item.id}
+              onClick={() => {
+                scrollTo(item.id);
+                window.history.pushState(null, "", `/dashboard?tab=${item.id}`);
+              }}
+              className={`flex flex-col items-center justify-center p-2 duration-200 cursor-pointer ${
+                isActive 
+                  ? "bg-[#3A4D39] text-white dark:bg-[#3A4D39] dark:text-[#f9f9f7] rounded-full px-5 py-2 scale-95" 
+                  : "text-stone-500 dark:text-stone-400 hover:text-[#3A4D39] dark:hover:text-white"
+              }`}
+            >
+              <span className="material-symbols-outlined mb-1" data-icon={item.icon}>{item.icon}</span>
+              <span className="font-['Manrope'] text-[11px] font-medium uppercase tracking-wider">{item.label}</span>
+            </div>
+          );
+        })}
       </nav>
     </div>
   );

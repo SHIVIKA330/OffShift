@@ -258,7 +258,7 @@ export default function HomePage() {
             <span className="font-['Manrope'] text-[11px] font-medium uppercase tracking-wider">Home</span>
           </div>
         </Link>
-        <Link href="/dashboard">
+        <Link href="/dashboard?tab=policies">
           <div className="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 p-2 hover:text-[#3A4D39] dark:hover:text-white transition-colors duration-200 cursor-pointer">
             <span className="material-symbols-outlined mb-1" data-icon="verified_user">verified_user</span>
             <span className="font-['Manrope'] text-[11px] font-medium uppercase tracking-wider">Policies</span>
@@ -270,7 +270,7 @@ export default function HomePage() {
             <span className="font-['Manrope'] text-[11px] font-medium uppercase tracking-wider">Claims</span>
           </div>
         </Link>
-        <Link href="/dashboard">
+        <Link href="/dashboard?tab=profile">
           <div className="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 p-2 hover:text-[#3A4D39] dark:hover:text-white transition-colors duration-200 cursor-pointer">
             <span className="material-symbols-outlined mb-1" data-icon="account_circle">account_circle</span>
             <span className="font-['Manrope'] text-[11px] font-medium uppercase tracking-wider">Profile</span>

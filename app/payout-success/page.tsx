@@ -69,7 +69,7 @@ export default function PayoutSuccessPage() {
 
       {/* BottomNavBar */}
       <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pt-3 pb-8 bg-[#f9f9f7]/80 dark:bg-stone-900/80 backdrop-blur-xl shadow-[0_-4px_30px_rgba(0,0,0,0.06)] rounded-t-[32px]">
-        <Link href="/">
+        <Link href="/dashboard?tab=home">
           <div className="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 p-2 hover:text-[#3A4D39] dark:hover:text-white transition-colors duration-200 cursor-pointer">
             <span className="material-symbols-outlined mb-1" data-icon="home_app_logo">home_app_logo</span>
             <span className="font-['Manrope'] text-[11px] font-medium uppercase tracking-wider">Home</span>
